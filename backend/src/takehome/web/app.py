@@ -35,10 +35,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from takehome.web.routers import conversations, documents, messages, review  # noqa: E402
+from takehome.web.routers import conversations, documents, messages, review, workspace  # noqa: E402
 
 app.include_router(conversations.router)
 app.include_router(messages.router)
 app.include_router(documents.router)
 
 app.include_router(review.router)
+
+app.include_router(workspace.router)
