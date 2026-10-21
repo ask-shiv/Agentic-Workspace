@@ -64,6 +64,7 @@ review_agent = Agent(
         "Return at most 6 material findings, prioritised for the objective, with exact contiguous source quotes "
         "and physical PDF page numbers obtained from tools. Never invent evidence or claim a complete legal review. "
         "Separate interpretation, client relevance, next step and uncertainty. State missing facts and documents in gaps. "
+        "Keep each field concise. Do not infer legal effects absent from the document, including automatic expiry or absence of liability. Distinguish initial rent from current rent and derived calculations from source facts. "
         "Do not assert deadlines or compliance without the necessary facts. Evidence status will be checked by code."
     ),
 )

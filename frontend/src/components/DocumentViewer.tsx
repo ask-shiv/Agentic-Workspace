@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, FileText, Loader2 } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Document as PDFDocument, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -18,9 +18,10 @@ const DEFAULT_WIDTH = 400;
 
 interface DocumentViewerProps {
 	document: Document | null;
+	pageRequest?: { page: number; nonce: number } | null;
 }
 
-export function DocumentViewer({ document }: DocumentViewerProps) {
+export function DocumentViewer({ document, pageRequest }: DocumentViewerProps) {
 	const [numPages, setNumPages] = useState<number>(0);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [pdfLoading, setPdfLoading] = useState(true);
@@ -28,6 +29,11 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
 	const [width, setWidth] = useState(DEFAULT_WIDTH);
 	const [dragging, setDragging] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (pageRequest && numPages > 0)
+			setCurrentPage(Math.min(numPages, Math.max(1, pageRequest.page)));
+	}, [pageRequest, numPages]);
 
 	const handleMouseDown = useCallback(
 		(e: React.MouseEvent) => {
