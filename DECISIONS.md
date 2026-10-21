@@ -30,3 +30,7 @@ With more time, the report would become an organisation-restricted living docume
 ## Submission still required
 
 Part 1 technical-achievement Markdown and the 2–3 minute Loom are still to be supplied by the candidate. No placeholders are presented as completed submissions.
+
+## Shared working conventions
+
+The supplied personal skills are now portable project assets under `.agents/skills/`, referenced by `AGENTS.md`. Employer names, hard-coded teams, internal projects and mandatory paid-tool assumptions were removed. Scope discipline, concise PRs, evidence-based iteration and meaningful regression checks remain. Project copies are reviewable alongside code; global installation is a personal convenience. Each implementation pass records regression boundaries in `AGENTS.md` and product rationale here.
