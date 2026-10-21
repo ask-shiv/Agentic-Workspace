@@ -45,3 +45,5 @@ Append one short entry per meaningful pass here: invariant affected, checks, and
 - Sidebar identity check: uploaded filenames must be findable before chat title generation; keep API/list and navigation tests paired when changing document labels.
 
 - Local exposure boundary: keep Docker ports on loopback and CORS restricted to the local frontend origins. Test disallowed preflights. These are not substitutes for backend identity and workspace permissions.
+
+- PDF highlight regression: the text layer sits above the canvas. Use a translucent highlight so source glyphs remain readable; escaping and exact character matching are necessary but do not verify visual legibility.

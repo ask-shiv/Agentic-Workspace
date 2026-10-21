@@ -166,7 +166,7 @@ body {
 	transform: translateY(0);
 }
 .react-pdf__Page__textContent mark {
-	background: #fde047;
+	background: rgba(250, 204, 21, .3);
 	color: transparent;
 	border-bottom: 2px solid #854d0e;
 }
