@@ -14,7 +14,7 @@ With more time, the report would become an organisation-restricted living docume
 - Intent and objective, finding cards, source inspection/navigation, add/drag into three editable sections, proposed drafts, and explicit acceptance.
 - Postgres-backed report state with optimistic revision checks. A revision number prevents stale overwrites; it is not version history. Starting a new review preserves report text but clears old evidence attachments after confirmation.
 - Server-generated Markdown attachment containing saved text, source quotations, review status, objective, revision and export date. Unsaved work must be saved first.
-- Seven focused Python tests, eleven typed frontend tests including semantic accessibility checks, frontend lint/TypeScript production build, live persistence/conflict checks, and live review/drafting through the browser. The reusable smoke script checks a running stack without making model calls.
+- Eight focused Python tests, eleven typed frontend tests including semantic accessibility checks, frontend lint/TypeScript production build, live persistence/conflict checks, and live review/drafting through the browser. The reusable smoke script checks a running stack without making model calls.
 - Adversarial review identified a proposal/save race and an oversized-section edge case; both were corrected before merge.
 
 ## Limits and follow-ups — would complete with more time
@@ -54,3 +54,5 @@ Speechify is an integration idea, not a connected service. Selectable HTML and e
 The original Docker port mappings exposed the unauthenticated app beyond localhost. They now bind only to 127.0.0.1, including Postgres. This reduces accidental network exposure but does not authenticate local users or protect a future hosted deployment. Organisation sharing remains blocked on genuine backend permissions, not UI links.
 
 Regression coverage now includes navigation/history, unsaved changes, citation identity and safe highlighting, editable report persistence, preference restoration, reading-mode preservation, shortcut conflicts and axe semantic checks. Axe in jsdom omits colour contrast and canvas-based label-content measurement and does not establish screen-reader usability. Large-text reflow and citation highlighting were checked in the live browser; a wider independent audit remains required. GitHub Actions runs type/lint/build/component tests and focused Python tests with a dummy API credential, without billed model calls. Each pass records its invariants in AGENTS.md.
+
+The sidebar identifies uploaded files even before the lawyer asks a chat question; document-based work should not depend on chat title generation to become findable. Existing meaningful conversation titles remain visible.

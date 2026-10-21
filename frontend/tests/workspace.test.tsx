@@ -37,7 +37,7 @@ test('source highlighting spans PDF text items and escapes document HTML',()=>{
 
 test('sidebar links support deep routes and browser history',async()=>{
  const user=userEvent.setup();
- const item={id:'lease-a',title:'Lease A',created_at:'2026-10-21',updated_at:'2026-10-21',has_document:true};
+ const item={id:'lease-a',title:'New Conversation',document_filename:'Lease A.pdf',created_at:'2026-10-21',updated_at:'2026-10-21',has_document:true};
  const router=createMemoryRouter([{path:'*',element:<WorkspaceNavigation conversations={[item]} loading={false} onCreate={()=>{}}/>}],{initialEntries:['/']});
  render(<RouterProvider router={router}/>);
  await user.click(screen.getByRole('link',{name:/Lease A/}));
