@@ -1,0 +1,151 @@
+import { Menu, PanelRight, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+	Link,
+	Outlet,
+	useLocation,
+	useMatch,
+	useNavigate,
+	useSearchParams,
+} from "react-router-dom";
+import { WorkspaceNavigation } from "../components/WorkspaceNavigation";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogTitle,
+} from "../components/ui/dialog";
+import { useConversations } from "../hooks/use-conversations";
+import { useMediaQuery } from "../hooks/use-media-query";
+
+export function AppShell() {
+	const { conversations, loading, error, refresh, remove } = useConversations();
+	const [mobileNav, setMobileNav] = useState(false);
+
+	const desktop = useMediaQuery("(min-width: 1024px)");
+	const match = useMatch("/workspaces/:workspaceId");
+	const [search, setSearch] = useSearchParams();
+	const navigate = useNavigate();
+	const location = useLocation();
+	useEffect(() => {
+		setMobileNav(false);
+		window.document.title =
+			location.pathname === "/settings"
+				? "Settings · Agentic Workspace"
+				: "Agentic Workspace";
+		window.document.getElementById("page-title")?.focus();
+	}, [location.pathname]);
+	const createWorkspace = async () => {
+		navigate("/?new=1");
+	};
+	const navigation = (
+		<WorkspaceNavigation
+			conversations={conversations}
+			loading={loading}
+			onCreate={createWorkspace}
+			onDelete={async (id) => {
+				if (
+					!window.confirm(
+						"Delete this workspace and its saved report? This cannot be undone in the app.",
+					)
+				)
+					return;
+				if (await remove(id)) {
+					if (match?.params.workspaceId === id)
+						navigate("/", { replace: true, state: { discardConfirmed: true } });
+				}
+			}}
+			onFollow={() => setMobileNav(false)}
+		/>
+	);
+	return (
+		<div className="app-shell flex h-dvh bg-[#f4f5f1] text-neutral-900">
+			<a href="#main-content" className="skip-link">
+				Skip to workspace content
+			</a>
+			{desktop && (
+				<aside className="shrink-0 border-r border-teal-950">
+					{navigation}
+				</aside>
+			)}
+			{!desktop && (
+				<Dialog open={mobileNav} onOpenChange={setMobileNav}>
+					<DialogContent className="left-0 top-0 h-dvh w-72 max-w-[90vw] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none border-0 bg-[#102a2a] p-0">
+						<DialogTitle className="sr-only">Workspaces</DialogTitle>
+						<DialogDescription className="sr-only">
+							Choose a saved workspace or create one.
+						</DialogDescription>
+						{navigation}
+					</DialogContent>
+				</Dialog>
+			)}
+			<div className="flex min-w-0 flex-1 flex-col">
+				<header className="flex min-h-16 shrink-0 items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 md:px-6">
+					<div className="flex min-w-0 items-center gap-3">
+						{!desktop && (
+							<button
+								type="button"
+								aria-label="Open workspace navigation"
+								aria-expanded={mobileNav}
+								className="icon-button"
+								onClick={() => setMobileNav(true)}
+							>
+								<Menu size={20} aria-hidden="true" />
+							</button>
+						)}
+						<Link to="/" className="text-sm font-semibold tracking-tight">
+							Agentic Workspace
+						</Link>
+						<span className="hidden text-xs text-neutral-600 sm:inline">
+							Evidence into advice
+						</span>
+					</div>
+					<div className="flex shrink-0 items-center gap-2">
+						{match && (
+							<button
+								type="button"
+								className="toolbar-button"
+								aria-pressed={search.get("source") === "1"}
+								onClick={() =>
+									setSearch((previous) => {
+										const next = new URLSearchParams(previous);
+										if (next.get("source") === "1") next.delete("source");
+										else next.set("source", "1");
+										return next;
+									})
+								}
+							>
+								<PanelRight size={16} aria-hidden="true" />
+								<span className="hidden sm:inline">Source</span>
+							</button>
+						)}
+						<Link
+							to="/settings"
+							className="icon-button"
+							aria-label="Workspace settings"
+						>
+							<Settings size={19} aria-hidden="true" />
+						</Link>
+					</div>
+				</header>
+				{error && (
+					<p
+						role="alert"
+						className="border-b bg-red-50 p-3 text-sm text-red-800"
+					>
+						{error}
+					</p>
+				)}
+				<main
+					id="main-content"
+					className="flex min-h-0 min-w-0 flex-1 flex-col"
+					tabIndex={-1}
+				>
+					<Outlet
+						context={{ refreshConversations: refresh, createWorkspace }}
+					/>
+				</main>
+			</div>
+		</div>
+	);
+}

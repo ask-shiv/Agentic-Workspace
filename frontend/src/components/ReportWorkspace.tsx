@@ -5,6 +5,8 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useLocation, useSearchParams } from "react-router-dom";
+import { citationKey, pageFromSearch } from "../lib/citations";
 import {
 	type Finding,
 	type WorkspaceData,
@@ -12,11 +14,13 @@ import {
 	workspaceRequest,
 } from "../lib/workspace";
 import type { Document } from "../types";
+import { CopyWorkspaceLink } from "./CopyWorkspaceLink";
+import { SourceCitation } from "./SourceCitation";
 
 interface Props {
 	conversationId: string;
 	document: Document | null;
-	onNavigate: (page: number) => void;
+	onCitation: (quote: string) => void;
 	onDirty: (dirty: boolean) => void;
 	children: ReactNode;
 }
@@ -24,7 +28,7 @@ interface Props {
 export function ReportWorkspace({
 	conversationId,
 	document,
-	onNavigate,
+	onCitation,
 	onDirty,
 	children,
 }: Props) {
@@ -33,7 +37,24 @@ export function ReportWorkspace({
 	const [dirty, setDirty] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState<string | null>(null);
-	const [chat, setChat] = useState(false);
+	const [search, setSearch] = useSearchParams();
+	const location = useLocation();
+	const requestedView = search.get("view");
+	const activeView =
+		requestedView === "chat" ||
+		requestedView === "report" ||
+		requestedView === "risk"
+			? requestedView
+			: data.intent;
+	const chat = activeView === "chat";
+	const chooseView = (view: "risk" | "report" | "chat") => {
+		setSearch((previous) => {
+			const next = new URLSearchParams(previous);
+			next.set("view", view);
+			return next;
+		});
+		if (view !== "chat") setData((previous) => ({ ...previous, intent: view }));
+	};
 	const [target, setTarget] = useState(1);
 	const [instruction, setInstruction] = useState(
 		"Draft this section for the client using the linked evidence and my objective.",
@@ -46,6 +67,18 @@ export function ReportWorkspace({
 		() => localStorage.getItem("orbital-workspace-onboarded") === "yes",
 	);
 	const controller = useRef<AbortController | null>(null);
+
+	useEffect(() => {
+		const key = new URLSearchParams(location.search).get("citation");
+		const finding = data.findings.find(
+			(item) =>
+				citationKey(item) === key &&
+				item.page === pageFromSearch(location.search),
+		);
+		onCitation(
+			finding?.evidence_status === "source_checked" ? finding.quote : "",
+		);
+	}, [data.findings, location.search, onCitation]);
 
 	const load = useCallback(
 		async (signal: AbortSignal) => {
@@ -225,6 +258,7 @@ export function ReportWorkspace({
 				</div>
 			)}
 			<header className="space-y-3 border-b bg-white p-4">
+				<CopyWorkspaceLink />
 				<div className="flex flex-wrap items-center justify-between gap-2">
 					<div
 						className="flex rounded-lg bg-neutral-100 p-1"
@@ -239,12 +273,11 @@ export function ReportWorkspace({
 							<button
 								type="button"
 								key={intent}
-								aria-pressed={data.intent === intent && !chat}
+								aria-pressed={activeView === intent}
 								disabled={!!busy || !loaded}
-								className={`rounded-md px-3 py-2 text-sm ${data.intent === intent && !chat ? "bg-neutral-900 text-white" : "text-neutral-600"}`}
+								className={`rounded-md px-3 py-2 text-sm ${activeView === intent ? "bg-neutral-900 text-white" : "text-neutral-600"}`}
 								onClick={() => {
-									setChat(false);
-									change({ ...data, intent });
+									chooseView(intent);
 								}}
 							>
 								{label}
@@ -254,7 +287,7 @@ export function ReportWorkspace({
 							type="button"
 							className="px-3 py-2 text-sm"
 							aria-pressed={chat}
-							onClick={() => setChat(!chat)}
+							onClick={() => chooseView(chat ? data.intent : "chat")}
 						>
 							Document chat
 						</button>
@@ -358,7 +391,7 @@ export function ReportWorkspace({
 				className={
 					chat
 						? "hidden"
-						: `grid min-h-0 flex-1 overflow-auto ${data.intent === "report" ? "xl:grid-cols-[minmax(220px,0.8fr)_minmax(300px,1.2fr)]" : "grid-cols-1"}`
+						: `grid min-h-0 flex-1 overflow-auto ${activeView === "report" ? "xl:grid-cols-[minmax(220px,0.8fr)_minmax(300px,1.2fr)]" : "grid-cols-1"}`
 				}
 			>
 				<section
@@ -433,13 +466,7 @@ export function ReportWorkspace({
 								{finding.uncertainty || "Legal interpretation requires review."}
 							</p>
 							<div className="group relative inline-block">
-								<button
-									type="button"
-									className="text-xs text-blue-800 underline"
-									onClick={() => onNavigate(finding.page)}
-								>
-									PDF page {finding.page}
-								</button>
+								<SourceCitation finding={finding} />
 								<div className="pointer-events-none absolute bottom-full left-0 z-20 mb-2 hidden w-72 rounded-lg border bg-white p-3 text-xs shadow-lg group-hover:block group-focus-within:block">
 									{finding.quote}
 								</div>
@@ -493,7 +520,7 @@ export function ReportWorkspace({
 						</div>
 					)}
 				</section>
-				{data.intent === "report" && (
+				{activeView === "report" && (
 					<section
 						className="space-y-4 overflow-y-auto border-l p-4"
 						aria-label="Report builder"
@@ -545,19 +572,12 @@ export function ReportWorkspace({
 									}
 								/>
 								<div className="flex flex-wrap gap-2">
-									{section.finding_ids.map((id) => (
-										<button
-											type="button"
-											key={id}
-											className="text-xs text-blue-800 underline"
-											onClick={() => {
-												const finding = data.findings[id];
-												if (finding) onNavigate(finding.page);
-											}}
-										>
-											Evidence: p.{data.findings[id]?.page}
-										</button>
-									))}
+									{section.finding_ids.map((id) => {
+										const finding = data.findings[id];
+										return finding ? (
+											<SourceCitation key={id} finding={finding} compact />
+										) : null;
+									})}
 								</div>
 								<button
 									type="button"
