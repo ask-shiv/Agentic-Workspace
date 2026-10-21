@@ -5,10 +5,11 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 import structlog
-from alembic import command
 from alembic.config import Config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from alembic import command
 
 logger = structlog.get_logger()
 
@@ -34,8 +35,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from takehome.web.routers import conversations, documents, messages  # noqa: E402
+from takehome.web.routers import conversations, documents, messages, review  # noqa: E402
 
 app.include_router(conversations.router)
 app.include_router(messages.router)
 app.include_router(documents.router)
+
+app.include_router(review.router)
