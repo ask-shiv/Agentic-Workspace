@@ -9,6 +9,7 @@ export function useMessages(conversationId: string | null) {
 	const [streaming, setStreaming] = useState(false);
 	const [streamingContent, setStreamingContent] = useState("");
 	const abortRef = useRef<AbortController | null>(null);
+	const sending = useRef(false);
 
 	const refresh = useCallback(async () => {
 		if (!conversationId) {
@@ -18,27 +19,63 @@ export function useMessages(conversationId: string | null) {
 		try {
 			setLoading(true);
 			setError(null);
-			const data = await api.fetchMessages(conversationId);
-			setMessages(data);
+			const controller = abortRef.current;
+			const data = await api.fetchMessages(conversationId, controller?.signal);
+			if (!controller?.signal.aborted) setMessages(data);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Failed to load messages");
+			if (
+				!abortRef.current?.signal.aborted &&
+				!(err instanceof DOMException && err.name === "AbortError")
+			)
+				setError(
+					err instanceof Error ? err.message : "Failed to load messages",
+				);
 		} finally {
-			setLoading(false);
+			if (!abortRef.current?.signal.aborted) setLoading(false);
 		}
 	}, [conversationId]);
 
 	useEffect(() => {
-		refresh();
-		return () => {
-			if (abortRef.current) {
-				abortRef.current.abort();
-			}
-		};
-	}, [refresh]);
+		const controller = new AbortController();
+		abortRef.current = controller;
+		sending.current = false;
+		setMessages([]);
+		setStreaming(false);
+		setStreamingContent("");
+		setError(null);
+		if (!conversationId) {
+			setLoading(false);
+			return () => controller.abort();
+		}
+		setLoading(true);
+		api
+			.fetchMessages(conversationId, controller.signal)
+			.then((data) => {
+				if (!controller.signal.aborted) setMessages(data);
+			})
+			.catch((err) => {
+				if (!controller.signal.aborted)
+					setError(
+						err instanceof Error ? err.message : "Failed to load messages",
+					);
+			})
+			.finally(() => {
+				if (!controller.signal.aborted) setLoading(false);
+			});
+		return () => controller.abort();
+	}, [conversationId]);
 
 	const send = useCallback(
 		async (content: string) => {
-			if (!conversationId || streaming) return;
+			const controller = abortRef.current;
+			if (
+				!conversationId ||
+				!controller ||
+				controller.signal.aborted ||
+				sending.current
+			)
+				return;
+			sending.current = true;
 
 			const userMessage: Message = {
 				id: `temp-${Date.now()}`,
@@ -55,7 +92,11 @@ export function useMessages(conversationId: string | null) {
 			setError(null);
 
 			try {
-				const response = await api.sendMessage(conversationId, content);
+				const response = await api.sendMessage(
+					conversationId,
+					content,
+					controller.signal,
+				);
 
 				if (!response.body) {
 					throw new Error("No response body");
@@ -65,10 +106,12 @@ export function useMessages(conversationId: string | null) {
 				const decoder = new TextDecoder();
 				let accumulated = "";
 				let buffer = "";
+				let completed = false;
 
 				while (true) {
 					const { done, value } = await reader.read();
 					if (done) break;
+					if (controller.signal.aborted) return;
 
 					buffer += decoder.decode(value, { stream: true });
 					const lines = buffer.split("\n");
@@ -87,9 +130,15 @@ export function useMessages(conversationId: string | null) {
 								type?: string;
 								content?: string;
 								delta?: string;
+								error?: string;
 								message?: Message;
 							};
 
+							if (parsed.type === "error") {
+								setError("Could not generate an answer. Please try again.");
+								return;
+							}
+							if (parsed.type === "done") completed = true;
 							if (parsed.type === "delta" && parsed.delta) {
 								accumulated += parsed.delta;
 								setStreamingContent(accumulated);
@@ -111,6 +160,9 @@ export function useMessages(conversationId: string | null) {
 					}
 				}
 
+				if (!completed)
+					throw new Error("The response was interrupted. Please try again.");
+
 				// If we accumulated content but never got a final message,
 				// create a synthetic assistant message
 				if (accumulated) {
@@ -126,17 +178,27 @@ export function useMessages(conversationId: string | null) {
 				}
 
 				// Refresh to get server-canonical messages
-				const freshMessages = await api.fetchMessages(conversationId);
-				setMessages(freshMessages);
+				const freshMessages = await api.fetchMessages(
+					conversationId,
+					controller.signal,
+				);
+				if (!controller.signal.aborted) setMessages(freshMessages);
 			} catch (err) {
-				if (err instanceof DOMException && err.name === "AbortError") return;
+				if (
+					controller.signal.aborted ||
+					(err instanceof DOMException && err.name === "AbortError")
+				)
+					return;
 				setError(err instanceof Error ? err.message : "Failed to send message");
 			} finally {
-				setStreaming(false);
-				setStreamingContent("");
+				if (!controller.signal.aborted) {
+					sending.current = false;
+					setStreaming(false);
+					setStreamingContent("");
+				}
 			}
 		},
-		[conversationId, streaming],
+		[conversationId],
 	);
 
 	return {

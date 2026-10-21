@@ -41,26 +41,32 @@ export async function deleteConversation(id: string): Promise<void> {
 
 export async function fetchConversation(
 	id: string,
+	signal?: AbortSignal,
 ): Promise<ConversationDetail> {
-	const res = await fetch(`${BASE}/conversations/${id}`);
+	const res = await fetch(`${BASE}/conversations/${id}`, { signal });
 	return handleResponse<ConversationDetail>(res);
 }
 
 export async function fetchMessages(
 	conversationId: string,
+	signal?: AbortSignal,
 ): Promise<Message[]> {
-	const res = await fetch(`${BASE}/conversations/${conversationId}/messages`);
+	const res = await fetch(`${BASE}/conversations/${conversationId}/messages`, {
+		signal,
+	});
 	return handleResponse<Message[]>(res);
 }
 
 export async function sendMessage(
 	conversationId: string,
 	content: string,
+	signal?: AbortSignal,
 ): Promise<Response> {
 	const res = await fetch(`${BASE}/conversations/${conversationId}/messages`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({ content }),
+		signal,
 	});
 	if (!res.ok) {
 		const text = await res.text().catch(() => "Unknown error");
