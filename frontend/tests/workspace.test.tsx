@@ -1,3 +1,5 @@
+import axe from "axe-core";
+import { PreferencesProvider, preferencesKey } from "../src/context/preferences";
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
@@ -71,10 +73,12 @@ test('report deep link restores evidence, saves edits and keeps citation navigat
   if(init?.method==='PUT') return Response.json({...JSON.parse(String(init.body)),version:2});
   return Response.json(saved);
  };
- function Workspace(){const [,setDirty]=useState(false);return <ReportWorkspace conversationId='a' document={{id:'doc',conversation_id:'a',filename:'lease.pdf',page_count:9,uploaded_at:'2026-10-21'}} onDirty={setDirty} onCitation={()=>{}}><p>Document chat</p></ReportWorkspace>;}
+ function Workspace(){const [,setDirty]=useState(false);return <PreferencesProvider><ReportWorkspace conversationId='a' document={{id:'doc',conversation_id:'a',filename:'lease.pdf',page_count:9,uploaded_at:'2026-10-21'}} onDirty={setDirty} onCitation={()=>{}}><p>Document chat</p></ReportWorkspace></PreferencesProvider>;}
  const router=createMemoryRouter([{path:'/workspaces/a',element:<Workspace/>}],{initialEntries:['/workspaces/a?view=report']});
- render(<RouterProvider router={router}/>); const user=userEvent.setup();
+ render(<main><h1>Review workspace</h1><RouterProvider router={router}/></main>); const user=userEvent.setup();
  await screen.findByRole('heading',{name:'Break notice'});
+ const audit=await axe.run(document.body,{rules:{'color-contrast':{enabled:false},'label-content-name-mismatch':{enabled:false}}});
+ assert.deepEqual(audit.violations.map(item=>item.id),[]);
  assert(screen.getByRole('region',{name:'Report builder'}));
  await user.click(screen.getByRole('button',{name:'Add to report'}));
  const section=screen.getByRole('textbox',{name:'Key findings'}) as HTMLTextAreaElement;
@@ -88,4 +92,31 @@ test('report deep link restores evidence, saves edits and keeps citation navigat
  assert.equal(new URLSearchParams(router.state.location.search).get('citation'),citationKey(finding));
  assert(section.value.includes('Lawyer decision'));
  router.dispose();
+});
+
+
+test('reading view preserves report content as selectable text without an editor',async()=>{
+ localStorage.setItem(preferencesKey,JSON.stringify({readingMode:true}));
+ const saved={...emptyWorkspace(),version:3,objective:'Review exit flexibility',findings:[finding],sections:[{title:'Key findings',content:'Client strategy: preserve exit flexibility.\n\n![remote](https://example.invalid/track)',finding_ids:[0]}]};
+ globalThis.fetch=async()=>Response.json(saved);
+ const router=createMemoryRouter([{path:'/workspaces/a',element:<PreferencesProvider><ReportWorkspace conversationId='a' document={{id:'doc',conversation_id:'a',filename:'lease.pdf',page_count:9,uploaded_at:'2026-10-21'}} onDirty={()=>{}} onCitation={()=>{}}><p>Document chat</p></ReportWorkspace></PreferencesProvider>}],{initialEntries:['/workspaces/a?view=report']});
+ render(<RouterProvider router={router}/>);
+ await screen.findByText('Client strategy: preserve exit flexibility.');
+ assert.equal(screen.getByRole('article',{name:'Readable report'}).querySelector('img'),null);
+ assert.equal(screen.queryByRole('textbox',{name:'Key findings'}),null);
+ assert(screen.getAllByRole('link',{name:'Inspect source on PDF page 7'}).length > 0);
+ router.dispose();
+});
+
+
+test('a previously confirmed deletion cannot bypass another workspace guard',async()=>{
+ const original=window.confirm; let prompts=0;window.confirm=()=>{prompts++;return false;};
+ function Editor(){useUnsavedNavigation(true);return <h1>Unsaved review</h1>;}
+ const router=createMemoryRouter([{path:'/',element:<h1>Home</h1>},{path:'/workspaces/a',element:<Editor/>}],{initialEntries:[{pathname:'/',state:{deletedWorkspace:'previous-workspace'}},'/workspaces/a']});
+ render(<RouterProvider router={router}/>);
+ try {
+  await act(()=>router.navigate(-1));
+  await waitFor(()=>assert.equal(prompts,1));
+  assert.equal(router.state.location.pathname,'/workspaces/a');
+ } finally {window.confirm=original;router.dispose();}
 });

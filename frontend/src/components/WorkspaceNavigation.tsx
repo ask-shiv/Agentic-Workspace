@@ -20,7 +20,7 @@ export function WorkspaceNavigation({
 	return (
 		<nav
 			aria-label="Workspace navigation"
-			className="workspace-navigation flex h-full w-64 flex-col bg-[#102a2a] text-white"
+			className="workspace-navigation flex h-full w-full lg:w-64 flex-col bg-[#102a2a] text-white"
 		>
 			<Link
 				to="/"

@@ -170,3 +170,128 @@ body {
 	color: transparent;
 	border-bottom: 2px solid #854d0e;
 }
+
+html[data-text-size="small"] {
+	font-size: 16px;
+}
+html[data-text-size="medium"] {
+	font-size: 18px;
+}
+html[data-text-size="large"] {
+	font-size: 20px;
+}
+.text-xs {
+	font-size: .8125rem;
+	line-height: 1.5;
+}
+.text-neutral-400 {
+	color: #64748b;
+}
+.text-neutral-500 {
+	color: #525252;
+}
+.review-workspace {
+	container-type: inline-size;
+}
+.report-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	overflow: auto;
+}
+.report-layout[data-view="report"] .report-builder {
+	grid-row: 1;
+}
+.report-layout[data-view="report"] .finding-list {
+	overflow: visible;
+}
+.report-layout[data-view="report"] .report-builder {
+	overflow: visible;
+}
+.report-section h3 {
+	font-family: "IBM Plex Serif", Georgia, serif;
+	font-size: 1.125rem;
+}
+.finding-card p {
+	line-height: 1.65;
+}
+@container (min-width: 55rem) {
+	.report-layout[data-view="report"] {
+		grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+		overflow: hidden;
+	}
+	.report-layout[data-view="report"] .report-builder {
+		grid-row: auto;
+		border-left: 1px solid #d4d4d4;
+		overflow-y: auto;
+	}
+	.report-layout[data-view="report"] .finding-list {
+		overflow-y: auto;
+	}
+}
+html[data-contrast="high"] body {
+	color: #111;
+	background: white;
+}
+html[data-contrast="high"]
+	:is(
+		.text-neutral-400,
+		.text-neutral-500,
+		.text-neutral-600,
+		.text-neutral-700
+	) {
+	color: #222;
+}
+html[data-contrast="high"]
+	:is(
+		input,
+		textarea,
+		select,
+		.toolbar-button,
+		.report-section,
+		.finding-card
+	) {
+	border-color: #555;
+}
+html[data-contrast="high"] :focus-visible {
+	outline: 4px solid #111;
+	box-shadow: 0 0 0 7px white;
+}
+html[data-contrast="high"] .workspace-navigation :focus-visible {
+	outline-color: white;
+	box-shadow: 0 0 0 7px #102a2a;
+}
+html[data-motion="reduced"] *,
+html[data-motion="reduced"] *::before,
+html[data-motion="reduced"] *::after {
+	animation-duration: .01ms !important;
+	animation-iteration-count: 1 !important;
+	transition-duration: .01ms !important;
+	scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: .01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: .01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+kbd {
+	border: 1px solid #d4d4d4;
+	border-radius: .25rem;
+	padding: .15rem .4rem;
+	background: #fafafa;
+	font-family: "IBM Plex Mono", monospace;
+	font-size: .8em;
+}
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+	border-color: #8a8a8a;
+}
+.toolbar-button,
+.icon-button {
+	border-color: #8a8a8a;
+}
