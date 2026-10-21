@@ -66,3 +66,41 @@ We've included sample legal documents in `sample-docs/` for testing.
 - `just db-shell` — Open a psql shell
 - `just shell-backend` — Shell into backend container
 - `just logs-backend` — Tail backend logs
+
+## Agentic workspace
+
+See [DECISIONS.md](DECISIONS.md) for rationale, trust boundaries and clearly marked follow-ups.
+
+1. Create/select a conversation and upload a text-based PDF from `sample-docs/`.
+2. Enter an objective, such as “Review the tenant break clause and notice conditions”, then select **Review document**. A review may take up to 100 seconds and makes billed model calls.
+3. Inspect each finding's quotation and PDF page. **Source checked** confirms a text match, not a legal conclusion. Unverified quotations are explicitly labelled.
+4. Switch to **Build report**. Choose a destination section and add findings, or drag them into the section. Edit the text directly; evidence remains attached for re-checking.
+5. Select **Propose a draft** on a section with evidence. Review the proposal and accept or reject it. Existing text is not replaced until acceptance.
+6. **Save workspace**, then **Export Markdown**. Return to the same conversation after reload to retrieve the saved work. Stale saves from another tab are rejected.
+
+Conversations and the source PDF can be toggled for narrow screens. Document chat remains available. No background observation or collaborative sharing is implemented. Keep this unauthenticated demo local.
+
+### Focused verification
+
+The starter's backend image does not copy tests. After starting the stack:
+
+```sh
+docker compose cp backend/tests backend:/app/backend/
+docker compose exec -T backend uv run pytest backend/tests/test_message_failure.py backend/tests/test_review.py backend/tests/test_workspace.py -q
+cd frontend
+npm ci
+npm run check
+npm run build
+```
+
+From the repository root, with the app running, verify persistence and stale-save rejection without model charges:
+
+```sh
+python3 scripts/smoke_workspace.py
+```
+
+The smoke script creates and removes its own test conversation. API credentials belong only in ignored `.env`; never commit them.
+
+### Submission status
+
+Loom walkthrough: not yet recorded. Part 1 technical-achievement Markdown: not yet added.
