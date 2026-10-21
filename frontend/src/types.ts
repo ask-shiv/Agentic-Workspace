@@ -1,4 +1,5 @@
 export interface Conversation {
+	document_filename?: string | null;
 	id: string;
 	title: string;
 	created_at: string;

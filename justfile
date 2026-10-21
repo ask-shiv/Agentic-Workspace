@@ -114,3 +114,8 @@ add-dep package:
 # Install a new frontend dependency
 add-dep-frontend package:
     docker compose exec frontend npm install {{package}}
+
+
+test:
+    docker compose exec -T backend uv run pytest backend/tests -q
+    docker compose exec -T frontend npm test

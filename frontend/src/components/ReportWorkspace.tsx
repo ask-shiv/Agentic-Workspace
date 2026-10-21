@@ -6,6 +6,9 @@ import {
 	useState,
 } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
+import { Streamdown } from "streamdown";
+import { usePreferences } from "../context/preferences";
+import { useWorkspaceShortcuts } from "../hooks/use-workspace-shortcuts";
 import { citationKey, pageFromSearch } from "../lib/citations";
 import {
 	type Finding,
@@ -32,6 +35,7 @@ export function ReportWorkspace({
 	onDirty,
 	children,
 }: Props) {
+	const { preferences } = usePreferences();
 	const [data, setData] = useState<WorkspaceData>(emptyWorkspace);
 	const [loaded, setLoaded] = useState(false);
 	const [dirty, setDirty] = useState(false);
@@ -63,9 +67,13 @@ export function ReportWorkspace({
 		index: number;
 		content: string;
 	} | null>(null);
-	const [onboarded, setOnboarded] = useState(
-		() => localStorage.getItem("orbital-workspace-onboarded") === "yes",
-	);
+	const [onboarded, setOnboarded] = useState(() => {
+		try {
+			return localStorage.getItem("orbital-workspace-onboarded") === "yes";
+		} catch {
+			return false;
+		}
+	});
 	const controller = useRef<AbortController | null>(null);
 
 	useEffect(() => {
@@ -234,11 +242,19 @@ export function ReportWorkspace({
 		anchor.remove();
 	};
 
-	const button =
-		"rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40";
+	useWorkspaceShortcuts(
+		preferences.shortcuts,
+		!!busy || !loaded,
+		() => {
+			if (dirty) save();
+		},
+		chooseView,
+	);
+
+	const button = "toolbar-button";
 	if (!document) return <>{children}</>;
 	return (
-		<div className="flex min-h-0 flex-1 flex-col bg-neutral-50">
+		<div className="review-workspace flex min-h-0 flex-1 flex-col bg-neutral-50">
 			{!onboarded && (
 				<div className="border-b bg-blue-50 p-4 text-sm text-blue-950">
 					<strong>From document to working report.</strong> Set an objective,
@@ -249,8 +265,12 @@ export function ReportWorkspace({
 						type="button"
 						className={`${button} ml-3`}
 						onClick={() => {
-							localStorage.setItem("orbital-workspace-onboarded", "yes");
 							setOnboarded(true);
+							try {
+								localStorage.setItem("orbital-workspace-onboarded", "yes");
+							} catch {
+								return;
+							}
 						}}
 					>
 						Get started
@@ -258,10 +278,17 @@ export function ReportWorkspace({
 				</div>
 			)}
 			<header className="space-y-3 border-b bg-white p-4">
-				<CopyWorkspaceLink />
+				<div>
+					<p className="mb-1 text-xs font-semibold uppercase tracking-widest text-teal-800">
+						Document review
+					</p>
+					<h2 className="break-words text-xl font-semibold tracking-tight">
+						{document.filename}
+					</h2>
+				</div>
 				<div className="flex flex-wrap items-center justify-between gap-2">
 					<div
-						className="flex rounded-lg bg-neutral-100 p-1"
+						className="flex max-w-full flex-wrap gap-1 rounded-lg bg-neutral-100 p-1"
 						aria-label="Workspace intent"
 					>
 						{(
@@ -274,8 +301,13 @@ export function ReportWorkspace({
 								type="button"
 								key={intent}
 								aria-pressed={activeView === intent}
+								aria-keyshortcuts={
+									preferences.shortcuts
+										? `Alt+Shift+${intent === "risk" ? "1" : "2"}`
+										: undefined
+								}
 								disabled={!!busy || !loaded}
-								className={`rounded-md px-3 py-2 text-sm ${activeView === intent ? "bg-neutral-900 text-white" : "text-neutral-600"}`}
+								className={`min-h-10 rounded-md px-3 py-2 text-sm font-medium ${activeView === intent ? "bg-teal-900 text-white shadow-sm" : "text-neutral-700 hover:bg-white"}`}
 								onClick={() => {
 									chooseView(intent);
 								}}
@@ -292,13 +324,13 @@ export function ReportWorkspace({
 							Document chat
 						</button>
 					</div>
-					<span className="text-xs text-neutral-500">
+					<output className="text-xs text-neutral-500">
 						{!loaded
 							? "Loading workspace…"
 							: dirty
 								? "Unsaved changes"
 								: `Saved revision ${data.version}`}
-					</span>
+					</output>
 				</div>
 				<label
 					className="block text-xs font-medium text-neutral-600"
@@ -334,6 +366,9 @@ export function ReportWorkspace({
 						type="button"
 						className={button}
 						onClick={save}
+						aria-keyshortcuts={
+							preferences.shortcuts ? "Control+s Meta+s" : undefined
+						}
 						disabled={!!busy || !loaded || !dirty}
 					>
 						{busy === "save" ? "Saving…" : "Save workspace"}
@@ -351,6 +386,7 @@ export function ReportWorkspace({
 					>
 						Export Markdown
 					</button>
+					<CopyWorkspaceLink />
 				</div>
 				{data.review_objective && data.review_objective !== data.objective && (
 					<p className="text-xs text-amber-800">
@@ -388,14 +424,11 @@ export function ReportWorkspace({
 			)}
 			<div className={chat ? "flex min-h-0 flex-1" : "hidden"}>{children}</div>
 			<div
-				className={
-					chat
-						? "hidden"
-						: `grid min-h-0 flex-1 overflow-auto ${activeView === "report" ? "xl:grid-cols-[minmax(220px,0.8fr)_minmax(300px,1.2fr)]" : "grid-cols-1"}`
-				}
+				data-view={activeView}
+				className={chat ? "hidden" : "report-layout min-h-0 flex-1"}
 			>
 				<section
-					className="space-y-3 overflow-y-auto p-4"
+					className="finding-list min-w-0 space-y-4 overflow-y-auto p-4 md:p-6"
 					aria-label="Review findings"
 				>
 					<h2 className="font-semibold">Evidence and findings</h2>
@@ -435,7 +468,7 @@ export function ReportWorkspace({
 									String(id),
 								)
 							}
-							className="space-y-2 rounded-lg border bg-white p-4"
+							className="finding-card space-y-3 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm"
 						>
 							<div className="flex flex-wrap gap-2 text-xs">
 								<span
@@ -522,7 +555,7 @@ export function ReportWorkspace({
 				</section>
 				{activeView === "report" && (
 					<section
-						className="space-y-4 overflow-y-auto border-l p-4"
+						className="report-builder min-w-0 space-y-4 overflow-y-auto p-4 md:p-6"
 						aria-label="Report builder"
 					>
 						<h2 className="font-semibold">Working report</h2>
@@ -530,103 +563,150 @@ export function ReportWorkspace({
 							Drag findings here or use “Add to report”. Edited claims need
 							re-checking against their attached evidence.
 						</p>
-						<label className="block text-xs">
-							Drafting instruction
-							<input
-								value={instruction}
-								maxLength={2000}
-								disabled={!!busy}
-								onChange={(e) => setInstruction(e.target.value)}
-								className="mt-1 w-full rounded border p-2 text-sm"
-							/>
-						</label>
-						{data.sections.map((section, index) => (
-							<div
-								key={section.title}
-								onDragOver={(e) => e.preventDefault()}
-								onDrop={(e) => {
-									e.preventDefault();
-									const value = e.dataTransfer.getData(
-										"application/orbital-finding",
-									);
-									if (!busy && /^\d+$/.test(value)) add(Number(value), index);
-								}}
-								className="space-y-2 rounded-lg border bg-white p-4"
-							>
-								<h3 className="font-medium">{section.title}</h3>
-								<textarea
-									aria-label={section.title}
-									value={section.content}
-									maxLength={20000}
-									rows={8}
+						{!preferences.readingMode && (
+							<label className="block text-xs">
+								Drafting instruction
+								<input
+									value={instruction}
+									maxLength={2000}
 									disabled={!!busy}
-									placeholder="Write here or add evidence from the review."
-									className="w-full resize-y rounded border p-2 text-sm leading-relaxed"
-									onChange={(e) =>
-										change({
-											...data,
-											sections: data.sections.map((s, i) =>
-												i === index ? { ...s, content: e.target.value } : s,
-											),
-										})
-									}
+									onChange={(e) => setInstruction(e.target.value)}
+									className="mt-1 w-full rounded border p-2 text-sm"
 								/>
-								<div className="flex flex-wrap gap-2">
-									{section.finding_ids.map((id) => {
-										const finding = data.findings[id];
-										return finding ? (
-											<SourceCitation key={id} finding={finding} compact />
-										) : null;
-									})}
-								</div>
-								<button
-									type="button"
-									className={button}
-									disabled={
-										!!busy ||
-										!section.finding_ids.length ||
-										instruction.trim().length < 3
-									}
-									onClick={() => draft(index)}
+							</label>
+						)}
+						{preferences.readingMode ? (
+							<article
+								aria-label="Readable report"
+								className="rounded-xl border bg-white p-6 shadow-sm"
+							>
+								{data.sections.map((section) => (
+									<section key={section.title} className="mb-8">
+										<h3 className="mb-3 font-serif text-xl font-semibold">
+											{section.title}
+										</h3>
+										<div className="prose text-base leading-loose">
+											<Streamdown
+												mode="static"
+												controls={false}
+												skipHtml
+												allowedElements={[
+													"p",
+													"strong",
+													"em",
+													"ul",
+													"ol",
+													"li",
+													"blockquote",
+													"br",
+													"code",
+													"a",
+												]}
+												unwrapDisallowed
+											>
+												{section.content || "No text in this section yet."}
+											</Streamdown>
+										</div>
+										<div className="mt-3 flex flex-wrap gap-3">
+											{section.finding_ids.map((id) => {
+												const finding = data.findings[id];
+												return finding ? (
+													<SourceCitation key={id} finding={finding} compact />
+												) : null;
+											})}
+										</div>
+									</section>
+								))}
+							</article>
+						) : (
+							data.sections.map((section, index) => (
+								<div
+									key={section.title}
+									onDragOver={(e) => e.preventDefault()}
+									onDrop={(e) => {
+										e.preventDefault();
+										const value = e.dataTransfer.getData(
+											"application/orbital-finding",
+										);
+										if (!busy && /^\d+$/.test(value)) add(Number(value), index);
+									}}
+									className="report-section space-y-3 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm"
 								>
-									Propose a draft
-								</button>
-								{proposal?.index === index && (
-									<div className="space-y-3 rounded border border-blue-200 bg-blue-50 p-3">
-										<strong className="text-sm">
-											Proposed amendment — not applied
-										</strong>
-										<p className="whitespace-pre-wrap text-sm">
-											{proposal.content}
-										</p>
-										<button
-											type="button"
-											className={button}
-											disabled={!!busy}
-											onClick={() =>
-												change({
-													...data,
-													sections: data.sections.map((s, i) =>
-														i === index
-															? { ...s, content: proposal.content }
-															: s,
-													),
-												})
-											}
-										>
-											Accept amendment
-										</button>{" "}
-										<button
-											type="button"
-											className={button}
-											onClick={() => setProposal(null)}
-										>
-											Reject
-										</button>
+									<h3 className="font-medium">{section.title}</h3>
+									<textarea
+										aria-label={section.title}
+										value={section.content}
+										maxLength={20000}
+										rows={8}
+										disabled={!!busy}
+										placeholder="Write here or add evidence from the review."
+										className="w-full resize-y rounded border p-2 text-sm leading-relaxed"
+										onChange={(e) =>
+											change({
+												...data,
+												sections: data.sections.map((s, i) =>
+													i === index ? { ...s, content: e.target.value } : s,
+												),
+											})
+										}
+									/>
+									<div className="flex flex-wrap gap-2">
+										{section.finding_ids.map((id) => {
+											const finding = data.findings[id];
+											return finding ? (
+												<SourceCitation key={id} finding={finding} compact />
+											) : null;
+										})}
 									</div>
-								)}
-							</div>
-						))}
+									<button
+										type="button"
+										className={button}
+										disabled={
+											!!busy ||
+											!section.finding_ids.length ||
+											instruction.trim().length < 3
+										}
+										onClick={() => draft(index)}
+									>
+										Propose a draft
+									</button>
+									{proposal?.index === index && (
+										<div className="space-y-3 rounded border border-blue-200 bg-blue-50 p-3">
+											<strong className="text-sm">
+												Proposed amendment — not applied
+											</strong>
+											<p className="whitespace-pre-wrap text-sm">
+												{proposal.content}
+											</p>
+											<button
+												type="button"
+												className={button}
+												disabled={!!busy}
+												onClick={() =>
+													change({
+														...data,
+														sections: data.sections.map((s, i) =>
+															i === index
+																? { ...s, content: proposal.content }
+																: s,
+														),
+													})
+												}
+											>
+												Accept amendment
+											</button>{" "}
+											<button
+												type="button"
+												className={button}
+												onClick={() => setProposal(null)}
+											>
+												Reject
+											</button>
+										</div>
+									)}
+								</div>
+							))
+						)}
 					</section>
 				)}
 			</div>

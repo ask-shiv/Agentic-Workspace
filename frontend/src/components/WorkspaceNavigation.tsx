@@ -10,6 +10,12 @@ interface Props {
 	onDelete?: (id: string) => void;
 }
 
+function navigationTitle(item: Conversation) {
+	return item.title === "New Conversation"
+		? item.document_filename?.replace(/\.pdf$/i, "") || "Untitled review"
+		: item.title;
+}
+
 export function WorkspaceNavigation({
 	conversations,
 	loading,
@@ -20,7 +26,7 @@ export function WorkspaceNavigation({
 	return (
 		<nav
 			aria-label="Workspace navigation"
-			className="workspace-navigation flex h-full w-64 flex-col bg-[#102a2a] text-white"
+			className="workspace-navigation flex h-full w-full lg:w-64 flex-col bg-[#102a2a] text-white"
 		>
 			<Link
 				to="/"
@@ -74,9 +80,7 @@ export function WorkspaceNavigation({
 							/>
 							<span className="min-w-0">
 								<span className="block break-words font-medium">
-									{item.title === "New Conversation"
-										? "Untitled review"
-										: item.title}
+									{navigationTitle(item)}
 								</span>
 								<span className="mt-1 block text-xs text-teal-100">
 									{item.has_document ? "Document & report" : "Awaiting upload"}
@@ -86,7 +90,7 @@ export function WorkspaceNavigation({
 						{onDelete && (
 							<button
 								type="button"
-								aria-label={`Delete workspace ${item.title}`}
+								aria-label={`Delete workspace ${navigationTitle(item)}`}
 								onClick={() => onDelete(item.id)}
 								className="absolute right-1 top-3 flex h-8 w-8 items-center justify-center rounded text-teal-100 hover:bg-white/15"
 							>

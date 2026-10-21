@@ -29,7 +29,7 @@
 ## Verification
 
 - Frontend: `cd frontend && npm run check && npm run build`; run focused component/routing tests when provided. Build runs the actual TypeScript project checks.
-- Backend: copy `backend/tests` into the running container, then run the relevant `uv run pytest` files. Run focused ruff checks on changed Python files.
+- Backend: development containers mount `backend/tests`; run the relevant `uv run pytest` files. `just test` runs both backend and frontend regression tests. Run focused ruff checks on changed Python files.
 - Integration: `python3 scripts/smoke_workspace.py` against the local stack checks persistence, conflicts and export without model charges.
 - UI: verify navigation, source links and the edited journey in the browser, including keyboard access and a narrow viewport when relevant. Do not claim a full screen-reader or compliance audit from an automated scan.
 - Review the diff for unrelated edits. Record real failures and environment limitations rather than declaring a pass. Use independent review for substantive changes when authorised.
@@ -39,4 +39,11 @@
 Append one short entry per meaningful pass here: invariant affected, checks, and remaining risks. Put product rationale and scope changes in DECISIONS.md; keep this file focused on preventing regressions.
 
 - 2026-10-21, shared-skills pass: portable skills replace day-job-specific assumptions. Existing global originals are backed up before personal copies are updated. Skill metadata and relative references are validated; no product behaviour changed.
-- 2026-10-21, routing pass: App composes a router; shell, workspace session, source reader and navigation have separate owners. Workspace path changes remount request scopes. Query-only citation/view changes preserve unsaved report text. Confirmed deletion alone may bypass the navigation guard. Regression tests cover Back/Forward, unsaved navigation, saved-report restoration, citation identity and escaped cross-item PDF highlighting. Keep link locators separate from access-control claims.
+- 2026-10-21, routing pass: App composes a router; shell, workspace session, source reader and navigation have separate owners. Workspace path changes remount request scopes. Query-only citation/view changes preserve unsaved report text. Confirmed deletion may bypass the navigation guard only for the exact workspace deleted; persisted history state must not bypass another workspace. Regression tests cover Back/Forward, unsaved navigation, saved-report restoration, citation identity and escaped cross-item PDF highlighting. Keep link locators separate from access-control claims.
+- 2026-10-21, accessibility/design pass: preferences are local browser data, not authentication. Test persistence, large text, reading-mode content preservation and keyboard opt-in. Shortcuts must not hijack view changes inside editors; save remains intentional. Preserve native radios/checkboxes, named source controls, focus-managed dialogs and the Add alternative to drag. Report-first reflow follows available pane width. CI runs focused frontend and backend checks without real API keys; do not disable checks to merge. Automated axe checks here omit colour contrast and canvas-based label-content measurement because jsdom lacks those capabilities; browser contrast/reflow and independent assistive-technology checks remain distinct.
+
+- Sidebar identity check: uploaded filenames must be findable before chat title generation; keep API/list and navigation tests paired when changing document labels.
+
+- Local exposure boundary: keep Docker ports on loopback and CORS restricted to the local frontend origins. Test disallowed preflights. These are not substitutes for backend identity and workspace permissions.
+
+- PDF highlight regression: the text layer sits above the canvas. Use a translucent highlight so source glyphs remain readable; escaping and exact character matching are necessary but do not verify visual legibility.

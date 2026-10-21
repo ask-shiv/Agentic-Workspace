@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { usePreferences } from "../context/preferences";
 import type { Document } from "../types";
 import { DocumentViewer } from "./DocumentViewer";
 
@@ -13,7 +14,10 @@ export function SourcePanel({
 	quote: string;
 	onPage: (page: number) => void;
 }) {
-	const [mode, setMode] = useState<"pdf" | "text">("pdf");
+	const { preferences } = usePreferences();
+	const [mode, setMode] = useState<"pdf" | "text">(
+		preferences.readingMode ? "text" : "pdf",
+	);
 	const [text, setText] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	useEffect(() => {
@@ -42,7 +46,7 @@ export function SourcePanel({
 			<p className="break-words px-4 pt-3 text-sm font-medium">
 				{document.filename}
 			</p>
-			<div className="flex items-center justify-between gap-2 border-b p-3">
+			<div className="flex flex-wrap items-center justify-between gap-2 border-b p-3">
 				<div className="flex gap-1" aria-label="Source format">
 					{(["pdf", "text"] as const).map((value) => (
 						<button
@@ -92,7 +96,7 @@ export function SourcePanel({
 					{error ? (
 						<p role="alert">{error}</p>
 					) : (
-						<p className="whitespace-pre-wrap text-base leading-relaxed">
+						<p className="whitespace-pre-wrap break-words text-base leading-relaxed">
 							{text || "Loading page text…"}
 						</p>
 					)}

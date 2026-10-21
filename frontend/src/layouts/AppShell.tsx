@@ -1,4 +1,4 @@
-import { Menu, PanelRight, Settings } from "lucide-react";
+import { Menu, PanelRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
 	Link,
@@ -15,10 +15,12 @@ import {
 	DialogDescription,
 	DialogTitle,
 } from "../components/ui/dialog";
+import { avatarInitials, usePreferences } from "../context/preferences";
 import { useConversations } from "../hooks/use-conversations";
 import { useMediaQuery } from "../hooks/use-media-query";
 
 export function AppShell() {
+	const { preferences } = usePreferences();
 	const { conversations, loading, error, refresh, remove } = useConversations();
 	const [mobileNav, setMobileNav] = useState(false);
 
@@ -52,7 +54,7 @@ export function AppShell() {
 					return;
 				if (await remove(id)) {
 					if (match?.params.workspaceId === id)
-						navigate("/", { replace: true, state: { discardConfirmed: true } });
+						navigate("/", { replace: true, state: { deletedWorkspace: id } });
 				}
 			}}
 			onFollow={() => setMobileNav(false)}
@@ -106,6 +108,7 @@ export function AppShell() {
 								type="button"
 								className="toolbar-button"
 								aria-pressed={search.get("source") === "1"}
+								aria-label="Toggle original source"
 								onClick={() =>
 									setSearch((previous) => {
 										const next = new URLSearchParams(previous);
@@ -121,10 +124,18 @@ export function AppShell() {
 						)}
 						<Link
 							to="/settings"
-							className="icon-button"
-							aria-label="Workspace settings"
+							aria-label={`Display settings for ${preferences.name.trim() || "you"}`}
+							className="flex items-center gap-2 rounded-full py-1 pl-2 pr-1 text-sm hover:bg-neutral-100"
 						>
-							<Settings size={19} aria-hidden="true" />
+							<span className="hidden max-w-32 truncate text-neutral-600 sm:inline">
+								{preferences.name.trim() || "Your workspace"}
+							</span>
+							<span
+								aria-hidden="true"
+								className="flex h-10 w-10 items-center justify-center rounded-full border border-teal-200 bg-teal-900 text-sm font-semibold text-white"
+							>
+								{avatarInitials(preferences.name)}
+							</span>
 						</Link>
 					</div>
 				</header>
@@ -133,7 +144,11 @@ export function AppShell() {
 						role="alert"
 						className="border-b bg-red-50 p-3 text-sm text-red-800"
 					>
-						{error}
+						A workspace request could not finish. Refresh the list to check its
+						current state.{" "}
+						<button type="button" className="ml-2 underline" onClick={refresh}>
+							Refresh workspaces
+						</button>
 					</p>
 				)}
 				<main

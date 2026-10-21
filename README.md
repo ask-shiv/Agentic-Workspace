@@ -82,10 +82,9 @@ Conversations and the source PDF can be toggled for narrow screens. Document cha
 
 ### Focused verification
 
-The starter's backend image does not copy tests. After starting the stack:
+Development containers mount the test directories. After starting the stack, run `just test`, or:
 
 ```sh
-docker compose cp backend/tests backend:/app/backend/
 docker compose exec -T backend uv run pytest backend/tests/test_message_failure.py backend/tests/test_review.py backend/tests/test_workspace.py -q
 cd frontend
 npm ci
@@ -104,3 +103,11 @@ The smoke script creates and removes its own test conversation. API credentials 
 ### Submission status
 
 Loom walkthrough: not yet recorded. Part 1 technical-achievement Markdown: not yet added.
+
+### Navigation and reading preferences
+
+Saved workspaces have bookmarkable URLs under `/workspaces/:id`. Review/report/chat intent and source citations can be linked directly. These are local bookmarks and do not grant access; organisation sharing is not implemented. Services bind to 127.0.0.1.
+
+Open the avatar in the top right for local display settings: text size, contrast, reduced motion, reading view and optional shortcuts. Names and preferences stay in this browser. Speechify is not connected; selectable report/source text is provided for assistive reading workflows.
+
+Run `cd frontend && npm test` for typed navigation, report and accessibility regression tests. Automated semantic checks exclude contrast in jsdom; see DECISIONS.md for audit limits and jurisdictional sources. CI runs these checks on PRs and main. The checked-in `.agents/skills/` and AGENTS.md document the portable working conventions.

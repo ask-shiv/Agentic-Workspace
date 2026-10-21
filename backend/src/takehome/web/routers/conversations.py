@@ -24,6 +24,7 @@ router = APIRouter(prefix="/api/conversations", tags=["conversations"])
 
 
 class ConversationListItem(BaseModel):
+    document_filename: str | None = None
     id: str
     title: str
     created_at: datetime
@@ -79,6 +80,7 @@ async def list_conversations_endpoint(
             created_at=c.created_at,
             updated_at=c.updated_at,
             has_document=len(c.documents) > 0,
+            document_filename=c.documents[0].filename if c.documents else None,
         )
         for c in conversations
     ]

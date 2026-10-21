@@ -5,7 +5,8 @@ export function useUnsavedNavigation(dirty: boolean) {
 	const blocker = useBlocker(
 		({ currentLocation, nextLocation }) =>
 			dirty &&
-			!nextLocation.state?.discardConfirmed &&
+			nextLocation.state?.deletedWorkspace !==
+				currentLocation.pathname.split("/")[2] &&
 			currentLocation.pathname !== nextLocation.pathname,
 	);
 	useEffect(() => {
