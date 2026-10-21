@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
 # Copy source (will be overridden by volume mount in dev)
 COPY . .

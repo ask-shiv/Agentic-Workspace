@@ -39,3 +39,4 @@
 Append one short entry per meaningful pass here: invariant affected, checks, and remaining risks. Put product rationale and scope changes in DECISIONS.md; keep this file focused on preventing regressions.
 
 - 2026-10-21, shared-skills pass: portable skills replace day-job-specific assumptions. Existing global originals are backed up before personal copies are updated. Skill metadata and relative references are validated; no product behaviour changed.
+- 2026-10-21, routing pass: App composes a router; shell, workspace session, source reader and navigation have separate owners. Workspace path changes remount request scopes. Query-only citation/view changes preserve unsaved report text. Confirmed deletion alone may bypass the navigation guard. Regression tests cover Back/Forward, unsaved navigation, saved-report restoration, citation identity and escaped cross-item PDF highlighting. Keep link locators separate from access-control claims.

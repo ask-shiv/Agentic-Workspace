@@ -63,8 +63,8 @@ async def upload_document_endpoint(
     except ValueError as e:
         error_message = str(e)
         if "already has a document" in error_message:
-            raise HTTPException(status_code=409, detail=error_message)
-        raise HTTPException(status_code=400, detail=error_message)
+            raise HTTPException(status_code=409, detail=error_message) from e
+        raise HTTPException(status_code=400, detail=error_message) from e
 
     logger.info(
         "Document uploaded",
@@ -100,3 +100,20 @@ async def serve_document_file(
         filename=document.filename,
         media_type="application/pdf",
     )
+
+
+@router.get("/api/documents/{document_id}/pages/{page}")
+async def document_page_text(
+    document_id: str, page: int, session: AsyncSession = Depends(get_session)
+) -> dict[str, str | int]:
+    from takehome.services.review import split_pages
+
+    document = await get_document(session, document_id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+    if page < 1 or page > document.page_count:
+        raise HTTPException(status_code=404, detail="Page not found")
+    text = split_pages(document.extracted_text or "").get(page)
+    if not text:
+        raise HTTPException(status_code=422, detail="No extracted text for this page")
+    return {"page": page, "text": text}

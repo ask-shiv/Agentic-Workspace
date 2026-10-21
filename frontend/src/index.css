@@ -132,3 +132,41 @@ body {
 	background-color: #f5f5f5;
 	font-weight: 600;
 }
+
+@layer components {
+	.toolbar-button {
+		@apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-800 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50;
+	}
+	.icon-button {
+		@apply inline-flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100;
+	}
+	.primary-button {
+		@apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-teal-900 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-800 disabled:opacity-50;
+	}
+}
+:focus-visible {
+	outline: 3px solid #0f766e;
+	outline-offset: 3px;
+}
+.workspace-navigation :focus-visible {
+	outline-color: #99f6e4;
+}
+.skip-link {
+	position: fixed;
+	top: .5rem;
+	left: .5rem;
+	z-index: 100;
+	transform: translateY(-200%);
+	padding: .75rem;
+	background: white;
+	color: #102a2a;
+	border: 2px solid #0f766e;
+}
+.skip-link:focus {
+	transform: translateY(0);
+}
+.react-pdf__Page__textContent mark {
+	background: #fde047;
+	color: transparent;
+	border-bottom: 2px solid #854d0e;
+}
