@@ -12,6 +12,7 @@ export default function App() {
 		conversations,
 		selectedId,
 		loading: conversationsLoading,
+		error: conversationsError,
 		create,
 		select,
 		remove,
@@ -29,6 +30,7 @@ export default function App() {
 
 	const {
 		document,
+		error: documentError,
 		upload,
 		refresh: refreshDocument,
 	} = useDocument(selectedId);
@@ -68,19 +70,25 @@ export default function App() {
 					onDelete={remove}
 				/>
 
-				<ChatWindow
-					messages={messages}
-					loading={messagesLoading}
-					error={messagesError}
-					streaming={streaming}
-					streamingContent={streamingContent}
-					hasDocument={!!document}
-					conversationId={selectedId}
-					onSend={handleSend}
-					onUpload={handleUpload}
-				/>
-
-				<DocumentViewer document={document} />
+				<div className="flex min-w-0 flex-1 flex-col">
+					{(conversationsError || documentError) && (
+						<div role="alert" className="bg-red-50 p-3 text-sm text-red-700">
+							{conversationsError || documentError}
+						</div>
+					)}
+					<ChatWindow
+						messages={messages}
+						loading={messagesLoading}
+						error={messagesError}
+						streaming={streaming}
+						streamingContent={streamingContent}
+						hasDocument={!!document}
+						conversationId={selectedId}
+						onSend={handleSend}
+						onUpload={handleUpload}
+					/>
+				</div>
+				<DocumentViewer key={document?.id} document={document} />
 			</div>
 		</TooltipProvider>
 	);

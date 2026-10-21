@@ -147,10 +147,9 @@ async def send_message(
                 "Error during LLM streaming",
                 conversation_id=conversation_id,
             )
-            error_msg = "I'm sorry, an error occurred while generating a response. Please try again."
-            full_response = error_msg
-            event_data = json.dumps({"type": "content", "content": error_msg})
+            event_data = json.dumps({"type": "error", "message": "Could not generate an answer. Please try again."})
             yield f"data: {event_data}\n\n"
+            return
 
         # Count sources cited in the full response
         sources = count_sources_cited(full_response)
