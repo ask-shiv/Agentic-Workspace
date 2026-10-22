@@ -128,3 +128,35 @@ async def test_history_is_scoped_to_requested_workspace_and_initial_conflict_is_
         with pytest.raises(HTTPException) as error:
             await get_revision("missing-workspace", 1, session)
         assert error.value.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_brief_snapshots_and_unlocked_state_round_trip_without_overwriting_history(
+    workspace_db,
+):
+    from .brief_fixture import tenant_brief
+
+    identity, sessions = workspace_db
+    brief = tenant_brief()
+    async with sessions() as session:
+        first = await save_workspace(
+            identity,
+            WorkspaceData(
+                objective=brief.objective,
+                brief=brief,
+                review_brief=brief,
+                report_brief=brief,
+                review_objective=brief.objective,
+            ),
+            session,
+        )
+    async with sessions() as session:
+        second = await save_workspace(
+            identity, first.model_copy(update={"purpose_unlocked": True}), session
+        )
+        assert second.purpose_unlocked
+    async with sessions() as session:
+        loaded = await get_workspace(identity, session)
+        assert loaded.brief == brief
+        assert loaded.purpose_unlocked
+        assert not (await get_revision(identity, 1, session)).purpose_unlocked

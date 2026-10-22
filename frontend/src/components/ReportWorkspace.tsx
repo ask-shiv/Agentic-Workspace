@@ -13,14 +13,20 @@ import { useWorkspaceShortcuts } from "../hooks/use-workspace-shortcuts";
 import { citationKey, pageFromSearch } from "../lib/citations";
 import {
 	type Finding,
+	type MatterBrief,
+	type TaskContext,
 	type WorkspaceData,
+	briefIsCurrent,
 	emptyWorkspace,
+	reportIsCurrent,
+	reviewIsCurrent,
 	workspaceRequest,
 } from "../lib/workspace";
 import type { Document } from "../types";
 import { CopyWorkspaceLink } from "./CopyWorkspaceLink";
 import { RevisionHistory } from "./RevisionHistory";
 import { SourceCitation } from "./SourceCitation";
+import { BriefReview, WorkflowSummary } from "./WorkflowBrief";
 import { WorkspaceMomentum } from "./WorkspaceMomentum";
 import {
 	Tooltip,
@@ -34,7 +40,7 @@ interface Props {
 	document: Document | null;
 	onCitation: (quote: string) => void;
 	onDirty: (dirty: boolean) => void;
-	children: ReactNode;
+	children: ReactNode | ((context: TaskContext) => ReactNode);
 }
 
 export function ReportWorkspace({
@@ -46,6 +52,8 @@ export function ReportWorkspace({
 }: Props) {
 	const { preferences } = usePreferences();
 	const [data, setData] = useState<WorkspaceData>(emptyWorkspace);
+	const [briefProposal, setBriefProposal] = useState<MatterBrief | null>(null);
+	const [briefOpen, setBriefOpen] = useState(false);
 	const [loaded, setLoaded] = useState(false);
 	const [dirty, setDirty] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -165,12 +173,53 @@ export function ReportWorkspace({
 	};
 	const objectiveChanged =
 		data.objective.trim() !== data.review_objective.trim();
-	const canReview =
-		loaded && !busy && data.objective.trim().length >= 5 && objectiveChanged;
-	const review = () => {
-		if (!canReview) return;
+	const briefCurrent = briefIsCurrent(data);
+	const reviewCurrent = reviewIsCurrent(data);
+	const reportCurrent = reportIsCurrent(data);
+	const planNeeded = !briefCurrent;
+	const purposeLocked =
+		!!(data.brief || data.review_objective) && !data.purpose_unlocked;
+	const unlockPurpose = () => {
+		if (busy || !loaded) return false;
 		if (
-			data.findings.length &&
+			!window.confirm(
+				"Change the purpose of this workspace? Existing findings and report text will be preserved, but drafting, contextual chat and export will pause until you agree the brief and re-run the investigation.",
+			)
+		)
+			return false;
+		change({ ...data, purpose_unlocked: true });
+		return true;
+	};
+	useEffect(() => {
+		if (data.purpose_unlocked && !briefOpen)
+			window.document.getElementById("objective")?.focus();
+	}, [data.purpose_unlocked, briefOpen]);
+	const plan = () => {
+		if (!loaded || busy || data.objective.trim().length < 5) return;
+		return run("plan", async (signal) => {
+			const result = await workspaceRequest<MatterBrief>(
+				conversationId,
+				"plan",
+				{ objective: data.objective },
+				signal,
+			);
+			if (!signal.aborted) {
+				setBriefProposal(result);
+				setBriefOpen(true);
+			}
+		});
+	};
+	const reviewFor = (current: WorkspaceData, replacementConfirmed = false) => {
+		if (
+			!loaded ||
+			busy ||
+			current.objective.trim().length < 5 ||
+			(current.brief && !briefIsCurrent(current))
+		)
+			return;
+		if (
+			current.findings.length &&
+			!replacementConfirmed &&
 			!window.confirm(
 				"Replace the findings? Existing report text will stay, but its evidence attachments will be cleared.",
 			)
@@ -180,19 +229,87 @@ export function ReportWorkspace({
 			const result = await workspaceRequest<{
 				findings: Finding[];
 				gaps: string[];
-			}>(conversationId, "review", { objective: data.objective }, signal);
+			}>(
+				conversationId,
+				"review",
+				{ objective: current.objective, brief: current.brief ?? null },
+				signal,
+			);
 			if (!signal.aborted)
 				change({
-					...data,
+					...current,
 					...result,
-					review_objective: data.objective,
+					review_objective: current.objective,
+					purpose_unlocked: false,
+					review_brief: current.brief ?? null,
 					reviewed_ids: [],
-					sections: data.sections.map((s) => ({ ...s, finding_ids: [] })),
+					sections: current.sections.map((section) => ({
+						...section,
+						finding_ids: [],
+					})),
 				});
 		});
 	};
+	const acceptBrief = () => {
+		if (
+			!briefProposal ||
+			briefProposal.objective.trim() !== data.objective.trim()
+		)
+			return;
+		if (
+			data.findings.length &&
+			!window.confirm(
+				"Investigate the agreed brief and replace existing findings? Report text will stay, but its evidence attachments will be cleared.",
+			)
+		)
+			return;
+		const next = { ...data, brief: briefProposal };
+		change(next);
+		setBriefOpen(false);
+		reviewFor(next, true);
+	};
+	const applyOutline = () => {
+		const brief = data.brief;
+		if (!brief || !briefCurrent || !reviewCurrent) return;
+		const hasWork = data.sections.some(
+			(section) => section.content.trim() || section.finding_ids.length,
+		);
+		if (
+			hasWork &&
+			!window.confirm(
+				"Save your current report as a revision, then replace its sections with this outline?",
+			)
+		)
+			return;
+		run("outline", async (signal) => {
+			const base = hasWork
+				? await workspaceRequest<WorkspaceData>(
+						conversationId,
+						"workspace",
+						data,
+						signal,
+						"PUT",
+					)
+				: data;
+			if (!signal.aborted) {
+				change({
+					...base,
+					report_brief: brief,
+					sections: brief.sections.map((section) => ({
+						...section,
+						content: "",
+						finding_ids: [],
+					})),
+					intent: "report",
+				});
+				setTarget(1);
+				chooseView("report");
+			}
+		});
+	};
+
 	const add = (id: number, sectionIndex = target) => {
-		if (!data.findings[id]) return;
+		if (!data.findings[id] || !reviewCurrent) return;
 		const finding = data.findings[id];
 		const section = data.sections[sectionIndex];
 		if (!section || section.finding_ids.includes(id)) return;
@@ -272,12 +389,17 @@ export function ReportWorkspace({
 	const draft = (index: number) =>
 		run("draft", async (signal) => {
 			const section = data.sections[index];
-			if (!section) return;
+			if (!section || !reportCurrent) return;
 			const result = await workspaceRequest<{ content: string }>(
 				conversationId,
 				"draft",
 				{
 					title: section.title,
+					purpose: section.purpose ?? "",
+					purpose_unlocked: !!data.purpose_unlocked,
+					brief: data.brief ?? null,
+					review_brief: data.review_brief ?? null,
+					report_brief: data.report_brief ?? null,
 					objective: data.objective,
 					instruction,
 					current_text: section.content,
@@ -307,9 +429,25 @@ export function ReportWorkspace({
 	);
 
 	const button = "toolbar-button";
-	if (!document) return <>{children}</>;
+	const chatContent =
+		typeof children === "function"
+			? children({
+					objective: data.objective,
+					brief: briefCurrent ? (data.brief ?? null) : null,
+					blocked: !!data.purpose_unlocked || (!!data.brief && !briefCurrent),
+				})
+			: children;
+	if (!document) return <>{chatContent}</>;
 	return (
 		<div className="review-workspace flex min-h-0 flex-1 flex-col bg-neutral-50">
+			<BriefReview
+				brief={briefProposal}
+				open={briefOpen}
+				busy={!!busy}
+				onChange={setBriefProposal}
+				onClose={() => setBriefOpen(false)}
+				onConfirm={acceptBrief}
+			/>
 			{!onboarded && (
 				<div className="border-b bg-blue-50 p-4 text-sm text-blue-950">
 					<strong>From document to working report.</strong> Set an objective,
@@ -398,10 +536,26 @@ export function ReportWorkspace({
 				<form
 					onSubmit={(event) => {
 						event.preventDefault();
-						review();
+						if (planNeeded) plan();
+						else if (!reviewCurrent) reviewFor(data);
 					}}
 					className="space-y-2"
 				>
+					{purposeLocked && (
+						<div className="flex flex-wrap items-center justify-between gap-2 text-xs text-teal-950">
+							<span>
+								Purpose locked · keeps the brief, findings and report aligned
+							</span>
+							<button
+								type="button"
+								className="quiet-button"
+								disabled={!!busy || !loaded}
+								onClick={unlockPurpose}
+							>
+								Change purpose
+							</button>
+						</div>
+					)}
 					<label
 						className="block text-xs font-medium text-neutral-600"
 						htmlFor="objective"
@@ -413,7 +567,7 @@ export function ReportWorkspace({
 							id="objective"
 							aria-describedby="objective-help"
 							maxLength={2000}
-							disabled={!!busy || !loaded}
+							disabled={!!busy || !loaded || purposeLocked}
 							value={data.objective}
 							onChange={(event) =>
 								change({ ...data, objective: event.target.value })
@@ -424,21 +578,43 @@ export function ReportWorkspace({
 						<button
 							type="submit"
 							className="primary-button shrink-0"
-							disabled={!canReview}
+							disabled={
+								!!busy ||
+								!loaded ||
+								data.objective.trim().length < 5 ||
+								(!planNeeded && reviewCurrent)
+							}
 						>
-							{busy === "review"
-								? "Updating review…"
-								: data.review_objective
-									? "Update review"
-									: "Review document"}
+							{busy === "plan"
+								? "Planning your work…"
+								: busy === "review"
+									? "Investigating…"
+									: planNeeded
+										? "Plan my work"
+										: reviewCurrent
+											? "Review up to date"
+											: "Investigate brief"}
 						</button>
 					</div>
 					<p id="objective-help" className="text-xs text-neutral-600">
-						{data.review_objective && !objectiveChanged
-							? "Your review reflects this objective. Edit it to update the review."
-							: "Submit your objective to review the document. Editing alone does not run the agent."}
+						{planNeeded
+							? "The agent will propose a brief and outline for you to check. Planning does not replace your work."
+							: reviewCurrent
+								? "The investigation reflects your agreed brief. Edit the brief to change direction."
+								: "Investigate the agreed brief to refresh the evidence. Your report text will be preserved."}
 					</p>
 				</form>
+				<WorkflowSummary
+					data={data}
+					busy={!!busy || !loaded}
+					onEdit={() => {
+						if (!data.purpose_unlocked && !unlockPurpose()) return;
+						setBriefProposal(data.brief ?? null);
+						setBriefOpen(true);
+					}}
+					onOutline={applyOutline}
+					onReport={() => chooseView("report")}
+				/>
 				<fieldset
 					className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-neutral-100 pt-2"
 					aria-label="Saved workspace actions"
@@ -462,6 +638,7 @@ export function ReportWorkspace({
 							!!busy ||
 							!loaded ||
 							dirty ||
+							!reportCurrent ||
 							!data.sections.some((s) => s.content.trim())
 						}
 					>
@@ -532,7 +709,9 @@ export function ReportWorkspace({
 					</button>
 				</div>
 			)}
-			<div className={chat ? "flex min-h-0 flex-1" : "hidden"}>{children}</div>
+			<div className={chat ? "flex min-h-0 flex-1" : "hidden"}>
+				{chatContent}
+			</div>
 			<div
 				data-view={activeView}
 				className={chat ? "hidden" : "report-layout min-h-0 flex-1"}
@@ -609,7 +788,7 @@ export function ReportWorkspace({
 							aria-label={`Finding ${id + 1}: ${finding.title}`}
 							onFocus={() => setActiveFinding(id)}
 							data-active={activeFinding === id}
-							draggable={!busy}
+							draggable={!busy && reviewCurrent}
 							onDragStart={(e) =>
 								e.dataTransfer.setData(
 									"application/orbital-finding",
@@ -665,7 +844,9 @@ export function ReportWorkspace({
 									type="button"
 									className={button}
 									disabled={
-										!!busy || data.sections[target]?.finding_ids.includes(id)
+										!!busy ||
+										!reviewCurrent ||
+										data.sections[target]?.finding_ids.includes(id)
 									}
 									onClick={() => add(id)}
 								>
@@ -674,7 +855,7 @@ export function ReportWorkspace({
 								<label className="text-xs">
 									<input
 										type="checkbox"
-										disabled={!!busy}
+										disabled={!!busy || !reviewCurrent}
 										checked={data.reviewed_ids.includes(id)}
 										onChange={(e) =>
 											change({
@@ -707,6 +888,13 @@ export function ReportWorkspace({
 						aria-label="Report builder"
 					>
 						<h2 className="font-semibold">Working report</h2>
+						{!reportCurrent && (
+							<p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+								This report is preserved from an earlier brief or investigation.
+								Agree and investigate the current brief, then apply its outline
+								before AI drafting or exporting. Your text remains editable.
+							</p>
+						)}
 						<p className="text-xs text-neutral-500">
 							Drag findings here, use “Add to report”, or write your own
 							section. Source checks cover quotations; edited prose still needs
@@ -777,11 +965,15 @@ export function ReportWorkspace({
 										const value = e.dataTransfer.getData(
 											"application/orbital-finding",
 										);
-										if (!busy && /^\d+$/.test(value)) add(Number(value), index);
+										if (!busy && reviewCurrent && /^\d+$/.test(value))
+											add(Number(value), index);
 									}}
 									className="report-section space-y-3 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm"
 								>
 									<h3 className="font-medium">{section.title}</h3>
+									{section.purpose && (
+										<p className="text-sm text-teal-900">{section.purpose}</p>
+									)}
 									{!section.content.trim() && (
 										<p
 											id={`section-start-${index}`}
@@ -827,6 +1019,7 @@ export function ReportWorkspace({
 										className={button}
 										disabled={
 											!!busy ||
+											!reportCurrent ||
 											!section.finding_ids.length ||
 											instruction.trim().length < 3
 										}

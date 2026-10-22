@@ -21,6 +21,7 @@ import { useMediaQuery } from "../hooks/use-media-query";
 import { useMessages } from "../hooks/use-messages";
 import { useUnsavedNavigation } from "../hooks/use-unsaved-navigation";
 import { pageFromSearch } from "../lib/citations";
+import type { MatterBrief } from "../lib/workspace";
 import { NotFoundPage } from "./NotFoundPage";
 
 export function WorkspacePage() {
@@ -57,8 +58,8 @@ function WorkspaceSession({ id }: { id: string }) {
 	useUnsavedNavigation(dirty);
 
 	const handleSend = useCallback(
-		async (text: string) => {
-			await send(text);
+		async (text: string, brief: MatterBrief | null, objective: string) => {
+			await send(text, { brief, objective });
 			await refreshConversations();
 		},
 		[send, refreshConversations],
@@ -128,17 +129,20 @@ function WorkspaceSession({ id }: { id: string }) {
 						onDirty={setDirty}
 						onCitation={setQuote}
 					>
-						<ChatWindow
-							messages={messages}
-							loading={loading}
-							error={messageError}
-							streaming={streaming}
-							streamingContent={streamingContent}
-							hasDocument={!!document}
-							conversationId={id}
-							onSend={handleSend}
-							onUpload={handleUpload}
-						/>
+						{({ brief, objective, blocked }) => (
+							<ChatWindow
+								messages={messages}
+								loading={loading}
+								error={messageError}
+								streaming={streaming}
+								streamingContent={streamingContent}
+								hasDocument={!!document}
+								conversationId={id}
+								onSend={(text) => handleSend(text, brief, objective)}
+								contextBlocked={blocked}
+								onUpload={handleUpload}
+							/>
+						)}
 					</ReportWorkspace>
 				)}
 			</section>

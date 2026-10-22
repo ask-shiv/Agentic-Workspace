@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from takehome.db.session import get_session
+from takehome.services.brief import MatterBrief, task_context
 from takehome.services.document import get_document_for_conversation
 from takehome.services.review import ReviewOutput, review_document
 
@@ -18,6 +19,7 @@ router = APIRouter(prefix="/api/conversations", tags=["review"])
 
 class ReviewRequest(BaseModel):
     objective: str = Field(min_length=5, max_length=2000)
+    brief: MatterBrief | None = None
 
 
 @router.post("/{conversation_id}/review", response_model=ReviewOutput)
@@ -30,7 +32,8 @@ async def run_review(
     if not document.extracted_text:
         raise HTTPException(422, "This PDF has no extracted text. Please use a text-based PDF.")
     try:
-        return await review_document(document.extracted_text, body.objective)
+        task_context(body.objective, body.brief)
+        return await review_document(document.extracted_text, body.objective, body.brief)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     except (TimeoutError, asyncio.CancelledError) as exc:

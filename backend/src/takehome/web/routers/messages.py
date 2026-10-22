@@ -6,13 +6,14 @@ from datetime import datetime
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
 from takehome.db.models import Message
 from takehome.db.session import get_session
+from takehome.services.brief import MatterBrief, task_context
 from takehome.services.conversation import get_conversation, update_conversation
 from takehome.services.document import get_document_for_conversation
 from takehome.services.llm import chat_with_document, count_sources_cited, generate_title
@@ -40,6 +41,8 @@ class MessageOut(BaseModel):
 
 class MessageCreate(BaseModel):
     content: str
+    objective: str = Field(default="", max_length=2000)
+    brief: MatterBrief | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -94,6 +97,11 @@ async def send_message(
     if conversation is None:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
+    try:
+        task_context(body.objective, body.brief)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
     # Save the user message
     user_message = Message(
         conversation_id=conversation_id,
@@ -137,6 +145,8 @@ async def send_message(
                 user_message=body.content,
                 document_text=document_text,
                 conversation_history=conversation_history,
+                objective=body.objective,
+                brief=body.brief,
             ):
                 full_response += chunk
                 event_data = json.dumps({"type": "content", "content": chunk})
@@ -147,7 +157,9 @@ async def send_message(
                 "Error during LLM streaming",
                 conversation_id=conversation_id,
             )
-            event_data = json.dumps({"type": "error", "message": "Could not generate an answer. Please try again."})
+            event_data = json.dumps(
+                {"type": "error", "message": "Could not generate an answer. Please try again."}
+            )
             yield f"data: {event_data}\n\n"
             return
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "../lib/api";
+import type { MatterBrief } from "../lib/workspace";
 import type { Message } from "../types";
 
 export function useMessages(conversationId: string | null) {
@@ -66,7 +67,10 @@ export function useMessages(conversationId: string | null) {
 	}, [conversationId]);
 
 	const send = useCallback(
-		async (content: string) => {
+		async (
+			content: string,
+			task?: { objective: string; brief: MatterBrief | null },
+		) => {
 			const controller = abortRef.current;
 			if (
 				!conversationId ||
@@ -96,6 +100,7 @@ export function useMessages(conversationId: string | null) {
 					conversationId,
 					content,
 					controller.signal,
+					task,
 				);
 
 				if (!response.body) {

@@ -117,3 +117,10 @@ Report history is available from the revision button. Previewing is read-only; r
 ### Agent validation
 
 The [source-based evaluation report](docs/evaluations/README.md) preserves synthetic baseline failures and a targeted recheck. Run the opt-in live evaluator only with a local key; it incurs model usage. Normal CI runs model-free regression tests. Matching quotes and page numbers do not validate every claim or clause label; remaining failures are explicit in the report.
+
+
+### Try the intent-led journey
+
+Upload a text-based PDF, enter a concrete objective such as “Help my tenant exit in 2029; prepare a client update”, then choose **Plan my work**. Correct the proposed represented party, outcome, priorities and outline before **Agree brief and investigate**. Apply the outline explicitly, add findings to sections, request a draft and accept only the text you want. Save to retain the brief, evidence and report together. The same agreed brief accompanies subsequent document-chat questions.
+
+The purpose locks once work starts. **Change purpose** warns and pauses evidence selection, drafting, contextual chat and download until reinvestigation; a changed brief also needs its outline applied. Existing text remains available and populated outlines are saved as revisions before replacement. Planning is fallible: the paired evaluation demonstrates different tenant/landlord workflows but retains quotation and unsupported-claim failures. Read the [actual evaluation results](docs/evaluations/README.md) before treating any generated output as reliable legal analysis.

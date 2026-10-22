@@ -1,0 +1,172 @@
+import json
+from contextlib import asynccontextmanager
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
+from fastapi import HTTPException
+from pydantic import ValidationError
+
+from takehome.services import llm, review
+from takehome.services.brief import require_current_briefs, task_context
+from takehome.web.routers import messages, workspace
+
+from .brief_fixture import tenant_brief
+
+
+def test_brief_rejects_duplicate_outline_and_stale_context():
+    brief = tenant_brief()
+    with pytest.raises(ValidationError, match="distinct"):
+        tenant_brief(sections=[brief.sections[0].model_dump()] * 3)
+    with pytest.raises(ValueError, match="different objective"):
+        task_context("Negotiate for the landlord", brief)
+    for reviewed, report, unlocked in [
+        (None, brief, False),
+        (brief, None, False),
+        (tenant_brief(client_role="landlord"), brief, False),
+        (brief, brief, True),
+    ]:
+        with pytest.raises(ValueError):
+            require_current_briefs(brief.objective, brief, reviewed, report, unlocked)
+    require_current_briefs(brief.objective, brief, brief, brief)
+    require_current_briefs("Legacy objective", None, None, None)
+    assert workspace.WorkspaceData.model_validate({"objective": "Legacy objective"}).brief is None
+
+
+@pytest.mark.asyncio
+async def test_plan_is_a_proposal_and_does_not_save_the_workspace(monkeypatch):
+    brief = tenant_brief()
+    session = AsyncMock()
+    session.get.return_value = object()
+    proposal = AsyncMock(return_value=brief)
+    monkeypatch.setattr(
+        workspace,
+        "get_document_for_conversation",
+        AsyncMock(return_value=SimpleNamespace(extracted_text="Synthetic document overview")),
+    )
+    monkeypatch.setattr(workspace, "propose_brief", proposal)
+    result = await workspace.plan_workflow(
+        "a", workspace.PlanRequest(objective=brief.objective), session
+    )
+    assert result == brief
+    proposal.assert_awaited_once_with(brief.objective, "Synthetic document overview")
+    session.commit.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_drafting_rejects_drift_before_calling_model_and_passes_agreed_context(monkeypatch):
+    brief = tenant_brief()
+    session = AsyncMock()
+    run = AsyncMock(
+        return_value=SimpleNamespace(output=workspace.DraftOutput(content="Proposed text"))
+    )
+    monkeypatch.setattr(workspace.draft_agent, "run", run)
+    body = workspace.DraftRequest(
+        title="Exit feasibility",
+        objective=brief.objective,
+        instruction="Use the evidence",
+        current_text="Lawyer text",
+        findings=[],
+        brief=brief,
+    )
+    with pytest.raises(HTTPException) as error:
+        await workspace.draft_section("a", body, session)
+    assert error.value.status_code == 409
+    run.assert_not_awaited()
+    finding = review.Finding(
+        title="Notice",
+        interpretation="Check conditions",
+        relevance="Exit",
+        next_step="Get records",
+        page=1,
+        quote="Written notice is required.",
+        uncertainty="Compliance unknown",
+    )
+    body = body.model_copy(
+        update={"review_brief": brief, "report_brief": brief, "findings": [finding]}
+    )
+    assert (await workspace.draft_section("a", body, session)).content == "Proposed text"
+    prompt = json.loads(run.await_args.args[0])
+    assert prompt["brief"] == brief.model_dump()
+    assert prompt["current_text"] == "Lawyer text"
+    assert "review_brief" not in prompt
+    run.reset_mock()
+    with pytest.raises(HTTPException):
+        await workspace.draft_section(
+            "a", body.model_copy(update={"purpose_unlocked": True}), session
+        )
+    run.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_review_and_chat_models_receive_the_same_agreed_brief(monkeypatch):
+    brief = tenant_brief()
+    review_run = AsyncMock(
+        return_value=SimpleNamespace(
+            output=review.ReviewOutput(findings=[], gaps=["Need payment records"])
+        )
+    )
+    monkeypatch.setattr(review.review_agent, "run", review_run)
+    await review.review_document("--- Page 1 ---\nSynthetic lease text", brief.objective, brief)
+    assert task_context(brief.objective, brief) in review_run.await_args.args[0]
+    captured = []
+
+    @asynccontextmanager
+    async def stream(prompt):
+        captured.append(prompt)
+
+        async def chunks(delta):
+            yield "Contextual answer"
+
+        yield SimpleNamespace(stream_text=chunks)
+
+    monkeypatch.setattr(llm.agent, "run_stream", stream)
+    result = [
+        chunk
+        async for chunk in llm.chat_with_document(
+            "What next?", "Document", [], brief.objective, brief
+        )
+    ]
+    assert result == ["Contextual answer"]
+    assert task_context(brief.objective, brief) in captured[0]
+
+
+@pytest.mark.asyncio
+async def test_chat_endpoint_forwards_live_unsaved_brief_without_changing_user_message(monkeypatch):
+    brief = tenant_brief()
+    session = AsyncMock()
+    session.add = lambda message: None
+    session.execute.return_value = MagicMock()
+    session.execute.return_value.scalars.return_value.all.return_value = []
+    monkeypatch.setattr(messages, "get_conversation", AsyncMock(return_value=object()))
+    monkeypatch.setattr(messages, "get_document_for_conversation", AsyncMock(return_value=None))
+    received = []
+
+    async def fail(**kwargs):
+        received.append(kwargs)
+        raise RuntimeError("Stop before persistence")
+        yield ""
+
+    monkeypatch.setattr(messages, "chat_with_document", fail)
+    response = await messages.send_message(
+        "a",
+        messages.MessageCreate(content="What next?", objective=brief.objective, brief=brief),
+        session,
+    )
+    events = [event async for event in response.body_iterator]
+    assert received[0]["brief"] == brief
+    assert received[0]["objective"] == brief.objective
+    assert received[0]["user_message"] == "What next?"
+    assert '"type": "error"' in events[0]
+
+
+@pytest.mark.asyncio
+async def test_export_rejects_saved_unlocked_purpose():
+    session = AsyncMock()
+    data = workspace.WorkspaceData(objective="Changed purpose", purpose_unlocked=True)
+    session.get.return_value = SimpleNamespace(
+        payload=data.model_dump_json(exclude={"version"}), version=2
+    )
+    with pytest.raises(HTTPException) as error:
+        await workspace.export_workspace("a", session)
+    assert error.value.status_code == 409
