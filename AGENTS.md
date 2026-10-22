@@ -94,3 +94,4 @@ Append one short entry per meaningful pass here: invariant affected, checks, and
 - Landing upload correction: default to Build report while keeping the objective blank. Drop and file-picker paths must upload real PDF data before navigation, preserve selected workflow/objective/pace, reject multiple-file drops, and never start a model call. Upload failures must remain recoverable without creating another workspace on retry.
 
 - Landing simplification: do not show the time-pressure checkbox on Home; new entry context uses normal detail. Preserve saved brief compatibility. “Brief me” is future work, not a delivered summary feature; it must preserve full findings and material caveats if implemented.
+- Workspace setup simplification (#63): the shared intent entry must not expose the removed time-pressure checkbox. Keep saved brief fields compatible and verify both Home and document-upload setup remain free of that control. Brief me remains deferred.

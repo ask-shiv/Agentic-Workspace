@@ -119,7 +119,7 @@ test('upload first shows document context then asks for an objective before mode
  assert(screen.getByText(/lease.pdf · 3 pages/));
  assert.equal((screen.getByRole('textbox') as HTMLTextAreaElement).value,'');
  assert(screen.getByRole('button',{name:'Plan my work'}).hasAttribute('disabled'));
- assert(!(screen.getByRole('checkbox',{name:/pressed for time/}) as HTMLInputElement).checked);
+ assert.equal(screen.queryByRole('checkbox',{name:/pressed for time/}),null);
  assert(!calls.some(url=>url.endsWith('/plan')||url.endsWith('/review')));router.dispose();
 });
 
