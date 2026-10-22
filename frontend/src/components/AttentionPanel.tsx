@@ -7,7 +7,7 @@ export function AttentionPanel({
 	if (!items.length) return null;
 	return (
 		<details className="group overflow-hidden rounded-xl border border-amber-300 bg-amber-50 text-amber-950">
-			<summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
+			<summary className="flex min-h-14 cursor-pointer list-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal-800 items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
 				<CircleHelp aria-hidden="true" className="h-5 w-5 shrink-0" />
 				<span className="min-w-0 flex-1">
 					<span className="flex flex-wrap items-center gap-2">
