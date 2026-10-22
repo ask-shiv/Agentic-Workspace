@@ -164,3 +164,9 @@ Mark reviewed currently records a user progress flag, updates the count and is r
 ## Reduce workspace header noise (#54)
 
 The header now leads with the selected workflow and document name. Repeated collaboration slogans, “Your working objective” and “Saved locally” are removed; a target icon accompanies the clear objective label. Brief guidance moves behind an accessible info control, with the same description retained for assistive technology. Unsaved-work warnings and purpose-change controls remain visible because they prevent mistakes. This pass changes presentation only, with no changes to the agent, review status, saved data or workflow rules.
+
+## Future direction: learn which goals are useful
+
+With more time, I would build a system that learns from the user's behaviour to suggest relevant objectives and workflows. Signals could include seasonality, raw document and task volume, the types of work they undertake, and which suggestions they accept, edit or dismiss. The aim is to make starting useful work easier as the partnership develops, while the lawyer continues to choose the objective and direct the agent.
+
+For now, suggestions are dummy examples, not evidence of implemented behavioural learning or personalisation. A future implementation would make the reasons for suggestions visible and let users disable or clear this history, without carrying confidential facts between unrelated matters.
