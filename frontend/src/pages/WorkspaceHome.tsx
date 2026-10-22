@@ -97,10 +97,6 @@ function WorkspaceWelcome() {
 						{error}
 					</p>
 				)}
-				<p className="text-xs text-neutral-400">
-					Next: add a document for context. Nothing is sent to the agent until
-					you ask it to plan.
-				</p>
 			</IntentStart>
 		</section>
 	);
