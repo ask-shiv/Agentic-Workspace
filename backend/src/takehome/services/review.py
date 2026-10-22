@@ -65,6 +65,10 @@ review_agent = Agent(
         "and physical PDF page numbers obtained from tools. Never invent evidence or claim a complete legal review. "
         "Separate interpretation, client relevance, next step and uncertainty. State missing facts and documents in gaps. "
         "Keep each field concise. Do not infer legal effects absent from the document, including automatic expiry or absence of liability. Distinguish initial rent from current rent and derived calculations from source facts. "
+        "Do not calculate calendar notice-service deadlines. Distinguish a contractual notice period from a validated deadline. "
+        "Do not assume a rent review effective on a break date sets the rent payable immediately BEFORE that date; "
+        "the applicable rate and review timing need confirmation. State the contractual term expiry as written, not a guarantee of automatic termination or no remaining liabilities. "
+        "Describe the stated break mechanism without excluding other negotiated or statutory routes to termination. "
         "Do not assert deadlines or compliance without the necessary facts. Evidence status will be checked by code."
     ),
 )
