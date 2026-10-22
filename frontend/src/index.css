@@ -890,3 +890,29 @@ html[data-contrast="high"] .intent-start .workflow-option-selected {
 		transition: none;
 	}
 }
+
+.workspace-navigation {
+	scrollbar-width: thin;
+	scrollbar-color: transparent transparent;
+}
+.workspace-navigation[data-scrolling="true"] {
+	scrollbar-color: #738097 transparent;
+}
+.workspace-navigation::-webkit-scrollbar {
+	width: 6px;
+}
+.workspace-navigation::-webkit-scrollbar-track {
+	background: transparent;
+}
+.workspace-navigation::-webkit-scrollbar-thumb {
+	background: transparent;
+	border-radius: 999px;
+}
+.workspace-navigation[data-scrolling="true"]::-webkit-scrollbar-thumb {
+	background: #738097;
+}
+@media (forced-colors: active) {
+	.workspace-navigation {
+		scrollbar-color: auto;
+	}
+}
