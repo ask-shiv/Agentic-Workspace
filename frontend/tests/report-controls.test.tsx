@@ -105,7 +105,7 @@ test('restore conflicts remain visible inside history and leave current work int
 
 test('the purpose lock requires confirmation and failed investigation remains retryable', async()=>{
  let attempts=0; let finishReview: ((response: Response)=>void) | undefined;
- const brief={...tenantBrief,objective:current.objective};
+ const brief={...tenantBrief,objective:current.objective,workflow:"risk" as const};
  const saved={...current,review_objective:current.objective,brief,review_brief:brief,report_brief:brief};
  globalThis.fetch=async(input)=>{
   if(String(input).endsWith('/review')) {
@@ -144,7 +144,7 @@ test('the purpose lock requires confirmation and failed investigation remains re
 test('planning requires agreement before investigation and successful empty reviews still lock the purpose',async()=>{
  let attempts=0;
  globalThis.fetch=async(input,init)=>{
-  if(String(input).endsWith('/plan')) return Response.json({...tenantBrief,objective:JSON.parse(String(init?.body)).objective});
+  if(String(input).endsWith('/plan')) return Response.json({...tenantBrief,objective:JSON.parse(String(init?.body)).objective,workflow:JSON.parse(String(init?.body)).workflow});
   if(String(input).endsWith('/review')) {attempts++;return Response.json({findings:[],gaps:['No matching provision found.']});}
   return Response.json({...emptyWorkspace(),version:1});
  };
@@ -153,7 +153,7 @@ test('planning requires agreement before investigation and successful empty revi
  const submit=screen.getByRole('button',{name:'Plan my work'});
  assert(submit.hasAttribute('disabled'));
  await user.type(screen.getByRole('textbox',{name:'What are you trying to achieve?'}),'Review tenant exit rights');
- await user.keyboard('{Enter}');
+ await user.click(submit);
  await screen.findByRole('dialog',{name:'Agree the brief'}); assert.equal(attempts,0);
  await user.click(screen.getByRole('button',{name:'Agree brief and investigate'}));
  await screen.findByText('No matching provision found.');

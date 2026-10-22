@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -31,6 +31,8 @@ class ReviewOutput(BaseModel):
 @dataclass
 class DocumentContext:
     pages: dict[int, str]
+    searches: int = 0
+    pages_read: set[int] = field(default_factory=set)
 
 
 def split_pages(text: str) -> dict[int, str]:
@@ -67,7 +69,7 @@ review_agent = Agent(
         "Return at most 6 material findings, prioritised for the objective, with exact contiguous source quotes "
         "and physical PDF page numbers obtained from tools. Never invent evidence or claim a complete legal review. "
         "Separate interpretation, client relevance, next step and uncertainty. State missing facts and documents in gaps. "
-        "Keep each field concise. Do not infer legal effects absent from the document, including automatic expiry or absence of liability. Distinguish initial rent from current rent and derived calculations from source facts. "
+        "Keep output compact to fit the structured contract: title at most 100 characters, interpretation at most 600, relevance at most 300, next_step at most 300 and uncertainty at most 300. Use one or two short sentences per field, not procedural essays. Each quote must be one contiguous passage at most 800 characters; never join passages with ellipses or insert clause labels. Do not infer legal effects absent from the document, including automatic expiry or absence of liability. Distinguish initial rent from current rent and derived calculations from source facts. "
         "Do not calculate calendar notice-service deadlines. Distinguish a contractual notice period from a validated deadline. "
         "Do not assume a rent review effective on a break date sets the rent payable immediately BEFORE that date; "
         "the applicable rate and review timing need confirmation. State the contractual term expiry as written, not a guarantee of automatic termination or no remaining liabilities. "
@@ -79,6 +81,9 @@ review_agent = Agent(
 
 @review_agent.tool
 async def search_document(ctx: RunContext[DocumentContext], query: str) -> str:
+    if ctx.deps.searches >= 2:
+        return "Search budget reached. Use the evidence already returned; identify unreviewed topics as limitations and produce your findings."
+    ctx.deps.searches += 1
     words = set(re.findall(r"[a-z]{3,}", query.lower()))
     ranked = sorted(
         ctx.deps.pages.items(),
@@ -97,6 +102,11 @@ async def search_document(ctx: RunContext[DocumentContext], query: str) -> str:
 
 @review_agent.tool
 async def read_page(ctx: RunContext[DocumentContext], page: int) -> str:
+    if page in ctx.deps.pages_read:
+        return f"PDF page {page} was already supplied. Refer to that earlier source text; do not request it again."
+    if len(ctx.deps.pages_read) >= 4:
+        return "Page-read budget reached. Do not request more pages. Produce findings supported by the evidence already returned and explicitly list unreviewed topics as limitations, not absent document facts."
+    ctx.deps.pages_read.add(page)
     return ctx.deps.pages.get(page, "Page does not exist.")[:10000]
 
 

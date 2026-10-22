@@ -49,13 +49,13 @@ async def test_plan_is_a_proposal_and_does_not_save_the_workspace(monkeypatch):
         "a", workspace.PlanRequest(objective=brief.objective), session
     )
     assert result == brief
-    proposal.assert_awaited_once_with(brief.objective, "Synthetic document overview")
+    proposal.assert_awaited_once_with(brief.objective, "Synthetic document overview", None)
     session.commit.assert_not_awaited()
 
 
 @pytest.mark.asyncio
 async def test_drafting_rejects_drift_before_calling_model_and_passes_agreed_context(monkeypatch):
-    brief = tenant_brief()
+    brief = tenant_brief(workflow="report")
     session = AsyncMock()
     run = AsyncMock(
         return_value=SimpleNamespace(output=workspace.DraftOutput(content="Proposed text"))
@@ -89,6 +89,7 @@ async def test_drafting_rejects_drift_before_calling_model_and_passes_agreed_con
     prompt = json.loads(run.await_args.args[0])
     assert prompt["brief"] == brief.model_dump()
     assert prompt["current_text"] == "Lawyer text"
+    assert "audience-specific" in prompt["workflow_guidance"]
     assert "review_brief" not in prompt
     run.reset_mock()
     with pytest.raises(HTTPException):
@@ -100,7 +101,7 @@ async def test_drafting_rejects_drift_before_calling_model_and_passes_agreed_con
 
 @pytest.mark.asyncio
 async def test_review_and_chat_models_receive_the_same_agreed_brief(monkeypatch):
-    brief = tenant_brief()
+    brief = tenant_brief(workflow="report")
     review_run = AsyncMock(
         return_value=SimpleNamespace(
             output=review.ReviewOutput(findings=[], gaps=["Need payment records"])
@@ -161,12 +162,50 @@ async def test_chat_endpoint_forwards_live_unsaved_brief_without_changing_user_m
 
 
 @pytest.mark.asyncio
-async def test_export_rejects_saved_unlocked_purpose():
+async def test_export_rejects_saved_unlocked_purpose_and_workflow_drift():
     session = AsyncMock()
-    data = workspace.WorkspaceData(objective="Changed purpose", purpose_unlocked=True)
-    session.get.return_value = SimpleNamespace(
-        payload=data.model_dump_json(exclude={"version"}), version=2
+    brief = tenant_brief(workflow="risk")
+    for data in [
+        workspace.WorkspaceData(objective="Changed purpose", purpose_unlocked=True),
+        workspace.WorkspaceData(
+            objective=brief.objective,
+            workflow="report",
+            brief=brief,
+            review_brief=brief,
+            report_brief=brief,
+        ),
+    ]:
+        session.get.return_value = SimpleNamespace(
+            payload=data.model_dump_json(exclude={"version"}), version=2
+        )
+        with pytest.raises(HTTPException) as error:
+            await workspace.export_workspace("a", session)
+        assert error.value.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_workflow_presets_change_planning_and_shared_agent_context(monkeypatch):
+    from takehome.services import brief as service
+
+    base = tenant_brief()
+    run = AsyncMock(
+        return_value=SimpleNamespace(output=service.BriefProposal.model_validate(base.model_dump()))
     )
-    with pytest.raises(HTTPException) as error:
-        await workspace.export_workspace("a", session)
-    assert error.value.status_code == 409
+    monkeypatch.setattr(service.brief_agent, "run", run)
+    risk = await service.propose_brief(base.objective, "Document overview", "risk")
+    risk_prompt = json.loads(run.await_args.args[0])
+    report = await service.propose_brief(base.objective, "Document overview", "report")
+    report_prompt = json.loads(run.await_args.args[0])
+    assert risk.objective == report.objective
+    assert risk.workflow == "risk" and risk.deliverable == base.deliverable
+    assert report.workflow == "report" and report.deliverable == base.deliverable
+    assert report.sections[0].title == "Client position"
+    assert report.sections[-1].title == "Decisions and next steps"
+    assert [section.title for section in risk.sections] != [
+        section.title for section in report.sections
+    ]
+    assert risk_prompt["workflow_guidance"] != report_prompt["workflow_guidance"]
+    assert "commercial exposure" in task_context(base.objective, risk)
+    assert "audience-specific" in task_context(base.objective, report)
+    with pytest.raises(ValueError):
+        require_current_briefs(base.objective, report, risk, risk)

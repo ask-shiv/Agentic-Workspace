@@ -1,0 +1,179 @@
+{
+  "timestamp_utc": "2026-10-22T14:35:26.790201+00:00",
+  "model": "claude-haiku-4-5-20251001",
+  "fixture_sha256": "e1c2e8e13efeff20c6c807f0e4be8eac2b0454d84554b8d0ec7f1abd32e39bb5",
+  "objective": "I am advising a tenant considering this lease. I need to understand the commercial risks before negotiations and prepare a concise client update.",
+  "current_source_sha256": {
+    "planning": "32b502244586c6ebf18671dcee55a65349f86050df496d999be9996320a98f82",
+    "review": "7411529a72896b3f2356e386ff26fdbc39c15c5cd9b20e09e14e64ab97f3ff97"
+  },
+  "scope": "Same synthetic document and objective, two explicit working presets. Proposed briefs are engineering inputs, not lawyer-approved plans. No legal accuracy or consistency benchmark is claimed; quotes retain their actual verification status. Draft/chat context has model-free coverage.",
+  "cases": [
+    {
+      "workflow": "risk",
+      "planning_reused": true,
+      "brief": {
+        "client_role": "tenant",
+        "outcome": "Identify material commercial risks in the proposed 15-year lease at 100 Bishopsgate to inform tenant's negotiating strategy and decision-making before formal discussions with the landlord. Clarify exposure on rent review mechanisms, service charge liability, break clauses, repair obligations and lease flexibility to enable informed risk/benefit trade-offs during negotiation.",
+        "deliverable": "risk_memo",
+        "priorities": [
+          "Rent review mechanics: Understand the basis (RPI, market, indexed) and tenant's protection against disproportionate increases at 2029 and 2034 review dates, including whether tenant has break rights or collar provisions",
+          "Service charge and operating costs: Establish what costs (repairs, insurance, maintenance, rates, utilities) are explicitly recoverable from tenant, capped or uncapped, and whether tenant has audit or challenge rights",
+          "Repair and maintenance obligations: Clarify division of responsibility for structural, exterior and interior repairs, dilapidation liability at lease end, and tenant's indemnity exposure for damage beyond normal wear",
+          "Lease flexibility and exit options: Confirm whether tenant has break clauses, renewal rights, assignment restrictions, and consequent exit costs or notice periods if business needs change during the 15-year term"
+        ],
+        "open_questions": [
+          "Does the lease contain rent review collars (minimum/maximum caps) or alternative adjustment mechanisms (e.g. CPI floor/ceiling) to limit exposure to market uplifts at 2029 and 2034?",
+          "Are service charges and building insurance costs capped, indexed, or entirely variable, and what happens if actual costs exceed budgeted contributions?",
+          "Does the tenant have the right to break the lease, and if so, on what conditions (notice period, rent payment, repair condition) and at which points in the 15-year term?",
+          "What are the specific dilapidation and repair obligations for the tenant, and does the landlord have the right to carry out works at tenant's cost if tenant fails to comply?"
+        ],
+        "sections": [
+          {
+            "title": "Rent Review Framework & Long-Term Cost Exposure",
+            "purpose": "Assess the mechanism and scope of rent adjustments at review dates, identify caps or protections available to tenant, and quantify potential cost escalation scenarios to inform negotiating position on rental increases."
+          },
+          {
+            "title": "Operational Cost Liabilities (Service Charge, Insurance, Rates)",
+            "purpose": "Establish tenant's exposure to variable operating costs, identify controllable vs. uncontrollable charge categories, confirm tenant's rights to audit and challenge invoices, and highlight any uncapped liability risks."
+          },
+          {
+            "title": "Repair, Maintenance & Dilapidation Obligations",
+            "purpose": "Clarify the split of responsibility for building systems, fabric and structural elements, identify tenant's indemnity and reinstatement obligations at lease end, and assess cost risk for unexpected major works."
+          },
+          {
+            "title": "Lease Term Flexibility & Break/Exit Rights",
+            "purpose": "Identify whether tenant has mid-term break options, renewal prospects, or unrestricted assignment rights, and evaluate the cost and practical feasibility of early exit if business circumstances change."
+          },
+          {
+            "title": "Landlord's Rights & Enforcement Mechanisms",
+            "purpose": "Document landlord's remedies for tenant breach (including self-help and cost-recovery rights), tenant's notice and cure obligations, and scope of landlord's discretionary powers (e.g. service charge determination, insurance procurement)."
+          }
+        ],
+        "workflow": "risk",
+        "objective": "I am advising a tenant considering this lease. I need to understand the commercial risks before negotiations and prepare a concise client update."
+      },
+      "review": {
+        "findings": [
+          {
+            "title": "Upward-only rent review at 2029 & 2034: no collar or indexed cap",
+            "interpretation": "The rent review mechanism operates on an upward-only basis against open market rent as at the 2029 and 2034 review dates (clauses 3.2.1 and 3.2.5). Reviewed rent is determined by reference to \"open market rent\" without indexation formulae, collars, or caps on increases. The surveyor determination is binding and occurs only if parties cannot agree by the review date; pending ascertainment, tenant continues at the prior rate but must pay backdated arrears with 2% above Barclays base rate interest within 14 days of determination (clause 3.3).",
+            "relevance": "Material exposure: tenant faces uncapped rent increases at 5- and 10-year marks with no protection against market deterioration or inflation spikes. No collar (floor/ceiling) or alternative CPI adjustment mechanism limits the magnitude of uplift. Tenant should model worst-case scenarios for market rent at 2029 and 2034 based on comparable City office trends. The interest charge on arrears is punitive if dispute resolution is lengthy.",
+            "next_step": "1. Obtain current market evidence for comparable 15-year City office leases with rent reviews and identify typical collar ranges (e.g., RPI floors or percentage caps). 2. Negotiate a collar mechanism (e.g., minimum 0%, maximum RPI+X% or fixed percentage uplift cap) at 2029 and 2034 review dates. 3. Clarify whether a rent review dispute is anticipated and confirm dispute resolution timeline under clause 10 (mediation 28\u201356 days, arbitration thereafter).",
+            "page": 4,
+            "quote": "With effect from each Review Date, the rent payable shall be the higher of (a) the rent payable immediately before the relevant Review Date and (b) the open market rent of the Premises as at the relevant Review Date, determined in accordance with clauses 3.2.2 to 3.2.5 below (the \"Reviewed Rent\")... the rent review shall be upward only.",
+            "uncertainty": "The lease does not state the current market rent estimate or published vacancy/pricing trends for 100 Bishopsgate as at January 2024. The definition of 'open market rent' assumes fitness for immediate occupation and disregards tenant-specific goodwill (clause 3.2.3), which could work in tenant's favour if the market has softened; however, the scope of comparable properties assumed by the surveyor is not prescribed. Timing and outcome of surveyor appointment under RICS rules requires further investigation.",
+            "evidence_status": "unverified"
+          },
+          {
+            "title": "Break rights at 2029 and 2034 with 12-month notice, 6-month rent penalty & conditions",
+            "interpretation": "Tenant has two break opportunities (January 2029 and January 2034) with a 12-month irrevocable notice requirement (clause 8.2.1). Exercise is conditional on: no material unremedied lease breach at the break date, vacant possession of the entire premises, and payment of a 6-month rent premium (clause 8.3.1). If any condition fails, the break notice lapses and the lease continues (clause 8.3.2). The premium is payable at the rent rate immediately before the break date, not the reviewed rent if under dispute.",
+            "relevance": "Positive tenant flexibility: break rights provide a mid-term exit strategy at 5 and 10 years if business needs change. However, the conditions are restrictive: the \"material breach\" test is subjective (undefined threshold), and vacant possession requirement prevents assignment continuation. The 6-month rent premium (approximately 7% of 5-year cumulative rent) is a material cost; if reviewed rent is in dispute at the break date, the penalty is calculated at the old rate, creating a timing advantage. Tenant must ensure no material breaches accumulate and plan the break notice deadline 12 months ahead.",
+            "next_step": "1. Clarify definition of \"material breach\" with landlord or seek contractual amendment to specify threshold (e.g. rent arrears >30 days or breach affecting >10% of premises). 2. Confirm whether the vacant possession condition allows continued use by tenant-controlled entities (e.g. affiliate companies) or requires complete hand-back. 3. Establish a break-notice-filing calendar to avoid missing the 12-month deadline. 4. Model cash flow impact of 6-month rent penalty; consider whether break timing aligns with lease end (31 Dec 2038) and market conditions at 2029 and 2034.",
+            "page": 7,
+            "quote": "The Tenant may determine this Lease on the fifth (5th) anniversary of the Term Commencement Date (being 1 January 2029) or the tenth (10th) anniversary of the Term Commencement Date (being 1 January 2034) (each a \"Break Date\") by serving written notice on the Landlord in accordance with clause 8.2... The Tenant must give the Landlord not less than twelve (12) months' prior written notice of its intention to exercise a break right (a \"Break Notice\"). A Break Notice, once given, shall be irrevocable... The Tenant's right to determine this Lease on a Break Date shall be conditional upon the following conditions being satisfied on or before the relevant Break Date: (a) there is no material breach by the Tenant of any of the Tenant's covenants in this Lease which remains unremedied at the Break Date; (b) the Tenant gives vacant possession of the whole of the Premises to the Landlord on or before the Break Date, free from all occupiers, subtenants and other persons claiming through or under the Tenant; (c) the Tenant pays to the Landlord on or before the Break Date a sum equivalent to six (6) months' rent at the rate payable immediately before the Break Date (the \"Break Premium\").",
+            "uncertainty": "The lease does not define 'material breach' or provide a cure period before the break date; landlord discretion on materiality is unconstrained. Clause 8.3.2 states the break notice shall be 'of no effect' if conditions are not met, but does not expressly state whether tenant may re-serve a break notice in a later period if the condition was satisfied belatedly (e.g. if breach was remedied after the break date). The interaction between break rights and subleasing (clause 7.2.2 restricts subleases to the whole, with 5-year rent review) is unclear if tenant seeks to exit via a pre-break sublease.",
+            "evidence_status": "unverified"
+          },
+          {
+            "title": "Tenant repair obligations: interior/decoration (5-yearly, final year redecoration); landlord covers structure/systems",
+            "interpretation": "Tenant covenants to: (1) maintain the premises in good and substantial repair and condition (fair wear and tear excepted) throughout the term and at yield-up (clause 4.1.1); (2) decorate the interior (including internal surfaces of walls, columns, doors, windows, frames) to first-class office standard in the City of London, with mandatory redecoration every 5 years and in the final year of the term (clause 4.1.2). Tenant also must not commit waste, spoil or destruction (clause 4.1.3). Schedule of condition (Schedule 4, prepared by Carter Mitchell Surveyors) caps tenant's repairing obligations to not improve beyond baseline condition at commencement (clause 4.3).",
+            "relevance": "Significant tenant cost exposure over 15 years: mandatory decoration refresh every 5 years (3 full cycles plus final year redecoration = 4 decoration events) on top of ongoing repair obligations. The \"good and substantial repair\" standard is onerous and subjective; fair wear and tear exception provides some protection but disputes over degree of deterioration are likely. Dilapidation claims at lease end (31 Dec 2038) will compare actual condition against schedule baseline. Landlord retains structure/exterior repairs (clause 4.2.1), but tenant's internal liability for wall/floor/ceiling surfaces creates exposure for building-system-related deterioration (e.g. moisture, subsidence). No explicit limitation on cost recovery if landlord elects to carry out repairs on tenant's behalf.",
+            "next_step": "1. Obtain a copy of Schedule 4 (schedule of condition) and verify its comprehensiveness and baseline photographs/condition notes; ensure ambiguous areas (e.g. partition walls, service risers) are clearly attributed to landlord or tenant responsibility. 2. Negotiate definition of 'good and substantial repair' with reference to 'ordinary wear and tear' standards in market comparables or RICS guidance. 3. Confirm whether tenant's 5-yearly redecoration obligation includes landlord-ordered upgrades (e.g. lift refurbishment affecting internal aesthetics) and whether cost cap can be negotiated. 4. Secure explicit confirmation that landlord's structural/system repairs (clause 4.2) cover all water ingress, HVAC, fire systems, and electrical distribution; get landlord cost-recovery mechanism in writing (clause 4.2.3 references service charge but not explicit self-help rights).",
+            "page": 5,
+            "quote": "The Tenant shall keep the Premises and every part thereof (including all additions and alterations thereto) in good and substantial repair and condition throughout the Term, fair wear and tear excepted, and shall yield up the Premises in such repair and condition at the expiration or sooner determination of the Term. The Tenant shall keep the interior of the Premises (including the internal surfaces of all external and load-bearing walls, floors, ceilings, columns, doors, windows and window frames) properly decorated to a standard consistent with that of a first-class office building in the City of London, and shall redecorate the same not less frequently than once in every five (5) years of the Term and in the last year of the Term (howsoever determined).",
+            "uncertainty": "The lease does not specify the schedule of condition's format, detail or accuracy; if missing or ambiguous, tenant's repairing obligations will default to the contractual standard, creating dispute risk at end of term. No express limit on how far 'interior surfaces' of external walls extend (e.g. does it include the outer leaf or only plasterboard?) or whether tenant is liable for remediation of structural cracks visible on internal surfaces. No cap on redecoration cost or frequency adjustment if market conditions change (e.g. economic downturn reducing occupancy standards). The interplay between tenant indemnity (clause 9.1) and repair obligations is not clear: whether tenant indemnifies landlord for structural defects caused by tenant alterations is ambiguous.",
+            "evidence_status": "unverified"
+          },
+          {
+            "title": "Service charge liability: 18.7% proportion of building costs; no visible cap or audit mechanism",
+            "interpretation": "Tenant's proportionate share of landlord's costs (structure, exterior, roof, systems, lifts, air conditioning, fire detection, common area lighting) is 18.7%, recoverable as service charge per Schedule 3 (not provided in the document pages reviewed). Clause 5.3 additionally provides that tenant reimburses a fair proportion of building insurance premium (defined by the same 18.7% ratio) and insurance excess on demand, constituting additional rent. No express mechanism for tendering, approval, audit, or cost challenge is visible in the reviewed clauses.",
+            "relevance": "Material open-ended cost exposure: tenant's service charge liability is undefined without Schedule 3 details. At 18.7% of building costs for structure, exterior, systems and common areas, the annual amount depends on landlord's actual spending and building condition. No visible cap, index ceiling, or tenant audit rights create risk of cost escalation without recourse. Insurance premium reimbursement is also uncapped (clause 5.3), with tenant liable for any excess under the policy. These operating costs are additional to the base rent (\u00a3850,000 pa initially) and reinvestment/decoration obligations.",
+            "next_step": "1. Obtain Schedule 3 and review detailed service charge provisions: identify what costs are recoverable (e.g. cleaning, maintenance, rates, utilities, tenant's insurance), whether cap/index ceiling applies, and whether landlord must obtain competitive quotes or obtain tenant approval for major works. 2. Confirm whether tenant has right to audit landlord's service charge accounts and challenge invoices; verify dispute resolution procedure if costs are disputed. 3. Request 3\u20135 years of actual service charge accounts for the building to establish baseline and historical escalation trend; model forward projections to 2029 and 2034 break dates. 4. Negotiate a service charge cap (e.g. annual increase limited to RPI or percentage cap), tenant audit/challenge rights, and exclusion of landlord's management fees or profit margin.",
+            "page": 5,
+            "quote": "The cost of the Landlord's obligations under this clause 4.2 shall be recoverable from the Tenant as part of the service charge in accordance with Schedule 3 hereto, the Tenant's proportion being 18.7% (representing the ratio of the net internal area of the Premises to the total lettable area of the Building).",
+            "uncertainty": "Schedule 3 is not yet reviewed; cannot confirm whether service charge includes landlord's internal costs, management fees, or profit margins, or whether significant capital works (e.g. building system replacement) are excluded from annual service charge and billed separately. No visibility on whether tenant's 18.7% proportion is fixed for the entire 15-year term or subject to adjustment if building lettable area changes (e.g. if other tenants leave). The 'fair proportion' definition for insurance excess is undefined; no cap on excess tenant must reimburse.",
+            "evidence_status": "source_checked"
+          },
+          {
+            "title": "Tenant indemnity to landlord: broad scope covering acts/omissions, breach and lease rights exercise",
+            "interpretation": "Clause 9.1.1 imposes a broad indemnity on tenant to reimburse landlord for all losses arising from: (a) tenant's or anyone at the premises with tenant authority's acts, omissions or negligence (including environmental contamination under clause 9.2); (b) any breach by tenant of lease covenants; (c) the exercise or purported exercise of tenant's lease rights. The indemnity covers direct and indirect loss and includes professional fees and VAT. This is separate from repair obligations and overlaps with them.",
+            "relevance": "Significant tenant liability exposure: the indemnity at clause 9.1.1(a) is unlimited and extends to 'indirect' loss and third-party claims, creating potentially unlimited cost liability for accidents, environmental damage, or disputes arising from tenant operations. Clause 9.1.1(c) is unusual: tenant indemnifies landlord for the 'exercise or purported exercise' of tenant's rights (e.g. break notice, subletting approval requests), which could trap tenant in defending landlord's discretionary decisions or litigation over lease interpretation. Environmental indemnity (clause 9.2) extends to Part IIA Environmental Protection Act 1990 and water legislation, making tenant liable for contamination even from previous occupants if tenant's operations contribute (strict liability regime).",
+            "next_step": "1. Negotiate a cap on indemnity to exclude landlord's negligence and breach, and limit to 'direct loss arising solely from' tenant's actions within tenant's control. 2. Carve out indemnity for landlord's exercise of discretion or disputes over lease interpretation (clause 9.1.1(c)) or at least require tenant's consent before landlord incurs defence costs. 3. Exclude or limit environmental indemnity to contamination directly caused by tenant's operations (not inherited or shared liability). 4. Introduce time limit (e.g. 6 years post-lease end) for indemnity claims and requirement for landlord to mitigate or take insurance.",
+            "page": 8,
+            "quote": "The Tenant shall indemnify and keep indemnified the Landlord against all actions, proceedings, claims, demands, losses, costs, expenses, damages and liability (including professional fees and Value Added Tax thereon) arising directly or indirectly out of: (a) any act, omission or negligence of the Tenant or any person at the Premises with the express or implied authority of the Tenant; (b) any breach or non-observance by the Tenant of the covenants, conditions and other provisions of this Lease; or (c) the exercise or purported exercise by the Tenant of any of the rights granted to the Tenant under this Lease.",
+            "uncertainty": "The scope of 'persons at the Premises with the express or implied authority of the Tenant' is undefined; it could include visitors, contractors, or temporary occupants, greatly expanding tenant's exposure. No contractual insurance requirement or landlord's duty to mitigate loss is visible in the reviewed provisions. Interaction with statutory landlord repairing obligations (Law of Property Act 1925) is unclear: if a structural defect causes damage for which tenant might be found negligent, the indemnity may override statutory protections. No carve-out for events of force majeure or pandemic.",
+            "evidence_status": "unverified"
+          },
+          {
+            "title": "Subleasing restrictions: whole premises only, upward-only 5-yearly review, consent implied not express",
+            "interpretation": "Tenant may sublet the whole premises only, subject to implied consent conditions (not explicitly stated in the searched sections, but reference to 'Any subletting' suggests consent mechanism exists elsewhere in lease). Sublet must contain: (i) upward-only rent review at \u22645-year intervals; (ii) otherwise consistent terms with the head lease (clause 7.2.2). No partial subleases permitted (clause 7.3.1). The restriction prevents tenant from subleasing individual floors or mixed arrangements.",
+            "relevance": "Operational inflexibility: tenant cannot exit via partial sublease or restructure occupancy to match changing business needs. If tenant vacates or reduces footprint, it must find a successor for all 32,500 sq ft or remain liable for the full base rent and service charge. The mandatory upward-only 5-yearly review in subleases mirrors the head lease mechanism and creates cascading exposure: tenant is liable to landlord for head-lease obligations regardless of subtenant performance. The 'consistent terms' requirement ensures subleases are not more tenant-friendly than the head lease, limiting tenant's ability to negotiate market-responsive terms with subtenants.",
+            "next_step": "1. Confirm the consent-to-sublet mechanism (implied in clause 7.2.2 but not explicitly quoted); verify whether consent is required at all and, if so, on what grounds it may be withheld (reasonably, arbitrarily, or not at all). 2. Negotiate to allow partial subleasing (e.g. individual floors) to increase flexibility and reduce vacated-premises risk. 3. Clarify whether the 'consistent terms' requirement allows tenant to charge subtenants market rent above head-lease rent (creating rent upside for tenant) or whether subrent is capped at head-lease rent. 4. Model partial-sublease scenarios (e.g. floors 9\u201310 sublet, floor 8 retained) and confirm landlord's position before finalizing lease.",
+            "page": 7,
+            "quote": "Any subletting shall be by way of a sub-lease which contains provisions for upward only rent review at intervals of not more than five (5) years, and which otherwise contains provisions consistent with the terms of this Lease... The Tenant shall not sublet any part of the Premises (as distinct from the whole).",
+            "uncertainty": "The reviewed clauses do not expressly state whether landlord's consent to sublet is required; clause 7.2.2 describes conditions for subletting but does not confirm a consent gate. If consent is not required, tenant has freedom to sublet; if required, the grounds for refusal are not specified (compare to Landlord and Tenant Act 1927 reasonableness test). The definition of 'otherwise contains provisions consistent with the terms of this Lease' is vague: it could mean identical provisions (preventing market-responsive subleases) or merely no provisions more favourable to subtenant. No express statement whether rent upside (subrent > head rent) is permitted.",
+            "evidence_status": "unverified"
+          }
+        ],
+        "gaps": [
+          "Schedule 3 (service charge detail): identifies recoverable costs, caps, indexation, audit/challenge rights, and landlord's management fee structure\u2014not yet reviewed.",
+          "Schedule 1 (Landlord's rights reserved) and Schedule 2 (Tenant's rights granted): identify reversion rights, re-entry for breach, dilapidation enforcement, and tenant's support/parking/access rights\u2014critical for exit planning.",
+          "Schedule 4 (schedule of condition): baseline photographs, descriptions, and condition notes at lease commencement (1 January 2024)\u2014needed to defend against dilapidation claims at end of term.",
+          "Consent-to-sublet mechanism: whether landlord consent is required (clause 7.2.2 implies subletting permitted but does not confirm consent gate); if required, grounds for refusal (reasonableness test or absolute discretion).",
+          "Initial rent basis and 2029/2034 market evidence: no independent valuation, comparable market data, or occupancy trends for 100 Bishopsgate provided; open market rent is determined by surveyor at review date with no floor guidance.",
+          "Dispute resolution timeline under clauses 10.1\u201310.2: mediation 28\u201356 days, arbitration threshold not specified; rent review disputes may run concurrently, delaying break-date certainty.",
+          "Landlord's self-help remedies for tenant breach: whether landlord can carry out repairs/redecoration at tenant's cost without express notice and opportunity to cure (clause 4.2 and 4.3 silent; rely on general law).",
+          "Insurance provisions: clause 5.2 only seeks 'reasonable endeavours' to obtain waiver of subrogation\u2014no guarantee insurer will waive; tenant remains exposed to subrogation claims if insurance is invalidated."
+        ]
+      },
+      "source_checked_count": 1
+    },
+    {
+      "workflow": "report",
+      "planning_reused": true,
+      "brief": {
+        "client_role": "tenant",
+        "outcome": "Tenant-focused summary of commercial lease risks at 100 Bishopsgate for Meridian Consulting Group LLP, identifying key financial, operational and legal exposures before negotiation. The update will highlight gaps in the provided lease draft (pages 1\u20133), material covenant and liability provisions not yet reviewed, and recommend priority investigation areas to clarify tenant obligations, rent escalation exposure, and landlord remedies before commitment.",
+        "deliverable": "client_update",
+        "priorities": [
+          "Rent review mechanism and any caps/collars at years 5 and 10: impact on financial planning over 15-year term",
+          "Tenant repairing and service charge obligations: scope, caps and exclusions; risk of disproportionate repair/maintenance liability",
+          "Break clauses, termination triggers and landlord remedies for default: exit flexibility and forfeiture exposure",
+          "Insurance, indemnity and liability allocation: tenant's exposure to building-wide losses, third-party claims and landlord negligence"
+        ],
+        "open_questions": [
+          "What are the agreed rent review terms (fixed %, open market, RPI collar) at the 2029 and 2034 review dates?",
+          "Which repairing obligations fall to the tenant (internal walls, M&E systems, exterior, roof) and are there caps or exclusions from tenant liability?",
+          "Are there break clauses available to the tenant, and if so at what milestones and on what notice/conditions?",
+          "How is the service charge calculated, and what share of building costs (insurance, maintenance, utilities, management) is charged to this tenant?"
+        ],
+        "sections": [
+          {
+            "title": "Client position",
+            "purpose": "Give the intended audience a concise overview of the agreed objective, evidence-supported position and important limitations."
+          },
+          {
+            "title": "Lease Structure and Immediate Commitments",
+            "purpose": "Set out the headline lease term, rent, use restriction and key dates; identify which lease clauses must be reviewed next to assess constraint on business and financial exposure."
+          },
+          {
+            "title": "Rent and Financial Exposure",
+            "purpose": "Isolate rent review mechanics and any escalation mechanism at years 5 and 10; assess predictability and scale of cost increases and affordability risk over the 15-year term."
+          },
+          {
+            "title": "Tenant Obligations and Operational Risk",
+            "purpose": "Identify scope of repairing, maintenance, service charge and compliance obligations; flag any broad tenant liability for building-wide or structural costs that landlord would normally bear."
+          },
+          {
+            "title": "Decisions and next steps",
+            "purpose": "Identify decisions for the lawyer and client, outstanding enquiries and next actions; do not invent deadlines or confirm compliance."
+          }
+        ],
+        "workflow": "report",
+        "objective": "I am advising a tenant considering this lease. I need to understand the commercial risks before negotiations and prepare a concise client update."
+      },
+      "error": "TimeoutError"
+    }
+  ]
+}

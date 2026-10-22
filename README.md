@@ -108,7 +108,7 @@ Loom walkthrough: not yet recorded. Part 1 technical-achievement Markdown: not y
 
 ### Navigation and reading preferences
 
-Saved workspaces have bookmarkable URLs under `/workspaces/:id`. Review/report/chat intent and source citations can be linked directly. These are local bookmarks and do not grant access; organisation sharing is not implemented. Services bind to 127.0.0.1.
+Saved workspaces have bookmarkable URLs under `/workspaces/:id`. Review/report/chat views and source citations can be linked directly. These are local bookmarks and do not grant access; organisation sharing is not implemented. Services bind to 127.0.0.1.
 
 Open the avatar in the top right for local display settings: text size, contrast, reduced motion, reading view and optional shortcuts. Names and preferences stay in this browser. Speechify is not connected; selectable report/source text is provided for assistive reading workflows.
 
@@ -123,7 +123,7 @@ The [source-based evaluation report](docs/evaluations/README.md) preserves synth
 
 ### Try the intent-led journey
 
-Upload a text-based PDF, enter a concrete objective such as “Help my tenant exit in 2029; prepare a client update”, then choose **Plan my work**. Correct the proposed represented party, outcome, priorities and outline before **Agree brief and investigate**. Apply the outline explicitly, add findings to sections, request a draft and accept only the text you want. Save to retain the brief, evidence and report together. The same agreed brief accompanies subsequent document-chat questions.
+Start on Home, choose Assess risk or Build report, and enter a concrete objective such as “Help my tenant exit in 2029; prepare a client update”, Continue to add a text-based PDF as context, then choose **Plan my work**. Correct the proposed represented party, outcome, priorities and outline before **Agree brief and investigate**. Apply the outline explicitly, add findings to sections, request a draft and accept only the text you want. Save to retain the brief, evidence and report together. The same agreed brief accompanies subsequent document-chat questions.
 
 The purpose locks once work starts. **Change purpose** warns and pauses evidence selection, drafting, contextual chat and download until reinvestigation; a changed brief also needs its outline applied. Existing text remains available and populated outlines are saved as revisions before replacement. Planning is fallible: the paired evaluation demonstrates different tenant/landlord workflows but retains quotation and unsupported-claim failures. Read the [actual evaluation results](docs/evaluations/README.md) before treating any generated output as reliable legal analysis.
 
@@ -131,3 +131,10 @@ The purpose locks once work starts. **Change purpose** warns and pauses evidence
 ### Original source integrity
 
 Highlights are a separate visual overlay; the agent and report editor do not rewrite the original PDF. New uploads have an upload-time SHA-256 fingerprint, checked before the same verified byte snapshot is served. A changed file is rejected. Older uploads are explicitly labelled as lacking an upload-time fingerprint; re-upload the trusted original to enable that verification. An exact highlight locates text, not legal correctness. Unmatched quotations remain inspectable with a warning and no invented highlight.
+
+
+### Intent-first workspace
+
+The supplied Orbital product walkthrough informed the charcoal shell, supplied logo, restrained blue actions and persistent sidebar. Home centres the two workflow presets and a concrete objective. Evidence, report, follow-up questions, revision history, saving and downloading live in the sidebar; navigating between those views preserves the agreed task and human edits.
+
+The presets change planning and the task context sent to investigation, drafting and follow-up questions. Assess risk prioritises exposure, conditions and negotiation decisions; Build report emphasises an audience-specific deliverable with an editable opening and next steps. An explicit requested format takes precedence over preset defaults. Changing workflows requires a newly agreed investigation. See the [workflow evaluation record](docs/evaluations/workflows.md) for mixed live results and the remaining reliability work in #47.

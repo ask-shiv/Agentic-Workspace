@@ -5,6 +5,7 @@ import asyncio
 import structlog
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from pydantic_ai.exceptions import UsageLimitExceeded
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from takehome.db.session import get_session
@@ -36,6 +37,11 @@ async def run_review(
         return await review_document(document.extracted_text, body.objective, body.brief)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
+    except UsageLimitExceeded as exc:
+        raise HTTPException(
+            503,
+            "The investigation reached its usage limit. Try a narrower objective or fewer priorities; your existing report is unchanged.",
+        ) from exc
     except (TimeoutError, asyncio.CancelledError) as exc:
         raise HTTPException(504, "The review timed out. Try a narrower objective.") from exc
     except Exception as exc:
