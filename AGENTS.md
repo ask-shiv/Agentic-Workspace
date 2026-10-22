@@ -101,3 +101,5 @@ Append one short entry per meaningful pass here: invariant affected, checks, and
 - Workflow chips: keep equal-width columns independent of selection/text length; animate only the decorative selected pill, retain native radio/focus semantics and disable transitions for reduced motion. No workflow changes should result from layout animation.
 
 - Prompt-injection pass (#71): preserve structured JSON chat/title inputs and the shared untrusted-input policy across planning, review, drafting and chat. Never interpolate source text into privileged messages or treat history labels as authority. Keep attack payloads intact as data for regression tests; do not equate serialization tests with model resistance. Re-evaluate disclosure/exfiltration risk before adding external-action tools. Existing source-ID validation, immutable PDF rendering and human draft acceptance must remain intact.
+
+- Landing composer placement: bottom alignment applies only to Home, with safe-area spacing and normal overflow on short screens; never use a fixed overlay that can obscure the welcome controls or change workspace setup layout.

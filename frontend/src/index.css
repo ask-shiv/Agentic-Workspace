@@ -916,3 +916,26 @@ html[data-contrast="high"] .intent-start .workflow-option-selected {
 		scrollbar-color: auto;
 	}
 }
+.workspace-home .intent-start {
+	padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+.workspace-home .welcome-form {
+	display: flex;
+	flex: 1 0 auto;
+	flex-direction: column;
+}
+.workspace-home .intent-composer {
+	margin-top: auto;
+	flex-shrink: 0;
+}
+.workspace-home .workflow-choices {
+	flex-shrink: 0;
+	margin-bottom: 2rem;
+}
+.workspace-home .intent-start {
+	height: calc(100dvh - 4rem);
+	min-height: min-content;
+}
+.workspace-home .welcome-form > .intent-composer {
+	margin-top: auto;
+}
