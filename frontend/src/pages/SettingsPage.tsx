@@ -131,7 +131,8 @@ export function SettingsPage() {
 				<h2 className="text-base font-semibold">Keyboard shortcuts</h2>
 				<p className="my-3 text-sm text-neutral-600">
 					Finding navigation is always available. Enable extra shortcuts above.
-					Navigation shortcuts do not run while typing in an input, editor or
+					Navigation shortcuts open views after investigation; they do not
+					change the agreed task or run while typing in an input, editor or
 					select.
 				</p>
 				<dl className="space-y-3 text-sm">
@@ -142,13 +143,13 @@ export function SettingsPage() {
 						</dd>
 					</div>
 					<div className="flex justify-between gap-4">
-						<dt>Assess risk</dt>
+						<dt>Review findings</dt>
 						<dd>
 							<kbd>Alt + Shift + 1</kbd>
 						</dd>
 					</div>
 					<div className="flex justify-between gap-4">
-						<dt>Build report</dt>
+						<dt>Write report</dt>
 						<dd>
 							<kbd>Alt + Shift + 2</kbd>
 						</dd>

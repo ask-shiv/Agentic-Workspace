@@ -43,6 +43,7 @@ import {
 } from "./ui/tooltip";
 
 interface Props {
+	onStageChange?: (stage: "loading" | "setup" | "working") => void;
 	onUpload?: (file: File) => void;
 	uploading?: boolean;
 	conversationId: string;
@@ -53,6 +54,7 @@ interface Props {
 }
 
 export function ReportWorkspace({
+	onStageChange,
 	onUpload,
 	uploading = false,
 	conversationId,
@@ -92,6 +94,24 @@ export function ReportWorkspace({
 		});
 		if (view !== "chat") setData((previous) => ({ ...previous, intent: view }));
 	};
+	const workReady =
+		!!document &&
+		!!(data.brief || data.review_objective || data.findings.length);
+	useEffect(
+		() =>
+			onStageChange?.(!loaded ? "loading" : workReady ? "working" : "setup"),
+		[loaded, workReady, onStageChange],
+	);
+	const previousView = useRef(activeView);
+	useEffect(() => {
+		const changed = previousView.current !== activeView;
+		previousView.current = activeView;
+		if (!changed || !loaded || !workReady || search.get("source") === "1")
+			return;
+		const heading = window.document.getElementById(`view-${activeView}`);
+		heading?.focus({ preventScroll: true });
+		heading?.scrollIntoView?.({ block: "start" });
+	}, [activeView, loaded, workReady, search]);
 	const [activeFinding, setActiveFinding] = useState(0);
 	const findingRefs = useRef<(HTMLElement | null)[]>([]);
 	const [target, setTarget] = useState(1);
@@ -869,7 +889,14 @@ export function ReportWorkspace({
 					</button>
 				</div>
 			)}
-			<div className={chat ? "flex min-h-0 flex-1" : "hidden"}>
+			<div
+				className={
+					chat ? "workspace-question-view flex min-h-0 flex-col" : "hidden"
+				}
+			>
+				<h2 id="view-chat" tabIndex={-1} className="px-5 pt-5 font-semibold">
+					Document questions
+				</h2>
 				{chatContent}
 			</div>
 			<div
@@ -880,7 +907,9 @@ export function ReportWorkspace({
 					className="finding-list min-w-0 space-y-6 overflow-y-auto p-5 md:p-8"
 					aria-label="Review findings"
 				>
-					<h2 className="font-semibold">Evidence and findings</h2>
+					<h2 id="view-risk" tabIndex={-1} className="font-semibold">
+						Review findings
+					</h2>
 					<p className="text-xs text-neutral-500">
 						Source checks confirm quotations, not legal conclusions. Review
 						before relying on a finding.
@@ -1037,7 +1066,9 @@ export function ReportWorkspace({
 						className="report-builder min-w-0 space-y-6 overflow-y-auto p-5 md:p-8"
 						aria-label="Report builder"
 					>
-						<h2 className="font-semibold">Working report</h2>
+						<h2 id="view-report" tabIndex={-1} className="font-semibold">
+							Write report
+						</h2>
 						{!reportCurrent && (
 							<p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
 								This report is preserved from an earlier brief or investigation.

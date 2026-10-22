@@ -482,7 +482,20 @@ textarea::placeholder {
 	flex-shrink: 0;
 }
 .workspace-navigation {
+	display: block;
 	overflow-y: auto;
+	overscroll-behavior-y: contain;
+	scrollbar-gutter: stable;
+}
+kbd {
+	color: var(--orbital-text);
+	background: var(--orbital-panel);
+	border-color: var(--orbital-border);
+}
+html[data-contrast="high"] kbd {
+	color: white;
+	background: #080b11;
+	border-color: white;
 }
 .workflow-option {
 	background: #151b27;
@@ -556,4 +569,9 @@ html[data-contrast="high"]
 html[data-contrast="high"] :focus-visible {
 	outline-color: #fff;
 	box-shadow: 0 0 0 6px #315efb;
+}
+
+.workspace-question-view {
+	flex: 0 0 auto;
+	min-height: calc(100dvh - 4rem);
 }

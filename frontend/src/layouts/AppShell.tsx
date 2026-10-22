@@ -16,6 +16,7 @@ import {
 	DialogTitle,
 } from "../components/ui/dialog";
 import { avatarInitials, usePreferences } from "../context/preferences";
+import type { WorkspaceStage } from "../context/workspace-shell";
 import { useConversations } from "../hooks/use-conversations";
 import { useMediaQuery } from "../hooks/use-media-query";
 
@@ -23,6 +24,10 @@ export function AppShell() {
 	const { preferences } = usePreferences();
 	const { conversations, loading, error, refresh, remove } = useConversations();
 	const [mobileNav, setMobileNav] = useState(false);
+	const [workspaceStage, setWorkspaceStage] = useState<{
+		id: string;
+		stage: WorkspaceStage;
+	} | null>(null);
 
 	const desktop = useMediaQuery("(min-width: 1024px)");
 	const match = useMatch("/workspaces/:workspaceId");
@@ -38,11 +43,17 @@ export function AppShell() {
 		window.document.getElementById("page-title")?.focus();
 	}, [location.pathname]);
 	const createWorkspace = async () => {
+		setMobileNav(false);
 		navigate("/");
 	};
 	const navigation = (
 		<WorkspaceNavigation
 			conversations={conversations}
+			workspaceStage={
+				workspaceStage?.id === match?.params.workspaceId
+					? workspaceStage?.stage
+					: "loading"
+			}
 			loading={loading}
 			onCreate={createWorkspace}
 			onDelete={async (id) => {
@@ -69,13 +80,13 @@ export function AppShell() {
 				Skip to workspace content
 			</a>
 			{desktop && (
-				<aside className="shrink-0 border-r border-teal-950">
+				<aside className="min-h-0 overflow-hidden shrink-0 border-r border-teal-950">
 					{navigation}
 				</aside>
 			)}
 			{!desktop && (
 				<Dialog open={mobileNav} onOpenChange={setMobileNav}>
-					<DialogContent className="left-0 top-0 h-dvh w-72 max-w-[90vw] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none border-0 bg-[#0c1017] p-0">
+					<DialogContent className="flex flex-col min-h-0 left-0 top-0 h-dvh w-72 max-w-[90vw] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none border-0 bg-[#0c1017] p-0">
 						<DialogTitle className="sr-only">Workspaces</DialogTitle>
 						<DialogDescription className="sr-only">
 							Choose a saved workspace or create one.
@@ -160,7 +171,11 @@ export function AppShell() {
 					tabIndex={-1}
 				>
 					<Outlet
-						context={{ refreshConversations: refresh, createWorkspace }}
+						context={{
+							refreshConversations: refresh,
+							createWorkspace,
+							setWorkspaceStage,
+						}}
 					/>
 				</main>
 			</div>
