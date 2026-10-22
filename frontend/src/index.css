@@ -137,6 +137,9 @@ body {
 	.toolbar-button {
 		@apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-800 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50;
 	}
+	.quiet-button {
+		@apply inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-transparent bg-transparent px-2 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50;
+	}
 	.icon-button {
 		@apply inline-flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100;
 	}

@@ -9,7 +9,9 @@ export function CopyWorkspaceLink() {
 			await navigator.clipboard.writeText(
 				`${window.location.origin}${location.pathname}${location.search}`,
 			);
-			setMessage("Local bookmark copied. This does not grant access.");
+			setMessage(
+				"Workspace address copied. Open it on this computer while the local app is running.",
+			);
 		} catch {
 			setMessage(
 				"Copy the address from your browser to bookmark this workspace.",
@@ -17,11 +19,19 @@ export function CopyWorkspaceLink() {
 		}
 	};
 	return (
-		<div className="flex flex-wrap items-center gap-2">
-			<button type="button" className="toolbar-button" onClick={copy}>
-				Copy local link
+		<div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+			<button
+				type="button"
+				className="quiet-button"
+				aria-describedby="workspace-address-help"
+				onClick={copy}
+			>
+				Copy workspace address
 			</button>
-			<output className="text-xs text-neutral-600">{message}</output>
+			<p id="workspace-address-help" className="text-xs text-neutral-600">
+				Local bookmark · does not invite collaborators
+			</p>
+			<output className="w-full text-xs text-neutral-600">{message}</output>
 		</div>
 	);
 }
