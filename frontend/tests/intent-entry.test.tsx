@@ -152,3 +152,12 @@ test('start new work closes the mobile drawer even when already on Home',async()
   }
  } finally {router.dispose();window.matchMedia=originalMedia;}
 });
+
+
+test('sidebar highlights the resumed saved view when the bookmark has no view query',()=>{
+ const router=createMemoryRouter([{path:'*',element:<WorkspaceNavigation conversations={[]} currentView='report' workspaceStage='working' loading={false} onCreate={()=>{}}/>}],{initialEntries:['/workspaces/a']});
+ render(<RouterProvider router={router}/>);
+ assert.equal(screen.getByRole('link',{name:'Write report'}).getAttribute('aria-current'),'page');
+ assert.equal(screen.getByRole('link',{name:'Review findings'}).getAttribute('aria-current'),null);
+ router.dispose();
+});

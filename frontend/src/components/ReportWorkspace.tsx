@@ -43,7 +43,10 @@ import {
 } from "./ui/tooltip";
 
 interface Props {
-	onStageChange?: (stage: "loading" | "setup" | "working") => void;
+	onStageChange?: (
+		stage: "loading" | "setup" | "working",
+		view: "risk" | "report" | "chat",
+	) => void;
 	onUpload?: (file: File) => void;
 	uploading?: boolean;
 	conversationId: string;
@@ -99,8 +102,11 @@ export function ReportWorkspace({
 		!!(data.brief || data.review_objective || data.findings.length);
 	useEffect(
 		() =>
-			onStageChange?.(!loaded ? "loading" : workReady ? "working" : "setup"),
-		[loaded, workReady, onStageChange],
+			onStageChange?.(
+				!loaded ? "loading" : workReady ? "working" : "setup",
+				activeView,
+			),
+		[loaded, workReady, onStageChange, activeView],
 	);
 	const previousView = useRef(activeView);
 	useEffect(() => {

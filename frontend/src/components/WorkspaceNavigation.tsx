@@ -13,6 +13,7 @@ import type { WorkspaceStage } from "../context/workspace-shell";
 import type { Conversation } from "../types";
 
 interface Props {
+	currentView?: "risk" | "report" | "chat";
 	workspaceStage?: WorkspaceStage;
 	conversations: Conversation[];
 	loading: boolean;
@@ -29,6 +30,7 @@ function navigationTitle(item: Conversation) {
 
 export function WorkspaceNavigation({
 	workspaceStage = "working",
+	currentView,
 	conversations,
 	loading,
 	onCreate,
@@ -37,7 +39,8 @@ export function WorkspaceNavigation({
 }: Props) {
 	const match = useMatch("/workspaces/:workspaceId");
 	const location = useLocation();
-	const view = new URLSearchParams(location.search).get("view") ?? "risk";
+	const view =
+		new URLSearchParams(location.search).get("view") ?? currentView ?? "risk";
 	return (
 		<nav
 			aria-label="Workspace navigation"

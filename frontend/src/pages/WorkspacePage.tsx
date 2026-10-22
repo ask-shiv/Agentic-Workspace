@@ -37,8 +37,10 @@ function WorkspaceSession({ id }: { id: string }) {
 	const { refreshConversations, setWorkspaceStage } =
 		useOutletContext<WorkspaceShellContext>();
 	const publishStage = useCallback(
-		(stage: "loading" | "setup" | "working") =>
-			setWorkspaceStage?.({ id, stage }),
+		(
+			stage: "loading" | "setup" | "working",
+			view?: "risk" | "report" | "chat",
+		) => setWorkspaceStage?.({ id, stage, view }),
 		[id, setWorkspaceStage],
 	);
 	const [dirty, setDirty] = useState(false);

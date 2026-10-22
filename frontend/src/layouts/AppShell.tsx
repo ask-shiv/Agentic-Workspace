@@ -27,6 +27,7 @@ export function AppShell() {
 	const [workspaceStage, setWorkspaceStage] = useState<{
 		id: string;
 		stage: WorkspaceStage;
+		view?: "risk" | "report" | "chat";
 	} | null>(null);
 
 	const desktop = useMediaQuery("(min-width: 1024px)");
@@ -49,6 +50,11 @@ export function AppShell() {
 	const navigation = (
 		<WorkspaceNavigation
 			conversations={conversations}
+			currentView={
+				workspaceStage?.id === match?.params.workspaceId
+					? workspaceStage?.view
+					: undefined
+			}
 			workspaceStage={
 				workspaceStage?.id === match?.params.workspaceId
 					? workspaceStage?.stage
