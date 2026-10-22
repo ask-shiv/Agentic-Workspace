@@ -163,7 +163,12 @@ export function ReportWorkspace({
 			if (!signal.aborted) setBusy(null);
 		}
 	};
+	const objectiveChanged =
+		data.objective.trim() !== data.review_objective.trim();
+	const canReview =
+		loaded && !busy && data.objective.trim().length >= 5 && objectiveChanged;
 	const review = () => {
+		if (!canReview) return;
 		if (
 			data.findings.length &&
 			!window.confirm(
@@ -395,30 +400,45 @@ export function ReportWorkspace({
 				>
 					What are you trying to achieve?
 				</label>
-				<input
-					id="objective"
-					maxLength={2000}
-					disabled={!!busy || !loaded}
-					value={data.objective}
-					onChange={(event) =>
-						change({ ...data, objective: event.target.value })
-					}
-					placeholder="e.g. Help my tenant client retain flexibility to exit the lease"
-					className="w-full rounded-md border px-3 py-2 text-sm"
-				/>
+				<form
+					onSubmit={(event) => {
+						event.preventDefault();
+						review();
+					}}
+					className="space-y-2"
+				>
+					<div className="flex flex-col gap-2 sm:flex-row">
+						<input
+							id="objective"
+							aria-describedby="objective-help"
+							maxLength={2000}
+							disabled={!!busy || !loaded}
+							value={data.objective}
+							onChange={(event) =>
+								change({ ...data, objective: event.target.value })
+							}
+							placeholder="e.g. Help my tenant client retain flexibility to exit the lease"
+							className="min-w-0 flex-1 rounded-md border px-3 py-2 text-sm"
+						/>
+						<button
+							type="submit"
+							className="primary-button shrink-0"
+							disabled={!canReview}
+						>
+							{busy === "review"
+								? "Updating review…"
+								: data.review_objective
+									? "Update review"
+									: "Review document"}
+						</button>
+					</div>
+					<p id="objective-help" className="text-xs text-neutral-600">
+						{data.review_objective && !objectiveChanged
+							? "Your review reflects this objective. Edit it to update the review."
+							: "Submit your objective to review the document. Editing alone does not run the agent."}
+					</p>
+				</form>
 				<div className="flex flex-wrap items-center gap-2">
-					<button
-						type="button"
-						className={button}
-						onClick={review}
-						disabled={!!busy || !loaded || data.objective.trim().length < 5}
-					>
-						{busy === "review"
-							? "Investigating document…"
-							: data.findings.length
-								? "Run a new review"
-								: "Review document"}
-					</button>
 					<button
 						type="button"
 						className={button}
@@ -463,7 +483,7 @@ export function ReportWorkspace({
 					</TooltipProvider>
 					<CopyWorkspaceLink />
 				</div>
-				{data.review_objective && data.review_objective !== data.objective && (
+				{data.review_objective && objectiveChanged && (
 					<p className="text-xs text-amber-800">
 						Objective changed. Existing findings reflect:{" "}
 						{data.review_objective}
