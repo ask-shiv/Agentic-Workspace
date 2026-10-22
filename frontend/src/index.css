@@ -191,17 +191,19 @@ html[data-text-size="large"] {
 	color: #525252;
 }
 .review-workspace {
+	overflow-y: auto;
 	container-type: inline-size;
 }
 .report-layout {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr);
-	overflow: auto;
+	flex: 0 0 auto;
+	overflow: visible;
 }
 .report-layout[data-view="report"] .report-builder {
 	grid-row: 1;
 }
-.report-layout[data-view="report"] .finding-list {
+.report-layout .finding-list {
 	overflow: visible;
 }
 .report-layout[data-view="report"] .report-builder {
@@ -214,8 +216,9 @@ html[data-text-size="large"] {
 .finding-card p {
 	line-height: 1.65;
 }
-@container (min-width: 55rem) {
+@container (min-width: 72rem) {
 	.report-layout[data-view="report"] {
+		flex: 1;
 		grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
 		overflow: hidden;
 	}
@@ -294,4 +297,24 @@ select {
 .toolbar-button,
 .icon-button {
 	border-color: #8a8a8a;
+}
+
+.finding-card[data-active="true"] {
+	border-color: #0f766e;
+}
+.finding-list,
+.report-builder {
+	scroll-padding: 2rem;
+}
+.finding-card,
+.report-section {
+	max-width: 52rem;
+	width: 100%;
+	margin-inline: auto;
+}
+.workspace-toolbar {
+	flex-shrink: 0;
+}
+.review-workspace > :not(.report-layout) {
+	flex-shrink: 0;
 }
