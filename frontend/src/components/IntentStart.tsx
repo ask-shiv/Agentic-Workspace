@@ -1,5 +1,11 @@
-import { ArrowRight, FilePenLine, PlusCircle, ShieldCheck } from "lucide-react";
-import type { ReactNode } from "react";
+import {
+	ArrowRight,
+	FilePenLine,
+	MessageSquare,
+	PlusCircle,
+	ShieldCheck,
+} from "lucide-react";
+import { type ReactNode, useRef, useState } from "react";
 import { usePreferences } from "../context/preferences";
 import type { Workflow } from "../lib/workspace";
 
@@ -7,7 +13,11 @@ export function WorkflowChoices({
 	value,
 	disabled = false,
 	onChange,
+	onChat,
+	chatSelected = false,
 }: {
+	onChat?: () => void;
+	chatSelected?: boolean;
 	value: Workflow | null;
 	disabled?: boolean;
 	onChange: (value: Workflow) => void;
@@ -61,6 +71,24 @@ export function WorkflowChoices({
 					</span>
 				</label>
 			))}
+			{onChat && (
+				<label
+					className={`workflow-option relative cursor-pointer ${chatSelected ? "workflow-option-selected" : ""}`}
+					data-disabled={disabled}
+				>
+					<input
+						type="radio"
+						name="workflow"
+						checked={chatSelected}
+						disabled={disabled}
+						onChange={onChat}
+						className="peer sr-only"
+					/>
+					<span className="pointer-events-none absolute inset-0 rounded-full peer-focus-visible:ring-2 peer-focus-visible:ring-blue-400" />
+					<MessageSquare aria-hidden="true" className="workflow-icon h-5 w-5" />
+					<span>Document chat</span>
+				</label>
+			)}
 		</fieldset>
 	);
 }
@@ -77,6 +105,9 @@ export function IntentStart({
 	timePressure = false,
 	onTimePressure,
 	onUploadFirst,
+	onFile,
+	onChat,
+	chatSelected = false,
 }: {
 	workflow: Workflow | null;
 	objective: string;
@@ -89,7 +120,13 @@ export function IntentStart({
 	timePressure?: boolean;
 	onTimePressure?: (value: boolean) => void;
 	onUploadFirst?: () => void;
+	onFile?: (file: File) => void;
+	onChat?: () => void;
+	chatSelected?: boolean;
 }) {
+	const fileInput = useRef<HTMLInputElement>(null);
+	const [dragging, setDragging] = useState(false);
+	const [dropError, setDropError] = useState<string | null>(null);
 	const { preferences } = usePreferences();
 	const name = preferences.name.trim().split(/\s+/)[0];
 	return (
@@ -119,17 +156,66 @@ export function IntentStart({
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
-					if (!disabled && workflow && objective.trim().length >= 5)
+					if (
+						!disabled &&
+						(chatSelected || (workflow && objective.trim().length >= 5))
+					)
 						onContinue();
 				}}
 				className="welcome-form space-y-6"
 			>
 				<WorkflowChoices
-					value={workflow}
+					value={chatSelected ? null : workflow}
+					onChat={onChat}
+					chatSelected={chatSelected}
 					disabled={disabled}
 					onChange={onWorkflow}
 				/>
-				<div className="intent-composer">
+				<section
+					aria-label="Document dropzone"
+					className={`intent-composer ${dragging ? "dropzone-active" : ""}`}
+					onDragOver={(event) => {
+						if (onFile && !disabled) {
+							event.preventDefault();
+							setDragging(true);
+						}
+					}}
+					onDragLeave={(event) => {
+						if (!event.currentTarget.contains(event.relatedTarget as Node))
+							setDragging(false);
+					}}
+					onDrop={(event) => {
+						if (!onFile) return;
+						event.preventDefault();
+						setDragging(false);
+						if (disabled) return;
+						const files = event.dataTransfer.files;
+						setDropError(
+							files.length !== 1 ? "Please add one PDF at a time." : null,
+						);
+						if (files.length === 1 && files[0]) onFile(files[0]);
+					}}
+				>
+					{dropError && (
+						<p role="alert" className="dropzone-hint">
+							{dropError}
+						</p>
+					)}
+					{onFile && (
+						<input
+							ref={fileInput}
+							type="file"
+							accept="application/pdf,.pdf"
+							aria-label="Choose PDF document"
+							className="sr-only"
+							disabled={disabled}
+							onChange={(event) => {
+								const file = event.target.files?.[0];
+								if (file) onFile(file);
+								event.target.value = "";
+							}}
+						/>
+					)}
 					<label htmlFor="objective" className="sr-only">
 						What are you trying to achieve?
 					</label>
@@ -141,8 +227,7 @@ export function IntentStart({
 								event.key === "Enter" &&
 								(event.ctrlKey || event.metaKey) &&
 								!disabled &&
-								workflow &&
-								objective.trim().length >= 5
+								(chatSelected || (workflow && objective.trim().length >= 5))
 							) {
 								event.preventDefault();
 								onContinue();
@@ -161,22 +246,27 @@ export function IntentStart({
 								type="button"
 								className="quiet-button"
 								disabled={disabled}
-								onClick={onUploadFirst}
+								onClick={() =>
+									onFile ? fileInput.current?.click() : onUploadFirst?.()
+								}
 							>
 								<PlusCircle aria-hidden="true" className="h-4 w-4" />
-								Add a document first
+								Add document
 							</button>
 						)}
 						<button
 							className="primary-button composer-submit"
 							type="submit"
-							disabled={disabled || !workflow || objective.trim().length < 5}
+							disabled={
+								disabled ||
+								(!chatSelected && (!workflow || objective.trim().length < 5))
+							}
 						>
 							{action}
 							<ArrowRight aria-hidden="true" className="h-4 w-4" />
 						</button>
 					</div>
-				</div>
+				</section>
 				{onTimePressure && (
 					<label className="flex items-center gap-3 text-sm text-neutral-300">
 						<input

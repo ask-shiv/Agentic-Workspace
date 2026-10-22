@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import { IntentStart } from "../components/IntentStart";
 import type { WorkspaceShellContext } from "../context/workspace-shell";
-import { createConversation } from "../lib/api";
+import { createConversation, uploadDocument } from "../lib/api";
 import type { Workflow } from "../lib/workspace";
 
 export function WorkspaceHome() {
@@ -13,29 +13,46 @@ export function WorkspaceHome() {
 function WorkspaceWelcome() {
 	const { refreshConversations } = useOutletContext<WorkspaceShellContext>();
 	const navigate = useNavigate();
-	const [workflow, setWorkflow] = useState<Workflow | null>(null);
-	const [timePressure, setTimePressure] = useState(false);
+	const [workflow, setWorkflow] = useState<Workflow | null>("report");
+	const [chatSelected, setChatSelected] = useState(false);
 	const [objective, setObjective] = useState("");
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const start = async (uploadFirst = false) => {
-		if (busy || (!uploadFirst && (!workflow || objective.trim().length < 5)))
+	const createdId = useRef<string | null>(null);
+	const start = async (uploadFirst = false, file?: File) => {
+		if (
+			busy ||
+			(!uploadFirst &&
+				!chatSelected &&
+				(!workflow || objective.trim().length < 5))
+		)
 			return;
+		if (file && !file.name.toLowerCase().endsWith(".pdf")) {
+			setError("Please add a PDF document.");
+			return;
+		}
 		setBusy(true);
 		setError(null);
 		try {
-			const workspace = await createConversation();
+			const workspace = createdId.current
+				? { id: createdId.current }
+				: await createConversation();
+			createdId.current = workspace.id;
+			if (file) await uploadDocument(workspace.id, file);
 			await refreshConversations();
-			navigate(`/workspaces/${workspace.id}`, {
-				state: {
-					startWithUpload: uploadFirst,
-					initialIntent: {
-						workflow,
-						objective: objective.trim(),
-						time_pressure: timePressure,
+			navigate(
+				`/workspaces/${workspace.id}${chatSelected ? "?view=chat" : ""}`,
+				{
+					state: {
+						startWithUpload: uploadFirst,
+						initialIntent: {
+							workflow,
+							objective: objective.trim(),
+							time_pressure: false,
+						},
 					},
 				},
-			});
+			);
 		} catch (error) {
 			setError(
 				error instanceof Error
@@ -56,15 +73,23 @@ function WorkspaceWelcome() {
 			<IntentStart
 				workflow={workflow}
 				objective={objective}
-				onWorkflow={setWorkflow}
+				onWorkflow={(value) => {
+					setChatSelected(false);
+					setWorkflow(value);
+				}}
+				onChat={() => setChatSelected(true)}
+				chatSelected={chatSelected}
 				onObjective={setObjective}
 				onContinue={() => start()}
 				onUploadFirst={() => start(true)}
-				timePressure={timePressure}
-				onTimePressure={setTimePressure}
+				onFile={(file) => start(true, file)}
 				disabled={busy}
 				action={
-					busy ? "Preparing your workspace…" : "Continue with this objective"
+					busy
+						? "Preparing your workspace…"
+						: chatSelected
+							? "Continue to document chat"
+							: "Continue with this objective"
 				}
 			>
 				{error && (

@@ -176,3 +176,15 @@ For now, suggestions are dummy examples, not evidence of implemented behavioural
 The supplied landing-page design informs a quieter welcome: compact workflow choices sit above a translucent objective composer with a single thin light border and an upload entry point. The existing single-document journey and explicit agreement before investigation remain intact; the mockup's multiple documents and document-chat preset are not presented as delivered capabilities. Uploaded context continues to show the real filename and page count in the workspace.
 
 Motion is decorative CSS with twelve small particles and static radial gradients, without canvas, WebGL, external scripts or a new dependency. The particle entrance settles within five seconds; a restrained colour sweep is confined to workflow buttons on hover. Reduced-motion disables movement and high contrast removes the atmospheric background. This favours reading and input responsiveness over reproducing the heavier CodePen effects. This is a design pass, not a measured performance benchmark.
+
+## Match the supplied welcome controls
+
+The welcome selector follows the supplied three-part joined chip: Assess risk, Build report and Document chat, with a raised selected segment. Document chat opens the existing upload/question path without requiring an investigation objective; risk and report continue to require an explicit objective and agreed brief. The supplied logo is now in the top header, and the upload action uses the requested “Add documents” wording. The underlying workspace still supports one document; this label does not add batch upload.
+
+Build report is selected on fresh arrival as requested; the objective stays blank and investigations remain explicit. The landing composer now accepts one dropped PDF or a file-picker selection and uploads it before opening the workspace. Multiple-file drops and non-PDF files are rejected, failures remain visible and an upload retry reuses the newly created workspace. No model call is triggered by uploading.
+
+## Future direction: Brief me
+
+I removed the “pressed for time” checkbox from the landing page to reduce choices before the user reaches value. Its prompt-level instruction to prioritise three findings had not been demonstrated to provide a reliably better quick workflow, and brevity should not hide material issues. New work starts with normal detail; existing saved preferences and agreed briefs remain compatible.
+
+With more time, I would add “Brief me” after investigation: a concise overview of the key decisions, outstanding questions and next actions, with links to supporting evidence and the full findings still available. It would summarise the completed review rather than prune the investigation or imply faster processing. I would evaluate whether it preserves material caveats and helps lawyers act before presenting it as a trusted shortcut.
