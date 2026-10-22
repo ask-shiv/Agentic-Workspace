@@ -116,7 +116,13 @@ export function AppShell() {
 							</button>
 						)}
 						<Link to="/" className="text-sm font-semibold tracking-tight">
-							Orbital
+							<img
+								src={
+									new URL("../assets/orbital-logo.svg", import.meta.url).href
+								}
+								alt="Orbital"
+								className="h-7 w-auto"
+							/>
 						</Link>
 					</div>
 					<div className="flex shrink-0 items-center gap-2">

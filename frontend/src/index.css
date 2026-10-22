@@ -767,3 +767,57 @@ html[data-contrast="high"] .intent-start .workflow-option-selected {
 		grid-template-columns: 1fr;
 	}
 }
+.intent-start .workflow-choices {
+	display: flex;
+	gap: 0;
+	width: fit-content;
+	max-width: 100%;
+	padding: 0;
+	border-radius: 999px;
+	background: #a2abb0;
+}
+.intent-start .workflow-option {
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: #20294f;
+	font-weight: 400;
+	text-transform: uppercase;
+	padding: 0.65rem 1.1rem;
+	white-space: nowrap;
+	font-size: 0.95rem;
+}
+.intent-start .workflow-option > .workflow-icon {
+	display: none;
+}
+.intent-start .workflow-option > span {
+	font-weight: 400;
+}
+.intent-start .workflow-option-selected {
+	background: #c8d2d8;
+	box-shadow: 0 0 0 4px #c8d2d8;
+	z-index: 1;
+}
+@media (max-width: 540px) {
+	.intent-start .workflow-option {
+		font-size: 0.72rem;
+		padding: 0.75rem 0.65rem;
+	}
+}
+@media (max-width: 360px) {
+	.intent-start .workflow-choices {
+		flex-wrap: wrap;
+		border-radius: 1rem;
+		justify-content: center;
+	}
+}
+.dropzone-hint {
+	padding: 0.65rem 1rem 0;
+	font-size: 0.75rem;
+	color: #bac6d5;
+}
+.intent-composer.dropzone-active {
+	border-color: #c5eaff;
+	background: #31547766;
+	box-shadow: 0 0 0 3px #9fd9ff44;
+}

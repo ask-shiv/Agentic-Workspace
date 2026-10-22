@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {afterEach,test} from 'node:test';
-import {act,cleanup,render,screen,waitFor} from '@testing-library/react';
+import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {useState} from 'react';
 import {createMemoryRouter,Outlet,RouterProvider} from 'react-router-dom';
@@ -97,7 +97,7 @@ test('fresh arrival is blank and remembers only a real local profile name',async
  assert(screen.getByText('Welcome back, Shiv.'));
  assert(screen.getByRole('heading',{name:'What are you trying to achieve?'}));
  assert.equal((screen.getByRole('textbox') as HTMLTextAreaElement).value,'');
- assert(screen.getAllByRole('radio').every(radio=>!(radio as HTMLInputElement).checked));
+ assert((screen.getByRole('radio',{name:/Build report/}) as HTMLInputElement).checked);
  assert(screen.getByRole('button',{name:'Continue with this objective'}).hasAttribute('disabled'));
  await user.type(screen.getByRole('textbox'),'Review commercial risks');
  await act(()=>router.navigate('/'));
@@ -112,7 +112,7 @@ test('upload first shows document context then asks for an objective before mode
  const router=createMemoryRouter([{element:<PreferencesProvider><Outlet context={{refreshConversations:async()=>{},createWorkspace:async()=>{}}}/></PreferencesProvider>,children:[{path:'/',element:<WorkspaceHome/>},{path:'/workspaces/a',element:<Context/>}]}],{initialEntries:['/']});
  render(<RouterProvider router={router}/>);const user=userEvent.setup();
  await user.click(screen.getByRole('checkbox',{name:/pressed for time/}));
- await user.click(screen.getByRole('button',{name:'Add a document first'}));
+ await user.upload(screen.getByLabelText('Choose PDF document'),new File(['pdf'],'lease.pdf',{type:'application/pdf'}));
  await screen.findByRole('heading',{name:'Add a document for context'});
  const fileInput=document.querySelector('input[type="file"]') as HTMLInputElement;
  await user.upload(fileInput,new File(['synthetic'],'lease.pdf',{type:'application/pdf'}));
@@ -160,4 +160,32 @@ test('sidebar highlights the resumed saved view when the bookmark has no view qu
  assert.equal(screen.getByRole('link',{name:'Write report'}).getAttribute('aria-current'),'page');
  assert.equal(screen.getByRole('link',{name:'Review findings'}).getAttribute('aria-current'),null);
  router.dispose();
+});
+
+test('document chat starts without a risk objective and exposes chat before investigation', async()=>{
+ globalThis.fetch=async(input)=>Response.json(String(input)==='/api/conversations'?{id:'a'}:emptyWorkspace());
+ const router=createMemoryRouter([{element:<PreferencesProvider><Outlet context={{refreshConversations:async()=>{}}}/></PreferencesProvider>,children:[{path:'/',element:<WorkspaceHome/>},{path:'/workspaces/a',element:<ReportWorkspace conversationId='a' document={null} onDirty={()=>{}} onCitation={()=>{}}><p>Document chat upload and questions</p></ReportWorkspace>}]}],{initialEntries:['/']});
+ render(<RouterProvider router={router}/>);const user=userEvent.setup();
+ await user.click(screen.getByRole('radio',{name:'Document chat'}));
+ await user.click(screen.getByRole('button',{name:'Continue to document chat'}));
+ await screen.findByText('Document chat upload and questions');
+ assert.equal(router.state.location.search,'?view=chat');
+ assert(screen.getByRole('button',{name:'Set an objective instead'}));
+});
+
+
+test('landing dropzone uploads a PDF with the selected report workflow and rejects multiple files',async()=>{
+ const calls:string[]=[];
+ globalThis.fetch=async(input)=>{calls.push(String(input));return Response.json({id:'a'});};
+ const router=createMemoryRouter([{element:<PreferencesProvider><Outlet context={{refreshConversations:async()=>{}}}/></PreferencesProvider>,children:[{path:'/',element:<WorkspaceHome/>},{path:'/workspaces/a',element:<p>Uploaded workspace</p>}]}],{initialEntries:['/']});
+ render(<RouterProvider router={router}/>);
+ const zone=screen.getByRole('region',{name:'Document dropzone'});
+ const file=new File(['synthetic'],'lease.pdf',{type:'application/pdf'});
+ fireEvent.drop(zone,{dataTransfer:{files:[file,file]}});
+ assert(screen.getByRole('alert'));assert.equal(calls.length,0);
+ fireEvent.drop(zone,{dataTransfer:{files:[file]}});
+ await screen.findByText('Uploaded workspace');
+ assert.deepEqual(calls,['/api/conversations','/api/conversations/a/documents']);
+ assert.equal(router.state.location.state.initialIntent.workflow,'report');
+ assert.equal(router.state.location.state.startWithUpload,true);
 });

@@ -627,12 +627,30 @@ export function ReportWorkspace({
 			/>
 		</SidebarTools>
 	);
+	if (requestedView === "chat" && !workReady)
+		return (
+			<div className="flex min-h-0 flex-1 flex-col">
+				{tools}
+				<div className="flex items-center justify-between border-b p-4">
+					<h2>Document chat</h2>
+					<button
+						type="button"
+						className="quiet-button"
+						onClick={() => chooseView("risk")}
+					>
+						Set an objective instead
+					</button>
+				</div>
+				{chatContent}
+			</div>
+		);
 	if (!document)
 		return (
 			<div className="review-workspace flex min-h-0 flex-1 flex-col overflow-y-auto">
 				{tools}
 				{!setupReady || editingIntent ? (
 					<IntentStart
+						onChat={() => chooseView("chat")}
 						workflow={selectedWorkflow ?? null}
 						timePressure={
 							data.time_pressure ?? data.brief?.time_pressure ?? false
@@ -697,6 +715,7 @@ export function ReportWorkspace({
 				/>
 				{confirmationDialog}
 				<IntentStart
+					onChat={() => chooseView("chat")}
 					workflow={selectedWorkflow ?? null}
 					timePressure={
 						data.time_pressure ?? data.brief?.time_pressure ?? false
