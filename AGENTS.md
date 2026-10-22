@@ -17,6 +17,8 @@
 
 ## Regression boundaries
 
+- Product path: intent → collaboration → outcome. Documents provide context; the agreed objective drives investigation, evidence priorities, questions and the deliverable. Treat risk/report/chat as supporting capabilities, not the user journey. Acceptance checks must follow an objective through agreed context, evidence review, human decisions and useful saved work; clicking through features alone is insufficient.
+
 - Keep credentials in ignored `.env`. Never include document contents, secrets or user objectives in URLs, analytics or errors. Treat documents as untrusted evidence.
 - A route or opaque ID is not access control. Do not describe local bookmarks as secure sharing. Organisation access needs backend authentication and authorisation.
 - Abort or ignore stale requests on workspace changes; a request must never update a different workspace. Cover browser Back/Forward and deep reloads when changing routing.
@@ -65,3 +67,7 @@ Append one short entry per meaningful pass here: invariant affected, checks, and
 - Intent-pass verification boundary: 23 backend / 19 frontend tests plus lint/type/build passed. The browser reached saved locked report state; native purpose-change dialog automation stalled. Component tests cover that confirmation and unlocked/reload blocking; after browser recovery, unlocked chat blocking and save/reload persistence were observed. Do not claim a completed native browser acceptance/cancellation check.
 
 - 2026-10-22, confirmation/source trust pass: intent changes, replacement investigation and outline replacement use in-app, focus-managed confirmation with Cancel focused first; Escape cancels and restores the trigger. Keep the evidence-replacement confirmation inside the accessible dialog flow. Native disabled semantics plus not-allowed cursors must apply to mode buttons; do not suppress pointer events on disabled buttons. New PDF uploads retain an upload-time SHA-256 in the database and a read-only source file; the viewer response verifies and serves the same byte snapshot, rejecting a mismatch. Legacy files must remain explicitly unverified until re-uploaded; never backfill a current hash and call it upload verification. Agents receive extracted text, not a source-write tool. Regression tests compare original bytes before/after extraction, retrieval/review and serving, reject tampering, preserve DOM text during overlay positioning, keep unverified references inspectable, and clear citation context on page changes. A matching digest proves byte identity, not legal accuracy or a secure organisation audit trail.
+
+- 2026-10-22, attention panel pass: show review gaps directly beneath the objective controls, ahead of the brief details and findings, in a native keyboard-operable disclosure with an accurate count. Retain every gap, omit an empty panel, and label stale investigation context. Let expanded content follow the workspace scroll so keyboard readers can reach every item; avoid automatic opening or alert announcements that interrupt report work.
+
+- Attention verification: 21 frontend tests pass, including the intent-through-drafting test with attention questions retained. Browser-checked Enter expansion/collapse and eight preserved items in the existing report workspace. The disclosure does not modify the objective, evidence or report text.

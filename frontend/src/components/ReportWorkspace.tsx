@@ -23,6 +23,7 @@ import {
 	workspaceRequest,
 } from "../lib/workspace";
 import type { Document } from "../types";
+import { AttentionPanel } from "./AttentionPanel";
 import { CopyWorkspaceLink } from "./CopyWorkspaceLink";
 import { RevisionHistory } from "./RevisionHistory";
 import { SourceCitation } from "./SourceCitation";
@@ -620,6 +621,7 @@ export function ReportWorkspace({
 								: "Investigate the agreed brief to refresh the evidence. Your report text will be preserved."}
 					</p>
 				</form>
+				<AttentionPanel items={data.gaps} current={reviewCurrent} />
 				<WorkflowSummary
 					data={data}
 					busy={!!busy || !loaded}
@@ -887,16 +889,6 @@ export function ReportWorkspace({
 							</div>
 						</article>
 					))}
-					{!!data.gaps.length && (
-						<div className="rounded-lg bg-amber-50 p-4 text-sm">
-							<h3 className="font-medium">Outstanding information</h3>
-							<ul className="mt-2 list-disc space-y-1 pl-4">
-								{data.gaps.map((gap) => (
-									<li key={gap}>{gap}</li>
-								))}
-							</ul>
-						</div>
-					)}
 				</section>
 				{activeView === "report" && (
 					<section
