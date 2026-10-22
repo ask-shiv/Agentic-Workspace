@@ -71,6 +71,8 @@ We've included sample legal documents in `sample-docs/` for testing.
 
 See [DECISIONS.md](DECISIONS.md) for rationale, trust boundaries and clearly marked follow-ups.
 
+I referenced [Orbital’s product demo](https://www.youtube.com/watch?v=iYuZb8JAEIs) while developing this take-home to understand the product beyond the starter app. Seeing document review, reporting and source navigation in context helped me focus this take-home on connecting those capabilities around the lawyer’s intent: an agreed objective that carries through investigation, evidence selection and an editable report.
+
 1. Create/select a conversation and upload a text-based PDF from `sample-docs/`.
 2. Enter an objective, such as “Review the tenant break clause and notice conditions”, then select **Review document**. A review may take up to 100 seconds and makes billed model calls.
 3. Inspect each finding's quotation and PDF page. **Source checked** confirms a text match, not a legal conclusion. Unverified quotations are explicitly labelled.
@@ -124,3 +126,8 @@ The [source-based evaluation report](docs/evaluations/README.md) preserves synth
 Upload a text-based PDF, enter a concrete objective such as “Help my tenant exit in 2029; prepare a client update”, then choose **Plan my work**. Correct the proposed represented party, outcome, priorities and outline before **Agree brief and investigate**. Apply the outline explicitly, add findings to sections, request a draft and accept only the text you want. Save to retain the brief, evidence and report together. The same agreed brief accompanies subsequent document-chat questions.
 
 The purpose locks once work starts. **Change purpose** warns and pauses evidence selection, drafting, contextual chat and download until reinvestigation; a changed brief also needs its outline applied. Existing text remains available and populated outlines are saved as revisions before replacement. Planning is fallible: the paired evaluation demonstrates different tenant/landlord workflows but retains quotation and unsupported-claim failures. Read the [actual evaluation results](docs/evaluations/README.md) before treating any generated output as reliable legal analysis.
+
+
+### Original source integrity
+
+Highlights are a separate visual overlay; the agent and report editor do not rewrite the original PDF. New uploads have an upload-time SHA-256 fingerprint, checked before the same verified byte snapshot is served. A changed file is rejected. Older uploads are explicitly labelled as lacking an upload-time fingerprint; re-upload the trusted original to enable that verification. An exact highlight locates text, not legal correctness. Unmatched quotations remain inspectable with a warning and no invented highlight.

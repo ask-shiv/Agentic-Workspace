@@ -10,7 +10,7 @@ import { ReportWorkspace } from "../src/components/ReportWorkspace";
 import { WorkspaceNavigation } from "../src/components/WorkspaceNavigation";
 import { useUnsavedNavigation } from "../src/hooks/use-unsaved-navigation";
 import { citationKey, citationSearch, pageFromSearch } from "../src/lib/citations";
-import { matchQuote, renderHighlighted } from "../src/lib/pdf-highlight";
+import { matchQuote, sourceHighlightBoxes } from "../src/lib/pdf-highlight";
 import { emptyWorkspace, type Finding } from "../src/lib/workspace";
 
 const originalFetch=globalThis.fetch;
@@ -27,12 +27,22 @@ test('citations survive whitespace changes and preserve view without exposing qu
  assert.equal(pageFromSearch('?page=999',9),9);
 });
 
-test('source highlighting spans PDF text items and escapes document HTML',()=>{
- const ranges=matchQuote(['Notice must be','served in writing.'],'Notice must be served in writing.');
- assert.equal(ranges.size,2);
- assert(renderHighlighted('Notice must be',ranges.get(0)).includes('<mark>Notice must be</mark>'));
- assert.equal(matchQuote(['Different text'],finding.quote).size,0);
- assert(!renderHighlighted('<img src=x onerror=alert(1)>',{start:0,end:26}).includes('<img'));
+test('source highlighting locates exact spans without changing original text or markup',()=>{
+ const root=document.createElement('div');
+ root.innerHTML='<div class="react-pdf__Page__textContent"><span role="presentation">Notice must be</span><br role="presentation"/><span role="presentation">served in writing.</span><span role="presentation">&lt;img src=x onerror=alert(1)&gt;</span></div>';
+ const original=root.innerHTML;
+ const rangePrototype=Object.getPrototypeOf(document.createRange());
+ const originalRects=rangePrototype.getClientRects;
+ rangePrototype.getClientRects=()=>[{left:10,top:20,width:90,height:12}];
+ try {
+  assert.equal(matchQuote(['Notice must be','served in writing.'],finding.quote).size,2);
+  assert.equal(sourceHighlightBoxes(root,finding.quote).length,2);
+  assert.equal(sourceHighlightBoxes(root,'Notice may be served verbally.').length,0);
+  assert.equal(sourceHighlightBoxes(root,'Notice must be...served in writing.').length,0);
+  assert.equal(sourceHighlightBoxes(root,'<img src=x onerror=alert(1)>').length,1);
+  assert.equal(root.querySelector('img'),null);
+  assert.equal(root.innerHTML,original);
+ } finally {rangePrototype.getClientRects=originalRects;}
 });
 
 test('sidebar links support deep routes and browser history',async()=>{
@@ -119,4 +129,20 @@ test('a previously confirmed deletion cannot bypass another workspace guard',asy
   await waitFor(()=>assert.equal(prompts,1));
   assert.equal(router.state.location.pathname,'/workspaces/a');
  } finally {window.confirm=original;router.dispose();}
+});
+
+
+test('unverified source references remain inspectable without claiming they matched',async()=>{
+ const unverified={...finding,evidence_status:'unverified' as const};
+ const saved={...emptyWorkspace(),version:1,objective:'Check notice',findings:[unverified]};
+ let received='';
+ globalThis.fetch=async()=>Response.json(saved);
+ const router=createMemoryRouter([{path:'*',element:<PreferencesProvider><ReportWorkspace conversationId='a' document={{id:'doc',conversation_id:'a',filename:'lease.pdf',page_count:9,uploaded_at:'2026-10-22'}} onDirty={()=>{}} onCitation={quote=>{received=quote;}}><p>Chat</p></ReportWorkspace></PreferencesProvider>}],{initialEntries:['/workspaces/a?view=risk']});
+ render(<RouterProvider router={router}/>);const user=userEvent.setup();
+ await user.click(await screen.findByRole('link',{name:'Inspect source on PDF page 7'}));
+ await waitFor(()=>assert.equal(received,unverified.quote));
+ assert(screen.getByText('Source unverified'));
+ await act(()=>router.navigate('/workspaces/a?view=risk&page=8'));
+ await waitFor(()=>assert.equal(received,''));
+ router.dispose();
 });

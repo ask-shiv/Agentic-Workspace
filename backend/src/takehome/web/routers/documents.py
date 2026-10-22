@@ -2,16 +2,18 @@ from __future__ import annotations
 
 import os
 from datetime import datetime
+from urllib.parse import quote
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.responses import FileResponse
+from starlette.responses import Response
 
 from takehome.db.session import get_session
 from takehome.services.conversation import get_conversation
 from takehome.services.document import get_document, upload_document
+from takehome.services.source_integrity import read_source, verify_source
 
 logger = structlog.get_logger()
 
@@ -86,7 +88,7 @@ async def upload_document_endpoint(
 async def serve_document_file(
     document_id: str,
     session: AsyncSession = Depends(get_session),
-) -> FileResponse:
+) -> Response:
     """Serve the raw PDF file for download/viewing."""
     document = await get_document(session, document_id)
     if document is None:
@@ -95,9 +97,15 @@ async def serve_document_file(
     if not os.path.exists(document.file_path):
         raise HTTPException(status_code=404, detail="File not found on disk")
 
-    return FileResponse(
-        path=document.file_path,
-        filename=document.filename,
+    content, integrity = read_source(document)
+    return Response(
+        content=content,
+        headers={
+            "X-Source-SHA256": integrity["sha256"],
+            "X-Source-Integrity": integrity["status"],
+            "Content-Disposition": f"inline; filename*=utf-8''{quote(document.filename)}",
+            "Cache-Control": "no-store",
+        },
         media_type="application/pdf",
     )
 
@@ -117,3 +125,13 @@ async def document_page_text(
     if not text:
         raise HTTPException(status_code=422, detail="No extracted text for this page")
     return {"page": page, "text": text}
+
+
+@router.get("/api/documents/{document_id}/integrity")
+async def source_integrity(
+    document_id: str, session: AsyncSession = Depends(get_session)
+) -> dict[str, str]:
+    document = await get_document(session, document_id)
+    if document is None:
+        raise HTTPException(404, "Document not found")
+    return verify_source(document)
