@@ -332,7 +332,7 @@ export function ReportWorkspace({
 					</button>
 				</div>
 			)}
-			<header className="workspace-toolbar space-y-4 border-b bg-white px-5 py-5 md:px-8">
+			<header className="workspace-toolbar space-y-3 border-b bg-white px-5 py-5 md:px-8">
 				<div>
 					<p className="mb-1 text-xs font-semibold uppercase tracking-widest text-teal-800">
 						Document review
@@ -394,12 +394,7 @@ export function ReportWorkspace({
 						restoreError={error}
 					/>
 				</div>
-				<label
-					className="block text-xs font-medium text-neutral-600"
-					htmlFor="objective"
-				>
-					What are you trying to achieve?
-				</label>
+
 				<form
 					onSubmit={(event) => {
 						event.preventDefault();
@@ -407,7 +402,13 @@ export function ReportWorkspace({
 					}}
 					className="space-y-2"
 				>
-					<div className="flex flex-col gap-2 sm:flex-row">
+					<label
+						className="block text-xs font-medium text-neutral-600"
+						htmlFor="objective"
+					>
+						What are you trying to achieve?
+					</label>
+					<div className="flex flex-col gap-2 min-[480px]:flex-row">
 						<input
 							id="objective"
 							aria-describedby="objective-help"
@@ -438,10 +439,13 @@ export function ReportWorkspace({
 							: "Submit your objective to review the document. Editing alone does not run the agent."}
 					</p>
 				</form>
-				<div className="flex flex-wrap items-center gap-2">
+				<fieldset
+					className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-neutral-100 pt-2"
+					aria-label="Saved workspace actions"
+				>
 					<button
 						type="button"
-						className={button}
+						className="quiet-button"
 						onClick={save}
 						aria-keyshortcuts={
 							preferences.shortcuts ? "Control+s Meta+s" : undefined
@@ -452,7 +456,7 @@ export function ReportWorkspace({
 					</button>
 					<button
 						type="button"
-						className={button}
+						className="quiet-button"
 						onClick={download}
 						disabled={
 							!!busy ||
@@ -468,7 +472,7 @@ export function ReportWorkspace({
 							<TooltipTrigger asChild>
 								<button
 									type="button"
-									className="icon-button"
+									className="quiet-button h-10 w-10 px-0"
 									aria-label="About downloading your report"
 								>
 									<Info aria-hidden="true" className="h-4 w-4" />
@@ -482,7 +486,7 @@ export function ReportWorkspace({
 						</Tooltip>
 					</TooltipProvider>
 					<CopyWorkspaceLink />
-				</div>
+				</fieldset>
 				{data.review_objective && objectiveChanged && (
 					<p className="text-xs text-amber-800">
 						Objective changed. Existing findings reflect:{" "}
@@ -704,8 +708,9 @@ export function ReportWorkspace({
 					>
 						<h2 className="font-semibold">Working report</h2>
 						<p className="text-xs text-neutral-500">
-							Drag findings here or use “Add to report”. Edited claims need
-							re-checking against their attached evidence.
+							Drag findings here, use “Add to report”, or write your own
+							section. Source checks cover quotations; edited prose still needs
+							your review.
 						</p>
 						{!preferences.readingMode && (
 							<label className="block text-xs">
@@ -777,13 +782,28 @@ export function ReportWorkspace({
 									className="report-section space-y-3 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm"
 								>
 									<h3 className="font-medium">{section.title}</h3>
+									{!section.content.trim() && (
+										<p
+											id={`section-start-${index}`}
+											className="text-sm leading-relaxed text-neutral-600"
+										>
+											Start with a finding from your review, or write this
+											section yourself. To use the agent, add evidence first,
+											then choose “Propose a draft”.
+										</p>
+									)}
 									<textarea
 										aria-label={section.title}
 										value={section.content}
 										maxLength={20000}
-										rows={8}
+										rows={section.title === "Introduction" ? 4 : 8}
 										disabled={!!busy}
-										placeholder="Write here or add evidence from the review."
+										placeholder={`Write your ${section.title.toLowerCase()} here…`}
+										aria-describedby={
+											!section.content.trim()
+												? `section-start-${index}`
+												: undefined
+										}
 										className="w-full resize-y rounded border p-2 text-sm leading-relaxed"
 										onChange={(e) =>
 											change({

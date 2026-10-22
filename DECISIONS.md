@@ -79,3 +79,9 @@ A small opt-in [source-based evaluation](docs/evaluations/README.md) exercised s
 This exposed real weaknesses despite matching quotations: inconsistent condition coverage, invented notice-service dates, unsupported rent-timing assumptions, and overbroad interpretations. Prompt changes reduced some risks in the targeted recheck; the preserved outputs still show incorrect clause labels in its draft. We therefore do not claim legal accuracy, comprehensive review, reliable consistency or full prompt-injection resistance. The result is deliberately mixed and reviewable. Lawyer-curated acceptance cases and claim/condition-level attribution are the next investment, ahead of more product features.
 
 The remaining source-attribution and coverage work is prioritised in [issue #28](https://github.com/ask-shiv/Agentic-Workspace/issues/28).
+
+## Focused design feedback
+
+The objective submit stays the primary action; save, download and bookmark controls now sit in a quieter secondary area. “Copy workspace address” explicitly identifies a local bookmark, not an invitation: the report and upload persist in the local backend, while profile preferences are browser-local. Empty report sections explain how to start with evidence or write directly, and that proposing a draft requires linked evidence. The green settings outline is an actual focus indicator and is preserved, along with the existing Small/Medium/Large preferences and usable target sizes.
+
+The trust boundary is explicit: saving revalidates attached quotation/page matches. It does not check whether edited report prose is semantically supported by that evidence. Claim-level validation remains follow-up #28; genuine organisation collaboration remains #6. The Loom should demonstrate review → evidence selection → human editing → saved draft, then describe collaboration as the next step rather than demoing a bookmark as shared editing.
