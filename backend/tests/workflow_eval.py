@@ -2,13 +2,15 @@ import argparse
 import asyncio
 import hashlib
 import json
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 
 from agent_eval import extract
+from pydantic_ai import capture_run_messages
 
 from takehome.services.brief import MatterBrief, propose_brief
-from takehome.services.review import review_document
+from takehome.services.review import check_evidence, review_document
 
 
 async def evaluate(lease: Path, output: Path, reuse_plans: Path | None = None) -> int:
@@ -47,24 +49,44 @@ async def evaluate(lease: Path, output: Path, reuse_plans: Path | None = None) -
             )
             case["brief"] = brief.model_dump()
             print(f"{workflow}: planned {brief.deliverable}", flush=True)
-            review = await review_document(text, objective, brief)
+            started = time.monotonic()
+            with capture_run_messages() as messages:
+                review = await review_document(text, objective, brief)
+            case["model_responses"] = sum(message.kind == "response" for message in messages)
+            case["review_elapsed_seconds"] = round(time.monotonic() - started, 2)
             case["review"] = review.model_dump()
             case["source_checked_count"] = sum(
                 f.evidence_status == "source_checked" for f in review.findings
             )
+            case["checks"] = {
+                "nonempty_lease_findings": bool(review.findings),
+                "all_quotes_match_source_independently": bool(review.findings)
+                and all(
+                    check_evidence(f, pages).evidence_status == "source_checked"
+                    for f in review.findings
+                ),
+                "within_existing_deadline": case["review_elapsed_seconds"] < 100,
+            }
             print(
                 f"{workflow}: {len(review.findings)} findings, {case['source_checked_count']} exact source matches",
                 flush=True,
             )
         except Exception as exc:
             case["error"] = type(exc).__name__
+            case["error_detail"] = str(exc)[:4000]
+            case["cause"] = str(exc.__cause__)[:4000]
             if type(exc).__name__ == "UsageLimitExceeded":
                 case["error_detail"] = str(exc)
             print(f"{workflow}: {type(exc).__name__}", flush=True)
         result["cases"].append(case)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(json.dumps(result, indent=2) + "\n")
-    return int(any("error" in case for case in result["cases"]))
+    return int(
+        any(
+            "error" in case or not all(case.get("checks", {}).values()) or not case.get("checks")
+            for case in result["cases"]
+        )
+    )
 
 
 if __name__ == "__main__":

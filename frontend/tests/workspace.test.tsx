@@ -146,3 +146,20 @@ test('unverified source references remain inspectable without claiming they matc
  await waitFor(()=>assert.equal(received,''));
  router.dispose();
 });
+
+
+test('supporting passages retain independent deep links and resolve the selected quotation',async()=>{
+ const source={page:8,quote:'A six month premium is payable.',evidence_status:'source_checked' as const};
+ const combined={...finding,supporting_evidence:[source]};
+ const saved={...emptyWorkspace(),version:1,objective:'Review exit flexibility',review_objective:'Review exit flexibility',findings:[combined]};
+ globalThis.fetch=async()=>Response.json(saved);
+ let selected='';
+ const router=createMemoryRouter([{path:'/workspaces/a',element:<PreferencesProvider><ReportWorkspace conversationId='a' document={{id:'doc',conversation_id:'a',filename:'lease.pdf',page_count:9,uploaded_at:'2026-10-21'}} onDirty={()=>{}} onCitation={quote=>{selected=quote;}}><p>Chat</p></ReportWorkspace></PreferencesProvider>}],{initialEntries:['/workspaces/a?view=risk']});
+ render(<RouterProvider router={router}/>);
+ const link=await screen.findByRole('link',{name:'Inspect source on PDF page 8'});
+ await userEvent.setup().click(link);
+ assert.equal(new URLSearchParams(router.state.location.search).get('citation'),citationKey(source));
+ await waitFor(()=>assert.equal(selected,source.quote));
+ assert.equal(new URLSearchParams(router.state.location.search).get('page'),'8');
+ router.dispose();
+});

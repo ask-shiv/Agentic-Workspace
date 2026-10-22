@@ -51,7 +51,16 @@ export function reportIsCurrent(data: WorkspaceData): boolean {
 		(!data.brief || briefKey(data.brief) === briefKey(data.report_brief))
 	);
 }
+export interface SourceEvidence {
+	page: number;
+	quote: string;
+	evidence_status: "source_checked" | "unverified";
+}
+export function evidenceOf(finding: Finding): SourceEvidence[] {
+	return [finding, ...(finding.supporting_evidence ?? [])];
+}
 export interface Finding {
+	supporting_evidence?: SourceEvidence[];
 	title: string;
 	interpretation: string;
 	relevance: string;

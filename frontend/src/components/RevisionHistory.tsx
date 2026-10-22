@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { type WorkspaceData, workspaceRequest } from "../lib/workspace";
+import {
+	type WorkspaceData,
+	evidenceOf,
+	workspaceRequest,
+} from "../lib/workspace";
 import {
 	Dialog,
 	DialogContent,
@@ -183,9 +187,14 @@ export function RevisionHistory({
 										<p className="mt-2 whitespace-pre-wrap">
 											{finding.interpretation}
 										</p>
-										<blockquote className="mt-2 border-l-2 pl-3">
-											{finding.quote}
-										</blockquote>
+										{evidenceOf(finding).map((source, sourceIndex) => (
+											<blockquote
+												key={`${source.page}-${sourceIndex}`}
+												className="mt-2 border-l-2 pl-3"
+											>
+												PDF page {source.page}: {source.quote}
+											</blockquote>
+										))}
 									</details>
 								))}
 								<button

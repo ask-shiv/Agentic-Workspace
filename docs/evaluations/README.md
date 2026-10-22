@@ -57,3 +57,6 @@ This run is opt-in and billed, bounded by production request/token/time limits. 
 
 
 The later [workflow preset experiment](workflows.md) retains usage-limit, timeout and quotation failures alongside one targeted completed report. This is separate from the earlier tenant/landlord objective comparison.
+
+
+The [quotation/timeout fix and repeated validation](reliability.md) supersedes the failed investigation path with source-ID resolution, bounded context and multiple citations. Legal interpretation limits remain explicit.

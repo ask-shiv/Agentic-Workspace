@@ -104,7 +104,7 @@ async def test_review_and_chat_models_receive_the_same_agreed_brief(monkeypatch)
     brief = tenant_brief(workflow="report")
     review_run = AsyncMock(
         return_value=SimpleNamespace(
-            output=review.ReviewOutput(findings=[], gaps=["Need payment records"])
+            output=review.SelectedReview(findings=[], gaps=["Need payment records"])
         )
     )
     monkeypatch.setattr(review.review_agent, "run", review_run)
