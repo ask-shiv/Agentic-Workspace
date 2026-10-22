@@ -1,4 +1,4 @@
-import { Info } from "lucide-react";
+import { Info, Target } from "lucide-react";
 import {
 	type ReactNode,
 	useCallback,
@@ -118,6 +118,7 @@ export function ReportWorkspace({
 		heading?.focus({ preventScroll: true });
 		heading?.scrollIntoView?.({ block: "start" });
 	}, [activeView, loaded, workReady, search]);
+	const [objectiveHelpOpen, setObjectiveHelpOpen] = useState(false);
 	const [activeFinding, setActiveFinding] = useState(0);
 	const findingRefs = useRef<(HTMLElement | null)[]>([]);
 	const [target, setTarget] = useState(1);
@@ -243,6 +244,11 @@ export function ReportWorkspace({
 	const briefCurrent = briefIsCurrent(data);
 	const reviewCurrent = reviewIsCurrent(data);
 	const reportCurrent = reportIsCurrent(data);
+	const objectiveHelp = !briefCurrent
+		? "The agent will propose a brief and outline for you to check. Planning does not replace your work."
+		: reviewCurrent
+			? "The investigation reflects your agreed brief. Edit the brief to change direction."
+			: "Investigate the agreed brief to refresh the evidence. Your report text will be preserved.";
 	const planNeeded = !briefCurrent;
 	const purposeLocked =
 		!!(data.brief || data.review_objective) && !data.purpose_unlocked;
@@ -741,25 +747,22 @@ export function ReportWorkspace({
 			{confirmationDialog}
 
 			<header className="workspace-toolbar mx-auto w-full max-w-3xl space-y-4 px-5 py-8 md:px-8">
-				<p className="text-xs text-neutral-400">
-					{dirty ? "Unsaved draft · save in Workspace tools" : "Saved locally"}
-				</p>
-				<div>
-					<p className="mb-1 text-xs font-semibold uppercase tracking-widest text-teal-800">
-						Your working objective
-					</p>
-					<h2 className="break-words text-xl font-semibold tracking-tight">
-						{document.filename}
-					</h2>
-				</div>
 				<p className="text-xs font-medium uppercase tracking-widest text-blue-300">
 					{selectedWorkflow
 						? workflow === "report"
 							? "Build report"
 							: "Assess risk"
-						: "Existing working brief"}{" "}
-					· Working together
+						: "Existing brief"}
 				</p>
+				<h2 className="break-words text-xl font-semibold tracking-tight">
+					{document.filename}
+				</h2>
+				{dirty && (
+					<p className="text-xs text-neutral-400">
+						Unsaved draft · save in Workspace tools
+					</p>
+				)}
+
 				{data.purpose_unlocked && (
 					<WorkflowChoices
 						value={workflow}
@@ -791,12 +794,40 @@ export function ReportWorkspace({
 							</button>
 						</div>
 					)}
-					<label
-						className="block text-xs font-medium text-neutral-600"
-						htmlFor="objective"
-					>
-						What are you trying to achieve?
-					</label>
+					<div className="flex items-center gap-2">
+						<Target size={15} aria-hidden="true" className="text-neutral-400" />
+						<label
+							className="text-xs font-medium text-neutral-600"
+							htmlFor="objective"
+						>
+							What are you trying to achieve?
+						</label>
+						<TooltipProvider>
+							<Tooltip
+								open={objectiveHelpOpen}
+								onOpenChange={setObjectiveHelpOpen}
+							>
+								<TooltipTrigger asChild>
+									<button
+										type="button"
+										className="inline-flex h-10 w-10 items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100"
+										aria-label="About this brief"
+										aria-describedby="objective-help"
+										onClick={(event) => {
+											event.preventDefault();
+											setObjectiveHelpOpen(true);
+										}}
+									>
+										<Info size={15} aria-hidden="true" />
+									</button>
+								</TooltipTrigger>
+								<TooltipContent className="max-w-xs">
+									{objectiveHelp}
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+					</div>
+
 					<div className="flex flex-col gap-2 min-[480px]:flex-row">
 						<input
 							id="objective"
@@ -831,12 +862,8 @@ export function ReportWorkspace({
 											: "Investigate brief"}
 						</button>
 					</div>
-					<p id="objective-help" className="text-xs text-neutral-600">
-						{planNeeded
-							? "The agent will propose a brief and outline for you to check. Planning does not replace your work."
-							: reviewCurrent
-								? "The investigation reflects your agreed brief. Edit the brief to change direction."
-								: "Investigate the agreed brief to refresh the evidence. Your report text will be preserved."}
+					<p id="objective-help" className="sr-only">
+						{objectiveHelp}
 					</p>
 				</form>
 				<AttentionPanel items={data.gaps} current={reviewCurrent} />
