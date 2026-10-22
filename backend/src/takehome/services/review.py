@@ -10,6 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic_ai import Agent
 from pydantic_ai.usage import UsageLimits
 
+from takehome.services.agent_security import UNTRUSTED_INPUT_POLICY
 from takehome.services.brief import MatterBrief, task_context
 
 
@@ -202,7 +203,8 @@ review_agent = Agent(
     output_type=SelectedReview,
     retries=1,
     model_settings={"max_tokens": 4500, "temperature": 0},
-    instructions=(
+    instructions=UNTRUSTED_INPUT_POLICY
+    + (
         "You assist an England and Wales commercial property lawyer reviewing one uploaded document. "
         "Follow the agreed task: represented party, priorities, outcome and deliverable change finding order, relevance and next enquiries. "
         "You receive a bounded evidence pack of exact source excerpts with stable IDs and physical PDF page numbers. "
