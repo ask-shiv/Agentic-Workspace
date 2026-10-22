@@ -35,6 +35,7 @@ test('brief planning, protected outline replacement, drafting and reload share t
  const outcome=screen.getByRole('textbox',{name:'Intended outcome'});await user.clear(outcome);await user.type(outcome,'Prepare a short client update on 2029 exit feasibility.');
  await user.click(screen.getByRole('button',{name:'Agree brief and investigate'}));await user.click(await screen.findByRole('button',{name:'Replace and investigate'}));
  await screen.findByRole('button',{name:'Review up to date'});
+ const attention=screen.getByText('Needs your attention').closest('details');assert(attention);assert(attention.closest('header'));assert.equal(attention.open,false);await user.click(screen.getByText('Needs your attention'));assert(screen.getByText('Need service records.'));
  const agreed=calls.find(call=>call.action==='review')?.body.brief as typeof tenantBrief;
  assert.equal(agreed.outcome,'Prepare a short client update on 2029 exit feasibility.');
  assert.equal((screen.getByRole('textbox',{name:'Introduction'}) as HTMLTextAreaElement).value,'Preserve my earlier advice.');
