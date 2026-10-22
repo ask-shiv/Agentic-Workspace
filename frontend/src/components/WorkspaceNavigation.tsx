@@ -9,6 +9,7 @@ import {
 	Trash2,
 	X,
 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useMatch } from "react-router-dom";
 import type { WorkspaceStage } from "../context/workspace-shell";
 import type { Conversation } from "../types";
@@ -40,6 +41,14 @@ export function WorkspaceNavigation({
 	onClose,
 	onDelete,
 }: Props) {
+	const [scrolling, setScrolling] = useState(false);
+	const scrollTimer = useRef<ReturnType<typeof setTimeout>>();
+	const revealScrollbar = () => {
+		setScrolling(true);
+		clearTimeout(scrollTimer.current);
+		scrollTimer.current = setTimeout(() => setScrolling(false), 900);
+	};
+	useEffect(() => () => clearTimeout(scrollTimer.current), []);
 	const match = useMatch("/workspaces/:workspaceId");
 	const location = useLocation();
 	const view =
@@ -47,6 +56,10 @@ export function WorkspaceNavigation({
 	return (
 		<nav
 			aria-label="Workspace navigation"
+			data-scrolling={scrolling}
+			onScroll={revealScrollbar}
+			onWheel={revealScrollbar}
+			onTouchMove={revealScrollbar}
 			className="workspace-navigation block min-h-0 h-full w-full lg:w-64 bg-[#0c1017] text-white"
 		>
 			<div className="navigation-header flex h-16 shrink-0 items-center justify-between border-b border-white/15 px-5">
