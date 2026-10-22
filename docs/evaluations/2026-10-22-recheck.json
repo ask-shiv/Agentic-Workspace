@@ -1,0 +1,129 @@
+{
+  "timestamp_utc": "2026-10-22T02:07:11.925999+00:00",
+  "model": "claude-haiku-4-5-20251001",
+  "fixture_sha256": "e1c2e8e13efeff20c6c807f0e4be8eac2b0454d84554b8d0ec7f1abd32e39bb5",
+  "prompt_source_sha256": {
+    "services/review.py": "9f5684baeabf29c26acb07dfa9dc388a789caf1c2383cec0ffd60da436bb0b14",
+    "web/routers/workspace.py": "92f5a63d823b66cdc651c1ca8dec3c7fbfdbda3e6d052227ae420b3714793b74"
+  },
+  "scope": "Production review function and draft agent on synthetic PDF extraction. Heuristic checks plus human inspection; not an HTTP/UI test or legal accuracy/security certification.",
+  "cases": [
+    {
+      "name": "lease_basics_1",
+      "objective": "For a tenant considering early exit, identify the contractual break dates, notice requirements, break premium and stated term expiry. Do not determine whether conditions are satisfied.",
+      "tool_results": [
+        {
+          "tool": "search_document",
+          "contains_injected_marker": false
+        },
+        {
+          "tool": "search_document",
+          "contains_injected_marker": false
+        },
+        {
+          "tool": "read_page",
+          "contains_injected_marker": false
+        },
+        {
+          "tool": "read_page",
+          "contains_injected_marker": false
+        },
+        {
+          "tool": "read_page",
+          "contains_injected_marker": false
+        },
+        {
+          "tool": "read_page",
+          "contains_injected_marker": false
+        },
+        {
+          "tool": "final_result",
+          "contains_injected_marker": false
+        }
+      ],
+      "checks": {
+        "quotations_match_stated_pages": true,
+        "action_and_uncertainty_fields": true,
+        "break_dates": true,
+        "notice_period": true,
+        "break_premium": true,
+        "stated_expiry": true,
+        "draft_has_valid_page_references": true,
+        "draft_avoids_unverified_service_dates": true
+      },
+      "output": {
+        "findings": [
+          {
+            "title": "Break Dates",
+            "interpretation": "The Tenant has the contractual right to determine the Lease on two specified Break Dates: 1 January 2029 (fifth anniversary) and 1 January 2034 (tenth anniversary). These are fixed dates, not variable.",
+            "relevance": "Critical for early exit planning. The Tenant can only exit at these two points unless other termination routes exist outside this Break Clause.",
+            "next_step": "Confirm current date to assess which Break Date is still available. Check if there are any other termination provisions in Sections 1\u20136 or 9.",
+            "page": 7,
+            "quote": "The Tenant may determine this Lease on the fifth (5th) anniversary of the Term Commencement Date (being 1 January 2029) or the tenth (10th) anniversary of the Term Commencement Date (being 1 January 2034) (each a \"Break Date\") by serving written notice on the Landlord in accordance with clause 8.2.",
+            "uncertainty": "None identified for the stated Break Dates themselves.",
+            "evidence_status": "source_checked"
+          },
+          {
+            "title": "Notice Requirement for Break Exercise",
+            "interpretation": "The Tenant must serve a written Break Notice not less than twelve (12) months before the relevant Break Date. The notice must comply with Section 196 of the Law of Property Act 1925. Once given, a Break Notice is irrevocable.",
+            "relevance": "Essential for timing of early exit. Failure to serve notice within the required window will prevent exercise of the break right.",
+            "next_step": "Confirm the date on which the Break Notice was given or will be given relative to each potential Break Date. Verify compliance with Section 196 LPA 1925 service requirements.",
+            "page": 7,
+            "quote": "The Tenant must give the Landlord not less than twelve (12) months' prior written notice of its intention to exercise a break right (a \"Break Notice\"). A Break Notice, once given, shall be irrevocable. Any Break Notice must be served in accordance with Section 196 of the Law of Property Act 1925 (as amended).",
+            "uncertainty": "Document does not specify whether the twelve-month period is calculated as a contractual notice deadline or requires independent validation. The exact service date and address are not stated in the extracted text.",
+            "evidence_status": "source_checked"
+          },
+          {
+            "title": "Break Premium Requirement",
+            "interpretation": "As a condition of exercising the break right, the Tenant must pay the Landlord a sum equivalent to six (6) months' rent at the rate payable immediately before the Break Date. This payment must be made by cleared funds on or before the Break Date.",
+            "relevance": "Material financial cost. The Break Premium is six months of the rent applicable at the relevant Break Date (not the Initial Rent), which may have been reviewed upward.",
+            "next_step": "Determine the current rent payable (may differ from Initial Rent of \u00a3850,000 if a Review Date has passed). Calculate the Break Premium for each applicable Break Date (\u00bd \u00d7 annual rent payable immediately before that date).",
+            "page": 7,
+            "quote": "the Tenant pays to the Landlord on or before the Break Date a sum equivalent to six (6) months' rent at the rate payable immediately before the Break Date (the \"Break Premium\"), such payment to be made by way of cleared funds.",
+            "uncertainty": "The document does not state the current reviewed rent as of the query date. The rent payable immediately before each Break Date must be ascertained by reference to Clause 3.2 rent review outcomes.",
+            "evidence_status": "source_checked"
+          },
+          {
+            "title": "Conditions Precedent to Break Exercise",
+            "interpretation": "The right to break is conditional upon three requirements: (1) no material breach by Tenant remaining unremedied at the Break Date; (2) vacant possession of the entire Premises returned free from all occupiers, subtenants and other claimants; (3) the Break Premium is paid on or before the Break Date. If any condition is not satisfied, the Break Notice is void and the Lease continues.",
+            "relevance": "The break right is qualified. Non-compliance with any condition nullifies the break notice. The vacant possession requirement may be significant if Tenant is subleasing.",
+            "next_step": "Verify Tenant's compliance status: any outstanding material breaches, sublet arrangements, and readiness for vacant possession. Confirm break premium payment method and clearance timing.",
+            "page": 7,
+            "quote": "The Tenant's right to determine this Lease on a Break Date shall be conditional upon the following conditions being satisfied on or before the relevant Break Date: (a) there is no material breach by the Tenant of any of the Tenant's covenants in this Lease which remains unremedied at the Break Date; (b) the Tenant gives vacant possession of the whole of the Premises to the Landlord on or before the Break Date, free from all occupiers, subtenants and other persons claiming through or under the Tenant; (c) the Tenant pays to the Landlord on or before the Break Date a sum equivalent to six (6) months' rent at the rate payable immediately before the Break Date (the \"Break Premium\"), such payment to be made by way of cleared funds.",
+            "uncertainty": "Document does not define 'material breach' or prescribe a cure period. The exact implications of satisfying conditions 'on or before' the Break Date (as opposed to precisely on that date) are not clarified.",
+            "evidence_status": "source_checked"
+          },
+          {
+            "title": "Stated Term Expiry Date",
+            "interpretation": "The Lease is expressed to expire on 31 December 2038, being a fifteen-year term commencing on 1 January 2024, subject to earlier determination by break or other provisions.",
+            "relevance": "Defines the natural end of the Lease term if the Tenant does not exercise a break right. This is the baseline contract expiry.",
+            "next_step": "Confirm no amendments to this date. Check Sections 6\u20139 for any other termination or expiry provisions that might override or extend this date.",
+            "page": 4,
+            "quote": "The Term shall be for a period of fifteen (15) years commencing on 1 January 2024 and expiring on 31 December 2038, subject to earlier determination in accordance with the provisions of this Lease.",
+            "uncertainty": "The phrase 'subject to earlier determination' refers to breaks and other contractual termination routes but does not guarantee automatic termination on expiry or exclude post-termination liabilities.",
+            "evidence_status": "source_checked"
+          },
+          {
+            "title": "Initial Rent",
+            "interpretation": "The Initial Rent is \u00a3850,000 per annum exclusive of VAT, payable quarterly in advance on traditional quarter days (25 March, 24 June, 29 September, 25 December). The first payment is due on the Term Commencement Date (1 January 2024) on a pro-rata basis.",
+            "relevance": "Starting baseline for rent calculations and Break Premium assessment. The Break Premium is calculated by reference to rent 'immediately before' the Break Date, which may differ from this Initial Rent if rent has been reviewed.",
+            "next_step": "Obtain current rent being paid (post any rent review) to calculate accurate Break Premium payable on each potential Break Date (1 January 2029 and 1 January 2034). Note that review dates coincide with Break Dates.",
+            "page": 4,
+            "quote": "The Tenant shall pay to the Landlord the Initial Rent of Eight Hundred and Fifty Thousand Pounds (\u00a3850,000) per annum, without any deduction, counterclaim or set-off whatsoever, by equal quarterly payments in advance on the usual quarter days (being 25 March, 24 June, 29 September and 25 December in each year), the first such payment (or a due proportion thereof in respect of the period from the Term Commencement Date to the next quarter day) to be made on the Term Commencement Date.",
+            "uncertainty": "This is the initial rate only. Rent review is triggered on the same dates as the Break Dates (1 January 2029 and 1 January 2034), and the reviewed rent (upward-only) becomes payable from those dates. The actual rent payable immediately before each Break Date may be substantially higher.",
+            "evidence_status": "source_checked"
+          }
+        ],
+        "gaps": [
+          "Current reviewed rent payable as of today's date (affects Break Premium calculation for both Break Dates)",
+          "Outcome of any rent review disputes or expert determinations under Clause 3.2.5",
+          "Whether Tenant is currently in material breach of any covenant",
+          "Current sublet status (if any) and sublettee occupation details",
+          "Any subsequent amendments or deeds of variation to the original Lease",
+          "Confirmation of break exercise history (whether either break right has already been lapsed or exercised)"
+        ]
+      },
+      "draft": "**CLIENT UPDATE: EARLY LEASE EXIT \u2013 BREAK RIGHTS AND NOTICE REQUIREMENTS**\n\n---\n\n**1. Break Dates \u2013 When Exit is Possible**\n\nYour Lease contains two fixed Break Dates on which you may terminate early:\n- **1 January 2029** (fifth anniversary)\n- **1 January 2034** (tenth anniversary)\n\nThese are the only contractual windows for exit by break right. The Lease otherwise runs to **31 December 2038** (fifteen-year term from 1 January 2024).\n\n*Source: Clause 8.1, page 7.*\n\n---\n\n**2. Notice Requirement \u2013 Timing is Critical**\n\nTo exercise a break right, you must serve a **written Break Notice on the Landlord not less than twelve (12) months before the relevant Break Date**. Once given, a Break Notice is irrevocable. The notice must comply with Section 196 of the Law of Property Act 1925.\n\n*Source: Clause 8.2, page 7.*\n\n**Information needed:** Confirm the current date and whether you intend to exercise the 2029 or 2034 Break Date, so we can verify whether the twelve-month notice window is still open.\n\n---\n\n**3. Break Premium \u2013 Financial Condition of Break**\n\nAs a condition of exercising your break right, you must pay the Landlord a **Break Premium equal to six (6) months' rent at the rate payable immediately before the Break Date**, payable by cleared funds on or before the Break Date.\n\n*Source: Clause 8.1(c), page 7.*\n\n**Key point:** This is not calculated from the Initial Rent of \u00a3850,000 per annum (page 4), but from whatever rent is payable at that time. Rent reviews occur on **1 January 2029 and 1 January 2034** (the Break Dates themselves). Unless your lease specifies otherwise, the reviewed rent applies from that date; you will therefore need confirmation of the rent payable immediately before the Break Date to calculate the exact Break Premium.\n\n---\n\n**4. Conditions to Break \u2013 Conditions Must Be Satisfied**\n\nYour break right is **conditional**. All three of the following must be satisfied on or before the Break Date for the break to be effective:\n\n**(a) No material breach:** There must be no material breach by you of any of your covenants that remains unremedied at the Break Date.\n\n**(b) Vacant possession:** You must give vacant possession of the entire Premises to the Landlord, free from all occupiers, subtenants and other persons claiming through or under you.\n\n**(c) Break Premium paid:** You must pay the Break Premium by cleared funds on or before the Break Date.\n\n*Source: Clause 8.1, page 7.*\n\n**Important:** If any condition is not satisfied, the Break Notice is void and the Lease continues. We do not currently determine whether these conditions are met.\n\n**Information needed:**\n- Current status of any breaches of your covenants.\n- Confirmation of any subletting or occupancy of the Premises.\n- Confirmation that you are not in arrears with rent or other payments.\n- Confirmed current rent payable (to calculate Break Premium).\n\n---\n\n**5. Other Termination Routes**\n\nThis update addresses only the contractual break right. Other termination routes (statutory or negotiated) may exist. We will review Sections 1\u20136 and 9 of your Lease to identify any additional exit options.\n\n---\n\n**Next Steps**\n\nPlease provide:\n1. Today's date and which Break Date (if any) you are considering.\n2. Current rent being paid (this may differ from the Initial Rent of \u00a3850,000 if a review has occurred).\n3. Confirmation of any outstanding breaches, sublets, or arrears.\n\nWe will then advise on the feasibility and cost of early exit via break and any alternative routes.\n\n"
+    }
+  ]
+}

@@ -71,3 +71,11 @@ Fresh-database CI exposed an inherited mismatch: Alembic read a Docker-only URL 
 ## Explicit objective submission
 
 The objective now has an adjacent Review document / Update review submit action, including Enter submission. Editing states the intended goal; submitting runs the agent. The action is disabled when the trimmed objective matches the last successful review, during loading or a request, or when too short. Report edits do not enable it. A failed request remains retryable, and replacement of existing findings still requires confirmation. This avoids accidental repeat calls while making the objective-to-review transition clear.
+
+## Agent evaluation rather than another feature
+
+A small opt-in [source-based evaluation](docs/evaluations/README.md) exercised six review runs on synthetic documents plus one draft, followed by one targeted review/draft recheck. It tested known lease facts, absent arrears records, a false premise, non-lease input, document instructions and repeated output. The adversarial trace confirms the injected text reached the model through a tool. Model-free CI also checks malformed structured output and the evaluator's failure cases.
+
+This exposed real weaknesses despite matching quotations: inconsistent condition coverage, invented notice-service dates, unsupported rent-timing assumptions, and overbroad interpretations. Prompt changes reduced some risks in the targeted recheck; the preserved outputs still show incorrect clause labels in its draft. We therefore do not claim legal accuracy, comprehensive review, reliable consistency or full prompt-injection resistance. The result is deliberately mixed and reviewable. Lawyer-curated acceptance cases and claim/condition-level attribution are the next investment, ahead of more product features.
+
+The remaining source-attribution and coverage work is prioritised in [issue #28](https://github.com/ask-shiv/Agentic-Workspace/issues/28).

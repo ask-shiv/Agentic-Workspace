@@ -113,3 +113,7 @@ Open the avatar in the top right for local display settings: text size, contrast
 Run `cd frontend && npm test` for typed navigation, report and accessibility regression tests. Automated semantic checks exclude contrast in jsdom; see DECISIONS.md for audit limits and jurisdictional sources. CI runs these checks on PRs and main. The checked-in `.agents/skills/` and AGENTS.md document the portable working conventions.
 
 Report history is available from the revision button. Previewing is read-only; restoring requires confirmation and creates a new revision. History begins at the state retained when the feature was enabled. Alt+Up/Down moves focus through findings outside editors and dialogs, even with optional shortcuts disabled. “Download report” exports the last saved report as a .md text file. The momentum strip shows current-workspace activity; it does not claim measured time savings.
+
+### Agent validation
+
+The [source-based evaluation report](docs/evaluations/README.md) preserves synthetic baseline failures and a targeted recheck. Run the opt-in live evaluator only with a local key; it incurs model usage. Normal CI runs model-free regression tests. Matching quotes and page numbers do not validate every claim or clause label; remaining failures are explicit in the report.
