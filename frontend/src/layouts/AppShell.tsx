@@ -116,11 +116,8 @@ export function AppShell() {
 							</button>
 						)}
 						<Link to="/" className="text-sm font-semibold tracking-tight">
-							Orbital · Working together
+							Orbital
 						</Link>
-						<span className="hidden text-xs text-neutral-600 sm:inline">
-							Your goal. Our shared workspace.
-						</span>
 					</div>
 					<div className="flex shrink-0 items-center gap-2">
 						{match && (

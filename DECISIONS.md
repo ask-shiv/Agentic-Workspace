@@ -159,3 +159,8 @@ The sidebar had two separate problems: the mobile drawer's nested flex/scroll la
 Keyboard-shortcut keycaps inherited light text while retaining a light background after the dark reskin. They now use explicit paired theme colours, including high contrast, and their labels match navigation rather than implying a new agent assessment. Browser checks covered short/narrow and large-text scrolling, destination focus, same-route dismissal and computed colours; personal display settings were restored afterwards. Automated semantic checks still do not certify contrast across the whole product.
 
 Mark reviewed currently records a user progress flag, updates the count and is retained on save/export. It does not validate a legal interpretation, add content to the report, train the agent or move items through a queue. A To review/Reviewed/All queue would be a separate workflow change; it was explained to the user and is not silently added in this navigation fix.
+
+
+## Reduce workspace header noise (#54)
+
+The header now leads with the selected workflow and document name. Repeated collaboration slogans, “Your working objective” and “Saved locally” are removed; a target icon accompanies the clear objective label. Brief guidance moves behind an accessible info control, with the same description retained for assistive technology. Unsaved-work warnings and purpose-change controls remain visible because they prevent mistakes. This pass changes presentation only, with no changes to the agent, review status, saved data or workflow rules.
