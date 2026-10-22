@@ -652,12 +652,6 @@ export function ReportWorkspace({
 					<IntentStart
 						onChat={() => chooseView("chat")}
 						workflow={selectedWorkflow ?? null}
-						timePressure={
-							data.time_pressure ?? data.brief?.time_pressure ?? false
-						}
-						onTimePressure={(value) =>
-							change({ ...data, time_pressure: value })
-						}
 						objective={data.objective}
 						disabled={!loaded}
 						onWorkflow={(value) => change({ ...data, workflow: value })}
@@ -717,10 +711,6 @@ export function ReportWorkspace({
 				<IntentStart
 					onChat={() => chooseView("chat")}
 					workflow={selectedWorkflow ?? null}
-					timePressure={
-						data.time_pressure ?? data.brief?.time_pressure ?? false
-					}
-					onTimePressure={(value) => change({ ...data, time_pressure: value })}
 					objective={data.objective}
 					disabled={!!busy || !loaded}
 					onWorkflow={selectWorkflow}

@@ -102,8 +102,6 @@ export function IntentStart({
 	disabled = false,
 	action = "Continue",
 	children,
-	timePressure = false,
-	onTimePressure,
 	onUploadFirst,
 	onFile,
 	onChat,
@@ -117,8 +115,6 @@ export function IntentStart({
 	disabled?: boolean;
 	action?: string;
 	children?: ReactNode;
-	timePressure?: boolean;
-	onTimePressure?: (value: boolean) => void;
 	onUploadFirst?: () => void;
 	onFile?: (file: File) => void;
 	onChat?: () => void;
@@ -267,17 +263,6 @@ export function IntentStart({
 						</button>
 					</div>
 				</section>
-				{onTimePressure && (
-					<label className="flex items-center gap-3 text-sm text-neutral-300">
-						<input
-							type="checkbox"
-							checked={timePressure}
-							disabled={disabled}
-							onChange={(event) => onTimePressure(event.target.checked)}
-						/>
-						I’m pressed for time — focus on the decisions that matter most.
-					</label>
-				)}
 				{children}
 			</form>
 		</div>
