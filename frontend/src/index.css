@@ -579,8 +579,8 @@ html[data-contrast="high"] :focus-visible {
 .intent-start {
 	position: relative;
 	isolation: isolate;
-	max-width: 66rem;
-	min-height: min(48rem, 100%);
+	max-width: none;
+	min-height: 100%;
 }
 .welcome-atmosphere {
 	position: absolute;
@@ -830,4 +830,16 @@ html[data-contrast="high"] .intent-start .workflow-option {
 }
 html[data-contrast="high"] .intent-start .workflow-option-selected {
 	box-shadow: 0 0 0 3px white;
+}
+.navigation-header {
+	box-sizing: border-box;
+}
+.navigation-header .navigation-close {
+	background: transparent;
+	color: #b8c4d7;
+	border-color: transparent;
+}
+.navigation-header .navigation-close:hover {
+	background: #ffffff0c;
+	color: white;
 }

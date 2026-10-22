@@ -23,6 +23,7 @@ import { useMediaQuery } from "../hooks/use-media-query";
 export function AppShell() {
 	const { preferences } = usePreferences();
 	const { conversations, loading, error, refresh, remove } = useConversations();
+	const [desktopNav, setDesktopNav] = useState(true);
 	const [mobileNav, setMobileNav] = useState(false);
 	const [workspaceStage, setWorkspaceStage] = useState<{
 		id: string;
@@ -50,6 +51,16 @@ export function AppShell() {
 	const navigation = (
 		<WorkspaceNavigation
 			conversations={conversations}
+			onClose={() => {
+				if (desktop) {
+					setDesktopNav(false);
+					requestAnimationFrame(() =>
+						window.document
+							.getElementById("open-workspace-navigation")
+							?.focus(),
+					);
+				} else setMobileNav(false);
+			}}
 			currentView={
 				workspaceStage?.id === match?.params.workspaceId
 					? workspaceStage?.view
@@ -85,14 +96,14 @@ export function AppShell() {
 			<a href="#main-content" className="skip-link">
 				Skip to workspace content
 			</a>
-			{desktop && (
+			{desktop && desktopNav && (
 				<aside className="min-h-0 overflow-hidden shrink-0 border-r border-teal-950">
 					{navigation}
 				</aside>
 			)}
 			{!desktop && (
 				<Dialog open={mobileNav} onOpenChange={setMobileNav}>
-					<DialogContent className="flex flex-col min-h-0 left-0 top-0 h-dvh w-72 max-w-[90vw] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none border-0 bg-[#0c1017] p-0">
+					<DialogContent className="flex flex-col min-h-0 left-0 top-0 h-dvh w-72 max-w-[90vw] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none [&>button]:hidden border-0 bg-[#0c1017] p-0">
 						<DialogTitle className="sr-only">Workspaces</DialogTitle>
 						<DialogDescription className="sr-only">
 							Choose a saved workspace or create one.
@@ -102,28 +113,33 @@ export function AppShell() {
 				</Dialog>
 			)}
 			<div className="flex min-w-0 flex-1 flex-col">
-				<header className="flex min-h-16 shrink-0 items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 md:px-6">
+				<header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 md:px-6">
 					<div className="flex min-w-0 items-center gap-3">
-						{!desktop && (
+						{(!desktop || !desktopNav) && (
 							<button
 								type="button"
+								id="open-workspace-navigation"
 								aria-label="Open workspace navigation"
-								aria-expanded={mobileNav}
+								aria-expanded={desktop ? desktopNav : mobileNav}
 								className="icon-button"
-								onClick={() => setMobileNav(true)}
+								onClick={() =>
+									desktop ? setDesktopNav(true) : setMobileNav(true)
+								}
 							>
 								<Menu size={20} aria-hidden="true" />
 							</button>
 						)}
-						<Link to="/" className="text-sm font-semibold tracking-tight">
-							<img
-								src={
-									new URL("../assets/orbital-logo.svg", import.meta.url).href
-								}
-								alt="Orbital"
-								className="h-7 w-auto"
-							/>
-						</Link>
+						{!(desktop && desktopNav) && !mobileNav && (
+							<Link to="/" className="text-sm font-semibold tracking-tight">
+								<img
+									src={
+										new URL("../assets/orbital-mark.svg", import.meta.url).href
+									}
+									alt="Orbital"
+									className="h-7 w-auto"
+								/>
+							</Link>
+						)}
 					</div>
 					<div className="flex shrink-0 items-center gap-2">
 						{match && (

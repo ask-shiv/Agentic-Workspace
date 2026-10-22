@@ -7,6 +7,7 @@ import {
 	Plus,
 	Settings,
 	Trash2,
+	X,
 } from "lucide-react";
 import { Link, NavLink, useLocation, useMatch } from "react-router-dom";
 import type { WorkspaceStage } from "../context/workspace-shell";
@@ -19,6 +20,7 @@ interface Props {
 	loading: boolean;
 	onCreate: () => void;
 	onFollow?: () => void;
+	onClose?: () => void;
 	onDelete?: (id: string) => void;
 }
 
@@ -35,6 +37,7 @@ export function WorkspaceNavigation({
 	loading,
 	onCreate,
 	onFollow,
+	onClose,
 	onDelete,
 }: Props) {
 	const match = useMatch("/workspaces/:workspaceId");
@@ -46,19 +49,28 @@ export function WorkspaceNavigation({
 			aria-label="Workspace navigation"
 			className="workspace-navigation block min-h-0 h-full w-full lg:w-64 bg-[#0c1017] text-white"
 		>
-			<Link
-				to="/"
-				onClick={onFollow}
-				className="flex items-center gap-3 border-b border-white/15 px-5 py-6 text-lg font-semibold tracking-tight"
-			>
-				<img
-					src={new URL("../assets/orbital-logo.svg", import.meta.url).href}
-					alt="Orbital"
-					width={108}
-					height={32}
-				/>
-				<span className="sr-only">Workspace home</span>
-			</Link>
+			<div className="navigation-header flex h-16 shrink-0 items-center justify-between border-b border-white/15 px-5">
+				<Link to="/" onClick={onFollow} className="flex items-center gap-3">
+					<img
+						src={new URL("../assets/orbital-mark.svg", import.meta.url).href}
+						alt="Orbital"
+						width={22}
+						height={38}
+					/>
+					<span className="sr-only">Workspace home</span>
+				</Link>
+				{onClose && (
+					<button
+						type="button"
+						className="icon-button navigation-close"
+						id="close-workspace-navigation"
+						aria-label="Close workspace navigation"
+						onClick={onClose}
+					>
+						<X size={20} aria-hidden="true" />
+					</button>
+				)}
+			</div>
 			<div className="p-4">
 				<button
 					type="button"

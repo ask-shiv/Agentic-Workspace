@@ -95,3 +95,5 @@ Append one short entry per meaningful pass here: invariant affected, checks, and
 
 - Landing simplification: do not show the time-pressure checkbox on Home; new entry context uses normal detail. Preserve saved brief compatibility. “Brief me” is future work, not a delivered summary feature; it must preserve full findings and material caveats if implemented.
 - Workspace setup simplification (#63): the shared intent entry must not expose the removed time-pressure checkbox. Keep saved brief fields compatible and verify both Home and document-upload setup remain free of that control. Brief me remains deferred.
+
+- Shell/viewer polish: show header branding only when navigation branding is hidden; keep the welcome atmosphere full-width while constraining form content. PDF status output must be a block with normal wrapping so inline padding cannot overlap the page. Preserve the source-byte and overlay boundaries.
