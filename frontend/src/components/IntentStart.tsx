@@ -5,7 +5,7 @@ import {
 	PlusCircle,
 	ShieldCheck,
 } from "lucide-react";
-import { type ReactNode, useRef, useState } from "react";
+import { type CSSProperties, type ReactNode, useRef, useState } from "react";
 import { usePreferences } from "../context/preferences";
 import type { Workflow } from "../lib/workspace";
 
@@ -25,6 +25,13 @@ export function WorkflowChoices({
 	return (
 		<fieldset
 			className="workflow-choices grid gap-3 sm:grid-cols-2"
+			data-selected={chatSelected || value ? "true" : "false"}
+			style={
+				{
+					"--choice-count": onChat ? 3 : 2,
+					"--choice-index": chatSelected ? 2 : value === "report" ? 1 : 0,
+				} as CSSProperties
+			}
 			disabled={disabled}
 		>
 			<legend className="sr-only">Choose how we work together</legend>
