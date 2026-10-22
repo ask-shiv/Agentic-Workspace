@@ -821,3 +821,13 @@ html[data-contrast="high"] .intent-start .workflow-option-selected {
 	background: #31547766;
 	box-shadow: 0 0 0 3px #9fd9ff44;
 }
+html[data-contrast="high"] .intent-start .workflow-choices {
+	background: black;
+}
+html[data-contrast="high"] .intent-start .workflow-option {
+	color: white;
+	border: 1px solid white;
+}
+html[data-contrast="high"] .intent-start .workflow-option-selected {
+	box-shadow: 0 0 0 3px white;
+}
