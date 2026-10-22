@@ -1,0 +1,13 @@
+{
+  "workspace_id": "0ddbf23b69dd4f35",
+  "document_id": "07e7d6b1b7a547d1",
+  "fixture_sha256": "e1c2e8e13efeff20c6c807f0e4be8eac2b0454d84554b8d0ec7f1abd32e39bb5",
+  "review_elapsed_seconds": 23.45,
+  "findings": 6,
+  "source_passages": 15,
+  "all_passages_match_independent_pdf_extraction": true,
+  "save_reload_preserves_all_evidence": true,
+  "export_includes_supporting_evidence": true,
+  "original_pdf_bytes_unchanged": true,
+  "scope": "Real local HTTP review and persistence on the synthetic fixture; retained as a labelled validation workspace. Lawyer text is explicitly pending review. No user workspace overwritten."
+}

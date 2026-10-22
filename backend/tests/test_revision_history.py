@@ -32,7 +32,7 @@ async def workspace_db():
                 conversation_id=identity,
                 filename="test.pdf",
                 file_path="not-a-file",
-                extracted_text="--- Page 1 ---\nNotice in writing.",
+                extracted_text="--- Page 1 ---\nNotice in writing.\n\n--- Page 2 ---\nA six month premium is payable.",
                 page_count=1,
             )
         )
@@ -160,3 +160,47 @@ async def test_brief_snapshots_and_unlocked_state_round_trip_without_overwriting
         assert loaded.brief == brief
         assert loaded.purpose_unlocked
         assert not (await get_revision(identity, 1, session)).purpose_unlocked
+
+
+@pytest.mark.asyncio
+async def test_multiple_source_passages_survive_save_reload_revision_and_export(workspace_db):
+    from takehome.services.review import SourceEvidence
+    from takehome.web.routers.workspace import export_workspace
+
+    identity, sessions = workspace_db
+    finding = Finding(
+        title="Conditional exit",
+        interpretation="Notice and payment are required.",
+        relevance="Exit",
+        next_step="Check compliance",
+        uncertainty="Actual compliance unknown",
+        page=1,
+        quote="Notice in writing.",
+        supporting_evidence=[
+            SourceEvidence(
+                page=2, quote="A six month premium is payable.", evidence_status="unverified"
+            )
+        ],
+    )
+    async with sessions() as session:
+        saved = await save_workspace(
+            identity,
+            WorkspaceData(
+                objective="Review exit conditions",
+                findings=[finding],
+                sections=[
+                    Section(title="Report", content="Lawyer review pending", finding_ids=[0])
+                ],
+            ),
+            session,
+        )
+        loaded = await get_workspace(identity, session)
+        assert loaded.findings[0].supporting_evidence == saved.findings[0].supporting_evidence
+        assert loaded.findings[0].evidence_status == "source_checked"
+        assert loaded.findings[0].supporting_evidence[0].evidence_status == "source_checked"
+        revision = await get_revision(identity, 1, session)
+        assert revision.findings[0].supporting_evidence == loaded.findings[0].supporting_evidence
+        exported = await export_workspace(identity, session)
+        assert b"Notice in writing." in exported.body
+        assert b"Additional evidence: PDF page 2" in exported.body
+        assert b"A six month premium is payable." in exported.body

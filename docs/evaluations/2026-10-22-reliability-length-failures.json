@@ -1,0 +1,109 @@
+{
+  "timestamp_utc": "2026-10-22T15:02:48.005207+00:00",
+  "model": "claude-haiku-4-5-20251001",
+  "fixture_sha256": "e1c2e8e13efeff20c6c807f0e4be8eac2b0454d84554b8d0ec7f1abd32e39bb5",
+  "objective": "I am advising a tenant considering this lease. I need to understand the commercial risks before negotiations and prepare a concise client update.",
+  "current_source_sha256": {
+    "planning": "aa35e48934bdb7fbd1ef8a59272d7afdb1c9868371005566cef572b575293b32",
+    "review": "49b0fe365ed60f60a00f28510630dddd908679d5152bb345f3cabcc65bc1668b"
+  },
+  "scope": "Same synthetic document and objective, two explicit working presets. Proposed briefs are engineering inputs, not lawyer-approved plans. No legal accuracy or consistency benchmark is claimed; quotes retain their actual verification status. Draft/chat context has model-free coverage.",
+  "cases": [
+    {
+      "workflow": "risk",
+      "planning_reused": true,
+      "brief": {
+        "client_role": "tenant",
+        "outcome": "Identify material commercial risks in the proposed 15-year lease at 100 Bishopsgate to inform tenant's negotiating strategy and decision-making before formal discussions with the landlord. Clarify exposure on rent review mechanisms, service charge liability, break clauses, repair obligations and lease flexibility to enable informed risk/benefit trade-offs during negotiation.",
+        "deliverable": "risk_memo",
+        "priorities": [
+          "Rent review mechanics: Understand the basis (RPI, market, indexed) and tenant's protection against disproportionate increases at 2029 and 2034 review dates, including whether tenant has break rights or collar provisions",
+          "Service charge and operating costs: Establish what costs (repairs, insurance, maintenance, rates, utilities) are explicitly recoverable from tenant, capped or uncapped, and whether tenant has audit or challenge rights",
+          "Repair and maintenance obligations: Clarify division of responsibility for structural, exterior and interior repairs, dilapidation liability at lease end, and tenant's indemnity exposure for damage beyond normal wear",
+          "Lease flexibility and exit options: Confirm whether tenant has break clauses, renewal rights, assignment restrictions, and consequent exit costs or notice periods if business needs change during the 15-year term"
+        ],
+        "open_questions": [
+          "Does the lease contain rent review collars (minimum/maximum caps) or alternative adjustment mechanisms (e.g. CPI floor/ceiling) to limit exposure to market uplifts at 2029 and 2034?",
+          "Are service charges and building insurance costs capped, indexed, or entirely variable, and what happens if actual costs exceed budgeted contributions?",
+          "Does the tenant have the right to break the lease, and if so, on what conditions (notice period, rent payment, repair condition) and at which points in the 15-year term?",
+          "What are the specific dilapidation and repair obligations for the tenant, and does the landlord have the right to carry out works at tenant's cost if tenant fails to comply?"
+        ],
+        "sections": [
+          {
+            "title": "Rent Review Framework & Long-Term Cost Exposure",
+            "purpose": "Assess the mechanism and scope of rent adjustments at review dates, identify caps or protections available to tenant, and quantify potential cost escalation scenarios to inform negotiating position on rental increases."
+          },
+          {
+            "title": "Operational Cost Liabilities (Service Charge, Insurance, Rates)",
+            "purpose": "Establish tenant's exposure to variable operating costs, identify controllable vs. uncontrollable charge categories, confirm tenant's rights to audit and challenge invoices, and highlight any uncapped liability risks."
+          },
+          {
+            "title": "Repair, Maintenance & Dilapidation Obligations",
+            "purpose": "Clarify the split of responsibility for building systems, fabric and structural elements, identify tenant's indemnity and reinstatement obligations at lease end, and assess cost risk for unexpected major works."
+          },
+          {
+            "title": "Lease Term Flexibility & Break/Exit Rights",
+            "purpose": "Identify whether tenant has mid-term break options, renewal prospects, or unrestricted assignment rights, and evaluate the cost and practical feasibility of early exit if business circumstances change."
+          },
+          {
+            "title": "Landlord's Rights & Enforcement Mechanisms",
+            "purpose": "Document landlord's remedies for tenant breach (including self-help and cost-recovery rights), tenant's notice and cure obligations, and scope of landlord's discretionary powers (e.g. service charge determination, insurance procurement)."
+          }
+        ],
+        "workflow": "risk",
+        "objective": "I am advising a tenant considering this lease. I need to understand the commercial risks before negotiations and prepare a concise client update."
+      },
+      "error": "UnexpectedModelBehavior",
+      "error_detail": "Exceeded maximum output retries (0)",
+      "cause": "21 validation errors for SelectedReview\nfindings.0.relevance\n  String should have at most 300 characters [type=string_too_long, input_value='Material commercial risk...and) to limit exposure.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.0.next_step\n  String should have at most 300 characters [type=string_too_long, input_value='Obtain market comparable...t becomes unaffordable.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.0.uncertainty\n  String should have at most 300 characters [type=string_too_long, input_value=\"Open market rent determi...tion, which is binding.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.1.relevance\n  String should have at most 300 characters [type=string_too_long, input_value=\"Moderately material. The...ot disadvantage tenant.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.1.next_step\n  String should have at most 300 characters [type=string_too_long, input_value=\"Ensure tenant maintains ...ural/systems condition.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.1.uncertainty\n  String should have at most 300 characters [type=string_too_long, input_value=\"The interaction between ...de similar investments.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.2.relevance\n  String should have at most 300 characters [type=string_too_long, input_value=\"Material commercial risk...location or efficiency.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.2.next_step\n  String should have at most 300 characters [type=string_too_long, input_value=\"Request detailed service...tigate insurance costs.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.2.uncertainty\n  String should have at most 300 characters [type=string_too_long, input_value=\"Schedule 3 (service char...hich are not disclosed.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.3.title\n  String should have at most 100 characters [type=string_too_long, input_value='Repair Obligations: Tena...ation Risk at Lease End', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.3.interpretation\n  String should have at most 600 characters [type=string_too_long, input_value=\"Tenant must keep premise...ear and tear exception.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.3.relevance\n  String should have at most 300 characters [type=string_too_long, input_value=\"Material commercial risk...nt's acts or omissions.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.3.next_step\n  String should have at most 300 characters [type=string_too_long, input_value=\"Obtain and carefully rev...visible/occupied areas.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.3.uncertainty\n  String should have at most 300 characters [type=string_too_long, input_value=\"Schedule 4 (schedule of ... decoration in year 15?\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.4.relevance\n  String should have at most 300 characters [type=string_too_long, input_value='Material commercial bene...ated before Break Date.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.4.next_step\n  String should have at most 300 characters [type=string_too_long, input_value=\"Confirm tenant's busines."
+    },
+    {
+      "workflow": "report",
+      "planning_reused": true,
+      "brief": {
+        "client_role": "tenant",
+        "outcome": "Tenant-focused summary of commercial lease risks at 100 Bishopsgate for Meridian Consulting Group LLP, identifying key financial, operational and legal exposures before negotiation. The update will highlight gaps in the provided lease draft (pages 1\u20133), material covenant and liability provisions not yet reviewed, and recommend priority investigation areas to clarify tenant obligations, rent escalation exposure, and landlord remedies before commitment.",
+        "deliverable": "client_update",
+        "priorities": [
+          "Rent review mechanism and any caps/collars at years 5 and 10: impact on financial planning over 15-year term",
+          "Tenant repairing and service charge obligations: scope, caps and exclusions; risk of disproportionate repair/maintenance liability",
+          "Break clauses, termination triggers and landlord remedies for default: exit flexibility and forfeiture exposure",
+          "Insurance, indemnity and liability allocation: tenant's exposure to building-wide losses, third-party claims and landlord negligence"
+        ],
+        "open_questions": [
+          "What are the agreed rent review terms (fixed %, open market, RPI collar) at the 2029 and 2034 review dates?",
+          "Which repairing obligations fall to the tenant (internal walls, M&E systems, exterior, roof) and are there caps or exclusions from tenant liability?",
+          "Are there break clauses available to the tenant, and if so at what milestones and on what notice/conditions?",
+          "How is the service charge calculated, and what share of building costs (insurance, maintenance, utilities, management) is charged to this tenant?"
+        ],
+        "sections": [
+          {
+            "title": "Client position",
+            "purpose": "Give the intended audience a concise overview of the agreed objective, evidence-supported position and important limitations."
+          },
+          {
+            "title": "Lease Structure and Immediate Commitments",
+            "purpose": "Set out the headline lease term, rent, use restriction and key dates; identify which lease clauses must be reviewed next to assess constraint on business and financial exposure."
+          },
+          {
+            "title": "Rent and Financial Exposure",
+            "purpose": "Isolate rent review mechanics and any escalation mechanism at years 5 and 10; assess predictability and scale of cost increases and affordability risk over the 15-year term."
+          },
+          {
+            "title": "Tenant Obligations and Operational Risk",
+            "purpose": "Identify scope of repairing, maintenance, service charge and compliance obligations; flag any broad tenant liability for building-wide or structural costs that landlord would normally bear."
+          },
+          {
+            "title": "Decisions and next steps",
+            "purpose": "Identify decisions for the lawyer and client, outstanding enquiries and next actions; do not invent deadlines or confirm compliance."
+          }
+        ],
+        "workflow": "report",
+        "objective": "I am advising a tenant considering this lease. I need to understand the commercial risks before negotiations and prepare a concise client update."
+      },
+      "error": "UnexpectedModelBehavior",
+      "error_detail": "Exceeded maximum output retries (0)",
+      "cause": "24 validation errors for SelectedReview\nfindings.0.interpretation\n  String should have at most 600 characters [type=string_too_long, input_value='Rent is reviewed on 1 Ja...ays base rate interest.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.0.relevance\n  String should have at most 300 characters [type=string_too_long, input_value='This creates material fi...or appointment process.', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.0.next_step\n  String should have at most 300 characters [type=string_too_long, input_value=\"Obtain comparable market...t becomes unaffordable.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.0.uncertainty\n  String should have at most 300 characters [type=string_too_long, input_value=\"The evidence does not sp...re final rent is known.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.1.interpretation\n  String should have at most 600 characters [type=string_too_long, input_value=\"Tenant must keep the Pre...enced by that schedule.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.1.relevance\n  String should have at most 300 characters [type=string_too_long, input_value=\"Tenant bears significant...tioning, fire systems).\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.1.next_step\n  String should have at most 300 characters [type=string_too_long, input_value=\"Obtain and review the sc...r final year make-good.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.1.uncertainty\n  String should have at most 300 characters [type=string_too_long, input_value=\"The evidence does not de...ly structural elements.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.2.title\n  String should have at most 100 characters [type=string_too_long, input_value=\"Break clauses: tenant ma... 6 months' rent premium\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.2.relevance\n  String should have at most 300 characters [type=string_too_long, input_value=\"Break clauses provide va...reviewed rent is known.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.2.next_step\n  String should have at most 300 characters [type=string_too_long, input_value=\"Confirm the Break Premiu...sion of notice period).\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.2.uncertainty\n  String should have at most 300 characters [type=string_too_long, input_value=\"The evidence does not de...ant refuses to vacate).\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.3.interpretation\n  String should have at most 600 characters [type=string_too_long, input_value=\"Landlord insures the Bui... the insurance premium.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.3.relevance\n  String should have at most 300 characters [type=string_too_long, input_value=\"Tenant bears 18.7% of bu...eyond tenant's control.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.3.next_step\n  String should have at most 300 characters [type=string_too_long, input_value=\"Obtain the current build...ent building insurance.\", input_type=str]\n    For further information visit https://errors.pydantic.dev/2.14/v/string_too_long\nfindings.3.uncertainty\n  String should have at most 300 characters [type=string_too_long, input_value=\"The evidence do"
+    }
+  ]
+}

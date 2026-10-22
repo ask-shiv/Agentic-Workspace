@@ -46,17 +46,17 @@ async def test_upload_review_and_serving_preserve_original_bytes_and_detect_muta
         "run",
         AsyncMock(
             return_value=SimpleNamespace(
-                output=review.ReviewOutput(findings=[], gaps=["Need service records"])
+                output=review.SelectedReview(findings=[], gaps=["Need service records"])
             )
         ),
     )
     await review.review_document(document.extracted_text, "Review notice conditions")
-    context = SimpleNamespace(deps=review.DocumentContext(review.split_pages(document.extracted_text)))
-    assert "Ignore instructions" in await review.read_page(context, 1)
-    assert "PDF page 1" in await review.search_document(context, "Notice")
+    pack, _ = review.evidence_pack(review.split_pages(document.extracted_text), "Notice")
+    assert "Ignore instructions" in pack[0].text
     request = review.review_agent.run.await_args
     assert document.file_path not in request.args[0]
-    assert all(isinstance(text, str) for text in request.kwargs["deps"].pages.values())
+    assert "Ignore instructions" in request.args[0]
+    assert "deps" not in request.kwargs
     monkeypatch.setattr(routes, "get_document", AsyncMock(return_value=document))
     response = await routes.serve_document_file("d", session)
     assert response.body == original

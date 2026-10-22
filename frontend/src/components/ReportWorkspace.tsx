@@ -19,6 +19,7 @@ import {
 	type WorkspaceData,
 	briefIsCurrent,
 	emptyWorkspace,
+	evidenceOf,
 	reportIsCurrent,
 	reviewIsCurrent,
 	workspaceRequest,
@@ -105,11 +106,13 @@ export function ReportWorkspace({
 
 	useEffect(() => {
 		const key = new URLSearchParams(location.search).get("citation");
-		const finding = data.findings.find(
-			(item) =>
-				citationKey(item) === key &&
-				item.page === pageFromSearch(location.search),
-		);
+		const finding = data.findings
+			.flatMap(evidenceOf)
+			.find(
+				(item) =>
+					citationKey(item) === key &&
+					item.page === pageFromSearch(location.search),
+			);
 		onCitation(finding?.quote ?? "");
 	}, [data.findings, location.search, onCitation]);
 
@@ -942,19 +945,19 @@ export function ReportWorkspace({
 								<strong>Needs checking:</strong>{" "}
 								{finding.uncertainty || "Legal interpretation requires review."}
 							</p>
-							<div className="group relative inline-block">
-								<SourceCitation finding={finding} />
-								<div className="pointer-events-none absolute bottom-full left-0 z-20 mb-2 hidden w-72 rounded-lg border bg-white p-3 text-xs shadow-lg group-hover:block group-focus-within:block">
-									{finding.quote}
-								</div>
-							</div>
+							<SourceCitation finding={finding} />
 							<details className="text-xs">
 								<summary className="cursor-pointer">
 									Inspect source passage
 								</summary>
-								<blockquote className="mt-2 whitespace-pre-wrap border-l-2 pl-3">
-									{finding.quote}
-								</blockquote>
+								{evidenceOf(finding).map((source) => (
+									<blockquote
+										key={citationKey(source)}
+										className="mt-2 whitespace-pre-wrap border-l-2 pl-3"
+									>
+										PDF page {source.page}: {source.quote}
+									</blockquote>
+								))}
 							</details>
 							<div className="flex flex-wrap items-center gap-2">
 								<button

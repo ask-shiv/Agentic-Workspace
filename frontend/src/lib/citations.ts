@@ -1,4 +1,4 @@
-import type { Finding } from "./workspace";
+import type { Finding, SourceEvidence } from "./workspace";
 
 export function citationKey(finding: Pick<Finding, "page" | "quote">): string {
 	let hash = 2166136261;
@@ -8,7 +8,10 @@ export function citationKey(finding: Pick<Finding, "page" | "quote">): string {
 	return (hash >>> 0).toString(36);
 }
 
-export function citationSearch(search: string, finding: Finding): string {
+export function citationSearch(
+	search: string,
+	finding: SourceEvidence,
+): string {
 	const params = new URLSearchParams(search);
 	params.set("source", "1");
 	params.set("page", String(finding.page));

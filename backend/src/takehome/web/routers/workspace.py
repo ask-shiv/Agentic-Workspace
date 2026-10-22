@@ -317,6 +317,18 @@ async def export_workspace(
                     "Source retained for reference; edited report claims require re-checking.",
                 ]
             )
+            for source in finding.supporting_evidence:
+                source_status = (
+                    "Source checked"
+                    if source.evidence_status == "source_checked"
+                    else "Unverified source"
+                )
+                lines.extend(
+                    [
+                        f"Additional evidence: PDF page {source.page} · {source_status}",
+                        "> " + source.quote.replace("\n", "\n> "),
+                    ]
+                )
     lines.extend(["## Review gaps", *[f"- {gap}" for gap in data.gaps]])
     return Response(
         "\n\n".join(lines),
