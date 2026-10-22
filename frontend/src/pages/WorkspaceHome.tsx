@@ -24,7 +24,7 @@ function WorkspaceWelcome() {
 			busy ||
 			(!uploadFirst &&
 				!chatSelected &&
-				(!workflow || objective.trim().length < 5))
+				(!workflow || (!!objective.trim() && objective.trim().length < 5)))
 		)
 			return;
 		if (file && !file.name.toLowerCase().endsWith(".pdf")) {
@@ -44,7 +44,7 @@ function WorkspaceWelcome() {
 				`/workspaces/${workspace.id}${chatSelected ? "?view=chat" : ""}`,
 				{
 					state: {
-						startWithUpload: uploadFirst,
+						startWithUpload: uploadFirst || !objective.trim(),
 						initialIntent: {
 							workflow,
 							objective: objective.trim(),
@@ -89,7 +89,9 @@ function WorkspaceWelcome() {
 						? "Preparing your workspace…"
 						: chatSelected
 							? "Continue to document chat"
-							: "Continue with this objective"
+							: objective.trim()
+								? "Continue with this objective"
+								: "Continue"
 				}
 			>
 				{error && (

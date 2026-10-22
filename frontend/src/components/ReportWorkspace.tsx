@@ -291,7 +291,12 @@ export function ReportWorkspace({
 		});
 	};
 	const plan = () => {
-		if (!loaded || busy || data.objective.trim().length < 5) return;
+		if (
+			!loaded ||
+			busy ||
+			(data.objective.trim() && data.objective.trim().length < 5)
+		)
+			return;
 		return run("plan", async (signal) => {
 			const result = await workspaceRequest<MatterBrief>(
 				conversationId,
@@ -304,6 +309,8 @@ export function ReportWorkspace({
 				signal,
 			);
 			if (!signal.aborted) {
+				if (!data.objective.trim())
+					change({ ...data, objective: result.objective });
 				setBriefProposal(result);
 				setBriefOpen(true);
 			}
@@ -716,7 +723,13 @@ export function ReportWorkspace({
 					onWorkflow={selectWorkflow}
 					onObjective={(value) => change({ ...data, objective: value })}
 					onContinue={plan}
-					action={busy ? "Planning your work…" : "Plan my work"}
+					action={
+						busy
+							? "Planning your work…"
+							: data.objective.trim()
+								? "Plan my work"
+								: "Suggest a brief"
+					}
 				>
 					<section
 						aria-label="Uploaded document context"

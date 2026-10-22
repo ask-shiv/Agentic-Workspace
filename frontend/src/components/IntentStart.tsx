@@ -161,7 +161,8 @@ export function IntentStart({
 					event.preventDefault();
 					if (
 						!disabled &&
-						(chatSelected || (workflow && objective.trim().length >= 5))
+						(chatSelected ||
+							(workflow && (!objective.trim() || objective.trim().length >= 5)))
 					)
 						onContinue();
 				}}
@@ -230,7 +231,9 @@ export function IntentStart({
 								event.key === "Enter" &&
 								(event.ctrlKey || event.metaKey) &&
 								!disabled &&
-								(chatSelected || (workflow && objective.trim().length >= 5))
+								(chatSelected ||
+									(workflow &&
+										(!objective.trim() || objective.trim().length >= 5)))
 							) {
 								event.preventDefault();
 								onContinue();
@@ -240,7 +243,7 @@ export function IntentStart({
 						value={objective}
 						disabled={disabled}
 						onChange={(event) => onObjective(event.target.value)}
-						placeholder="Tell me what you’re working towards…"
+						placeholder="(Optional) Tell me what you’re working towards…"
 						className="w-full resize-y rounded-xl border p-4 text-sm leading-relaxed"
 					/>
 					<div className="composer-actions">
@@ -262,7 +265,9 @@ export function IntentStart({
 							type="submit"
 							disabled={
 								disabled ||
-								(!chatSelected && (!workflow || objective.trim().length < 5))
+								(!chatSelected &&
+									(!workflow ||
+										(!!objective.trim() && objective.trim().length < 5)))
 							}
 						>
 							{action}

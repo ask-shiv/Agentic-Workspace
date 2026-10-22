@@ -150,7 +150,7 @@ test('planning requires agreement before investigation and successful empty revi
  };
  const router=mount(); const user=userEvent.setup();
  await screen.findByText('Saved revision 1');
- const submit=screen.getByRole('button',{name:'Plan my work'});
+ const submit=screen.getByRole('button',{name:'Suggest a brief'});
  assert(submit.hasAttribute('disabled'));
  await user.type(screen.getByRole('textbox',{name:'What are you trying to achieve?'}),'Review tenant exit rights');
  await user.click(screen.getByRole('radio',{name:/Assess risk/}));

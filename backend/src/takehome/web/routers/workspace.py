@@ -7,7 +7,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from pydantic_ai import Agent
 from pydantic_ai.usage import UsageLimits
 from sqlalchemy import select, update
@@ -44,6 +44,15 @@ class WorkspaceData(BaseModel):
     purpose_unlocked: bool = False
     version: int = Field(default=0, ge=0)
     objective: str = Field(default="", max_length=2000)
+
+    @field_validator("objective")
+    @classmethod
+    def optional_objective(cls, value: str) -> str:
+        value = value.strip()
+        if value and len(value) < 5:
+            raise ValueError("Provide at least five characters, or leave the objective blank.")
+        return value
+
     intent: Literal["risk", "report"] = "risk"
     findings: list[Finding] = Field(default_factory=list, max_length=8)
     gaps: list[str] = Field(default_factory=list, max_length=8)
@@ -186,7 +195,7 @@ async def restore_revision(
 class PlanRequest(BaseModel):
     time_pressure: bool = False
     workflow: Workflow | None = None
-    objective: str = Field(min_length=5, max_length=2000)
+    objective: str = Field(default="", max_length=2000)
 
 
 @router.post("/{conversation_id}/plan", response_model=MatterBrief)

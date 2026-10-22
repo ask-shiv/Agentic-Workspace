@@ -116,6 +116,12 @@ brief_agent = Agent(
 async def propose_brief(
     objective: str, overview: str, workflow: Workflow | None = None, time_pressure: bool = False
 ) -> MatterBrief:
+    infer_objective = not objective.strip()
+    objective = objective.strip() or (
+        "Propose a useful purpose for the uploaded document and selected workflow. "
+        "Identify document-relevant priorities and a suitable deliverable for the lawyer to confirm. "
+        "Do not assume a represented party or client strategy; ask where these are unspecified."
+    )
     result = await asyncio.wait_for(
         brief_agent.run(
             json.dumps(
@@ -133,6 +139,8 @@ async def propose_brief(
         timeout=45,
     )
     proposal = result.output.model_dump()
+    if infer_objective:
+        objective = proposal["outcome"]
     if workflow == "report":
         middle = [
             section

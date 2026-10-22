@@ -237,3 +237,22 @@ async def test_time_pressure_is_proposed_persisted_and_guides_shared_agent_conte
     assert "preserving all conditions" in context["pace_guidance"]
     with pytest.raises(ValueError):
         require_current_briefs(proposed.objective, proposed, base, proposed)
+
+
+@pytest.mark.asyncio
+async def test_blank_objective_proposes_an_outcome_without_overwriting_explicit_goal(monkeypatch):
+    from takehome.services import brief as service
+
+    proposal = service.BriefProposal.model_validate(tenant_brief().model_dump())
+    run = AsyncMock(return_value=SimpleNamespace(output=proposal))
+    monkeypatch.setattr(service.brief_agent, "run", run)
+    inferred = await service.propose_brief("", "Synthetic lease overview", "report")
+    payload = json.loads(run.call_args.args[0])
+    assert payload["document_overview"] == "Synthetic lease overview"
+    assert "Do not assume a represented party" in payload["objective"]
+    assert inferred.objective == proposal.outcome
+    explicit = "Advise the landlord about rental income."
+    supplied = await service.propose_brief(explicit, "Same lease", "risk")
+    assert supplied.objective == explicit
+    assert json.loads(run.call_args.args[0])["objective"] == explicit
+    assert workspace.PlanRequest().objective == ""
