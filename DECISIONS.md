@@ -190,3 +190,7 @@ I removed the “pressed for time” checkbox from the landing page to reduce ch
 With more time, I would add “Brief me” after investigation: a concise overview of the key decisions, outstanding questions and next actions, with links to supporting evidence and the full findings still available. It would summarise the completed review rather than prune the investigation or imply faster processing. I would evaluate whether it preserves material caveats and helps lawyers act before presenting it as a trusted shortcut.
 
 The time-pressure checkbox is also removed from workspace setup, completing its removal from the entry journey. Saved briefs retain their existing fields for compatibility. A future iteration would offer “Brief me” after investigation: a concise, evidence-linked view of decisions, unanswered questions and next steps while keeping the full assessment available. This is deferred work, not a delivered feature or a reason to suppress findings.
+
+## Shell and source-viewer polish (#65)
+
+The sidebar and main header share the same height, with a single orange logo mark wherever navigation is visible. The sidebar has explicit close/reopen controls; desktop close returns focus to the menu button. The welcome atmosphere covers the available workspace while the form remains constrained. PDF reference notices are block elements with normal line wrapping, so their padding no longer fragments across lines. These are presentation changes; source PDF bytes, text layers and citation overlays are unchanged.

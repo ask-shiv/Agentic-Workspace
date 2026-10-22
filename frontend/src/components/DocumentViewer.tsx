@@ -48,7 +48,7 @@ export function DocumentViewer({
 				</p>
 			)}
 			{quote && (
-				<output className="border-b bg-amber-50 p-3 text-xs text-amber-950">
+				<output className="block w-full whitespace-normal break-words border-b bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-950">
 					{overlay?.key !== key
 						? "Locating the reference in the original page…"
 						: boxes.length
