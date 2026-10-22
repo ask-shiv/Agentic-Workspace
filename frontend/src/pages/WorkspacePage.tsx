@@ -34,7 +34,15 @@ export function WorkspacePage() {
 }
 
 function WorkspaceSession({ id }: { id: string }) {
-	const { refreshConversations } = useOutletContext<WorkspaceShellContext>();
+	const { refreshConversations, setWorkspaceStage } =
+		useOutletContext<WorkspaceShellContext>();
+	const publishStage = useCallback(
+		(
+			stage: "loading" | "setup" | "working",
+			view?: "risk" | "report" | "chat",
+		) => setWorkspaceStage?.({ id, stage, view }),
+		[id, setWorkspaceStage],
+	);
 	const [dirty, setDirty] = useState(false);
 	const [quote, setQuote] = useState("");
 	const [search, setSearch] = useSearchParams();
@@ -127,6 +135,7 @@ function WorkspaceSession({ id }: { id: string }) {
 						onUpload={handleUpload}
 						uploading={uploading}
 						conversationId={id}
+						onStageChange={publishStage}
 						document={document}
 						onDirty={setDirty}
 						onCitation={setQuote}

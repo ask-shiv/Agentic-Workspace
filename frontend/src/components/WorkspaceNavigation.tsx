@@ -9,9 +9,12 @@ import {
 	Trash2,
 } from "lucide-react";
 import { Link, NavLink, useLocation, useMatch } from "react-router-dom";
+import type { WorkspaceStage } from "../context/workspace-shell";
 import type { Conversation } from "../types";
 
 interface Props {
+	currentView?: "risk" | "report" | "chat";
+	workspaceStage?: WorkspaceStage;
 	conversations: Conversation[];
 	loading: boolean;
 	onCreate: () => void;
@@ -26,6 +29,8 @@ function navigationTitle(item: Conversation) {
 }
 
 export function WorkspaceNavigation({
+	workspaceStage = "working",
+	currentView,
 	conversations,
 	loading,
 	onCreate,
@@ -34,11 +39,12 @@ export function WorkspaceNavigation({
 }: Props) {
 	const match = useMatch("/workspaces/:workspaceId");
 	const location = useLocation();
-	const view = new URLSearchParams(location.search).get("view") ?? "risk";
+	const view =
+		new URLSearchParams(location.search).get("view") ?? currentView ?? "risk";
 	return (
 		<nav
 			aria-label="Workspace navigation"
-			className="workspace-navigation flex h-full w-full lg:w-64 flex-col bg-[#0c1017] text-white"
+			className="workspace-navigation block min-h-0 h-full w-full lg:w-64 bg-[#0c1017] text-white"
 		>
 			<Link
 				to="/"
@@ -60,23 +66,32 @@ export function WorkspaceNavigation({
 					onClick={onCreate}
 				>
 					<Plus size={17} aria-hidden="true" />
-					New workspace
+					Start new work
 				</button>
+				<p className="mt-2 text-xs text-neutral-400">
+					Choose a goal and add a document.
+				</p>
 			</div>
 			<div className="space-y-1 px-3 pb-5">
 				<Link to="/" onClick={onFollow} className="sidebar-link">
 					<Home aria-hidden="true" size={17} /> Home
 				</Link>
 				{match &&
+					workspaceStage === "working" &&
 					(
 						[
-							{ view: "risk", label: "Evidence & findings", icon: ListChecks },
-							{ view: "report", label: "Working report", icon: FilePenLine },
-							{ view: "chat", label: "Ask a follow-up", icon: MessageSquare },
+							{ view: "risk", label: "Review findings", icon: ListChecks },
+							{ view: "report", label: "Write report", icon: FilePenLine },
+							{
+								view: "chat",
+								label: "Document questions",
+								icon: MessageSquare,
+							},
 						] as const
 					).map((item) => {
 						const query = new URLSearchParams(location.search);
 						query.set("view", item.view);
+						query.delete("source");
 						return (
 							<Link
 								key={item.view}
@@ -90,11 +105,18 @@ export function WorkspaceNavigation({
 							</Link>
 						);
 					})}
+				{match && workspaceStage !== "working" && (
+					<p className="px-3 pt-3 text-xs leading-relaxed text-neutral-400">
+						{workspaceStage === "loading"
+							? "Loading this workspace…"
+							: "Agree your objective and investigate to open findings, your report and document questions."}
+					</p>
+				)}
 			</div>
 			<p className="px-5 pb-2 text-xs font-medium uppercase tracking-widest text-teal-100">
 				Your work
 			</p>
-			<div className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-4">
+			<div className="space-y-1 px-3 pb-4">
 				{loading && (
 					<output className="px-2 py-3 text-sm">Loading workspaces…</output>
 				)}

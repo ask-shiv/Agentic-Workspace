@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import {useState} from 'react';
 import {createMemoryRouter,Outlet,RouterProvider} from 'react-router-dom';
 import {WorkspaceHome} from '../src/pages/WorkspaceHome';
+import {AppShell} from '../src/layouts/AppShell';
 import {ReportWorkspace} from '../src/components/ReportWorkspace';
 import {WorkspaceNavigation} from '../src/components/WorkspaceNavigation';
 import {PreferencesProvider,preferencesKey} from '../src/context/preferences';
@@ -57,9 +58,11 @@ test('sidebar view navigation preserves the chosen workflow and unsaved report j
  const router=createMemoryRouter([{path:'*',element:<PreferencesProvider><div data-workspace-shell><WorkspaceNavigation conversations={[]} loading={false} onCreate={()=>{}}/><ReportWorkspace conversationId='a' document={doc} onDirty={()=>{}} onCitation={()=>{}}>{context=><output data-testid='context'>{JSON.stringify(context)}</output>}</ReportWorkspace></div></PreferencesProvider>}],{initialEntries:['/workspaces/a?view=report']});
  render(<RouterProvider router={router}/>);const user=userEvent.setup();
  const editor=await screen.findByRole('textbox',{name:'Introduction'});await user.type(editor,'My negotiating decision.');
- await user.click(screen.getByRole('link',{name:'Evidence & findings'}));
+ await user.click(screen.getByRole('link',{name:'Review findings'}));
+ assert.equal(document.activeElement?.id,'view-risk');
  assert.equal(new URLSearchParams(router.state.location.search).get('view'),'risk');
- await user.click(screen.getByRole('link',{name:'Working report'}));
+ await user.click(screen.getByRole('link',{name:'Write report'}));
+ assert.equal(document.activeElement?.id,'view-report');
  assert.equal((screen.getByRole('textbox',{name:'Introduction'}) as HTMLTextAreaElement).value,'My negotiating decision.');
  assert.equal(JSON.parse(screen.getByTestId('context').textContent??'{}').brief.workflow,'risk');
  await user.click(screen.getByText('Workspace tools'));
@@ -119,4 +122,42 @@ test('upload first shows document context then asks for an objective before mode
  assert(screen.getByRole('button',{name:'Plan my work'}).hasAttribute('disabled'));
  assert((screen.getByRole('checkbox',{name:/pressed for time/}) as HTMLInputElement).checked);
  assert(!calls.some(url=>url.endsWith('/plan')||url.endsWith('/review')));router.dispose();
+});
+
+
+test('setup sidebar explains the next step instead of offering inert view links',()=>{
+ const router=createMemoryRouter([{path:'*',element:<WorkspaceNavigation conversations={[]} workspaceStage='setup' loading={false} onCreate={()=>{}}/>}],{initialEntries:['/workspaces/a?view=chat']});
+ render(<RouterProvider router={router}/>);
+ assert.equal(screen.queryByRole('link',{name:'Document questions'}),null);
+ assert(screen.getByText(/Agree your objective and investigate/));
+ assert(screen.getByRole('button',{name:'Start new work'}));
+ assert(screen.getByText('Choose a goal and add a document.'));
+ router.dispose();
+});
+
+
+test('start new work closes the mobile drawer even when already on Home',async()=>{
+ const originalMedia=window.matchMedia;
+ window.matchMedia=query=>({...originalMedia(query),matches:false});
+ globalThis.fetch=async()=>Response.json([]);
+ const router=createMemoryRouter([{element:<PreferencesProvider><AppShell/></PreferencesProvider>,children:[{path:'/',element:<WorkspaceHome/>}]}],{initialEntries:['/']});
+ try {
+  render(<RouterProvider router={router}/>);const user=userEvent.setup();
+  for(let attempt=0;attempt<2;attempt++){
+   await user.click(screen.getByRole('button',{name:'Open workspace navigation'}));
+   await screen.findByRole('dialog',{name:'Workspaces'});
+   await user.click(screen.getByRole('button',{name:'Start new work'}));
+   await waitFor(()=>assert.equal(screen.queryByRole('dialog',{name:'Workspaces'}),null));
+   assert.equal((screen.getByRole('textbox',{name:'What are you trying to achieve?'}) as HTMLTextAreaElement).value,'');
+  }
+ } finally {router.dispose();window.matchMedia=originalMedia;}
+});
+
+
+test('sidebar highlights the resumed saved view when the bookmark has no view query',()=>{
+ const router=createMemoryRouter([{path:'*',element:<WorkspaceNavigation conversations={[]} currentView='report' workspaceStage='working' loading={false} onCreate={()=>{}}/>}],{initialEntries:['/workspaces/a']});
+ render(<RouterProvider router={router}/>);
+ assert.equal(screen.getByRole('link',{name:'Write report'}).getAttribute('aria-current'),'page');
+ assert.equal(screen.getByRole('link',{name:'Review findings'}).getAttribute('aria-current'),null);
+ router.dispose();
 });
