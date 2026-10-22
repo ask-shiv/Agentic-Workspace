@@ -141,3 +141,6 @@ The presets change planning and the task context sent to investigation, drafting
 
 
 Investigations now select exact source-passage IDs rather than composing quotations. Compound findings retain separate supporting citations in the reader, saved revisions and downloads. Oversized sources are explicitly labelled partial reviews. Repeated synthetic risk/report checks completed in about 23 seconds; these are engineering checks, not legal assurance. A labelled “Reliability check — synthetic lease” workspace is available locally for inspection.
+
+
+Home/New workspace starts clean with **What are you trying to achieve?**. Choose a working preset and objective, or add a document first. A saved local profile name supplies the personal welcome. The optional time-pressure preference accompanies the agreed brief; it prioritises decision-critical work without promising faster model responses. Saved workspace links resume the existing matter.

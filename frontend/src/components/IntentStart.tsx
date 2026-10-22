@@ -1,5 +1,6 @@
 import { ArrowRight, FilePenLine, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
+import { usePreferences } from "../context/preferences";
 import type { Workflow } from "../lib/workspace";
 
 export function WorkflowChoices({
@@ -7,7 +8,7 @@ export function WorkflowChoices({
 	disabled = false,
 	onChange,
 }: {
-	value: Workflow;
+	value: Workflow | null;
 	disabled?: boolean;
 	onChange: (value: Workflow) => void;
 }) {
@@ -73,8 +74,11 @@ export function IntentStart({
 	disabled = false,
 	action = "Continue",
 	children,
+	timePressure = false,
+	onTimePressure,
+	onUploadFirst,
 }: {
-	workflow: Workflow;
+	workflow: Workflow | null;
 	objective: string;
 	onWorkflow: (value: Workflow) => void;
 	onObjective: (value: string) => void;
@@ -82,32 +86,33 @@ export function IntentStart({
 	disabled?: boolean;
 	action?: string;
 	children?: ReactNode;
+	timePressure?: boolean;
+	onTimePressure?: (value: boolean) => void;
+	onUploadFirst?: () => void;
 }) {
+	const { preferences } = usePreferences();
+	const name = preferences.name.trim().split(/\s+/)[0];
 	return (
 		<div className="intent-start mx-auto flex w-full max-w-2xl flex-col justify-center px-5 py-12 md:px-8">
 			<p className="mb-3 text-xs font-medium uppercase tracking-[0.2em] text-blue-300">
-				Intent → collaboration → outcome
+				{name ? `Welcome back, ${name}.` : "Welcome. Let’s work together."}
 			</p>
 			<h2 className="mb-4 text-3xl font-semibold leading-tight tracking-tight md:text-4xl">
-				What would you like to move forward today?
+				What are you trying to achieve?
 			</h2>
 			<p className="mb-8 max-w-xl text-sm leading-relaxed text-neutral-400">
-				You bring the judgment. Your collaborator helps investigate the evidence
-				and shape the work. Start with the outcome you need.
+				You set the direction. I’ll help investigate the evidence and shape the
+				work. You make the decisions.
 			</p>
 			<form
 				onSubmit={(event) => {
 					event.preventDefault();
-					if (!disabled && objective.trim().length >= 5) onContinue();
+					if (!disabled && workflow && objective.trim().length >= 5)
+						onContinue();
 				}}
 				className="space-y-6"
 			>
-				<WorkflowChoices
-					value={workflow}
-					disabled={disabled}
-					onChange={onWorkflow}
-				/>
-				<label htmlFor="objective" className="block text-sm font-medium">
+				<label htmlFor="objective" className="sr-only">
 					What are you trying to achieve?
 				</label>
 				<textarea
@@ -118,6 +123,7 @@ export function IntentStart({
 							event.key === "Enter" &&
 							(event.ctrlKey || event.metaKey) &&
 							!disabled &&
+							workflow &&
 							objective.trim().length >= 5
 						) {
 							event.preventDefault();
@@ -128,18 +134,44 @@ export function IntentStart({
 					value={objective}
 					disabled={disabled}
 					onChange={(event) => onObjective(event.target.value)}
-					placeholder="I’m advising a tenant considering this lease. Help me understand the commercial risks before negotiations."
+					placeholder="Tell me what you’re working towards…"
 					className="w-full resize-y rounded-xl border p-4 text-sm leading-relaxed"
 				/>
+				<WorkflowChoices
+					value={workflow}
+					disabled={disabled}
+					onChange={onWorkflow}
+				/>
+				{onTimePressure && (
+					<label className="flex items-center gap-3 text-sm text-neutral-300">
+						<input
+							type="checkbox"
+							checked={timePressure}
+							disabled={disabled}
+							onChange={(event) => onTimePressure(event.target.checked)}
+						/>
+						I’m pressed for time — focus on the decisions that matter most.
+					</label>
+				)}
 				{children}
 				<button
 					className="primary-button w-full sm:w-auto"
 					type="submit"
-					disabled={disabled || objective.trim().length < 5}
+					disabled={disabled || !workflow || objective.trim().length < 5}
 				>
 					{action}
 					<ArrowRight aria-hidden="true" className="h-4 w-4" />
 				</button>
+				{onUploadFirst && (
+					<button
+						type="button"
+						className="quiet-button ml-0 sm:ml-4"
+						disabled={disabled}
+						onClick={onUploadFirst}
+					>
+						Add a document first
+					</button>
+				)}
 			</form>
 		</div>
 	);

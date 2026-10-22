@@ -49,7 +49,7 @@ async def test_plan_is_a_proposal_and_does_not_save_the_workspace(monkeypatch):
         "a", workspace.PlanRequest(objective=brief.objective), session
     )
     assert result == brief
-    proposal.assert_awaited_once_with(brief.objective, "Synthetic document overview", None)
+    proposal.assert_awaited_once_with(brief.objective, "Synthetic document overview", None, False)
     session.commit.assert_not_awaited()
 
 
@@ -169,6 +169,13 @@ async def test_export_rejects_saved_unlocked_purpose_and_workflow_drift():
         workspace.WorkspaceData(objective="Changed purpose", purpose_unlocked=True),
         workspace.WorkspaceData(
             objective=brief.objective,
+            workflow="risk",
+            brief=brief.model_copy(update={"time_pressure": True}),
+            review_brief=brief.model_copy(update={"time_pressure": True}),
+            report_brief=brief.model_copy(update={"time_pressure": True}),
+        ),
+        workspace.WorkspaceData(
+            objective=brief.objective,
             workflow="report",
             brief=brief,
             review_brief=brief,
@@ -209,3 +216,24 @@ async def test_workflow_presets_change_planning_and_shared_agent_context(monkeyp
     assert "audience-specific" in task_context(base.objective, report)
     with pytest.raises(ValueError):
         require_current_briefs(base.objective, report, risk, risk)
+
+
+@pytest.mark.asyncio
+async def test_time_pressure_is_proposed_persisted_and_guides_shared_agent_context(monkeypatch):
+    from takehome.services import brief as service
+
+    base = tenant_brief()
+    run = AsyncMock(
+        return_value=SimpleNamespace(output=service.BriefProposal.model_validate(base.model_dump()))
+    )
+    monkeypatch.setattr(service.brief_agent, "run", run)
+    proposed = await service.propose_brief(base.objective, "Synthetic lease", "risk", True)
+    assert proposed.time_pressure is True
+    prompt = json.loads(run.await_args.args[0])
+    assert prompt["time_pressure"] is True
+    assert "three decision-critical" in prompt["pace_guidance"]
+    context = json.loads(task_context(proposed.objective, proposed))
+    assert context["agreed_brief"]["time_pressure"] is True
+    assert "preserving all conditions" in context["pace_guidance"]
+    with pytest.raises(ValueError):
+        require_current_briefs(proposed.objective, proposed, base, proposed)

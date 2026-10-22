@@ -102,7 +102,7 @@ export function AppShell() {
 							Orbital · Working together
 						</Link>
 						<span className="hidden text-xs text-neutral-600 sm:inline">
-							Your intent. Our shared workspace.
+							Your goal. Our shared workspace.
 						</span>
 					</div>
 					<div className="flex shrink-0 items-center gap-2">
