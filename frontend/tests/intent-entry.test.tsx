@@ -98,7 +98,7 @@ test('fresh arrival is blank and remembers only a real local profile name',async
  assert(screen.getByRole('heading',{name:'What are you trying to achieve?'}));
  assert.equal((screen.getByRole('textbox') as HTMLTextAreaElement).value,'');
  assert((screen.getByRole('radio',{name:/Build report/}) as HTMLInputElement).checked);
- assert(screen.getByRole('button',{name:'Continue with this objective'}).hasAttribute('disabled'));
+ assert(!screen.getByRole('button',{name:'Continue'}).hasAttribute('disabled'));
  await user.type(screen.getByRole('textbox'),'Review commercial risks');
  await act(()=>router.navigate('/'));
  await waitFor(()=>assert.equal((screen.getByRole('textbox') as HTMLTextAreaElement).value,''));
@@ -118,7 +118,7 @@ test('upload first shows document context then asks for an objective before mode
  await screen.findByRole('region',{name:'Uploaded document context'});
  assert(screen.getByText(/lease.pdf · 3 pages/));
  assert.equal((screen.getByRole('textbox') as HTMLTextAreaElement).value,'');
- assert(screen.getByRole('button',{name:'Plan my work'}).hasAttribute('disabled'));
+ assert(!screen.getByRole('button',{name:'Suggest a brief'}).hasAttribute('disabled'));
  assert.equal(screen.queryByRole('checkbox',{name:/pressed for time/}),null);
  assert(!calls.some(url=>url.endsWith('/plan')||url.endsWith('/review')));router.dispose();
 });
@@ -187,4 +187,18 @@ test('landing dropzone uploads a PDF with the selected report workflow and rejec
  assert.deepEqual(calls,['/api/conversations','/api/conversations/a/documents']);
  assert.equal(router.state.location.state.initialIntent.workflow,'report');
  assert.equal(router.state.location.state.startWithUpload,true);
+});
+
+test('blank objective can be proposed but still requires agreement before investigation',async()=>{
+ const calls:string[]=[];
+ const inferred='Prepare a lease negotiation briefing for client discussion.';
+ globalThis.fetch=async(input)=>{const url=String(input);calls.push(url);if(url.endsWith('/plan'))return Response.json({...tenantBrief,objective:inferred,outcome:inferred});return Response.json(emptyWorkspace());};
+ const router=createMemoryRouter([{path:'*',element:<PreferencesProvider><ReportWorkspace conversationId='a' document={doc} onDirty={()=>{}} onCitation={()=>{}}><p>Chat</p></ReportWorkspace></PreferencesProvider>}],{initialEntries:['/workspaces/a']});
+ render(<RouterProvider router={router}/>);const user=userEvent.setup();
+ await user.click(await screen.findByRole('radio',{name:/Build report/}));
+ assert(screen.getByPlaceholderText('(Optional) Tell me what you’re working towards…'));
+ await user.click(screen.getByRole('button',{name:'Suggest a brief'}));
+ await screen.findByRole('button',{name:'Agree brief and investigate'});
+ assert.equal((document.querySelector('#objective') as HTMLTextAreaElement).value,inferred);
+ assert(!calls.some(url=>url.endsWith('/review')));
 });
