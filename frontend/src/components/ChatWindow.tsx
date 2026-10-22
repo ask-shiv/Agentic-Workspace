@@ -6,6 +6,7 @@ import { EmptyState } from "./EmptyState";
 import { MessageBubble, StreamingBubble } from "./MessageBubble";
 
 interface ChatWindowProps {
+	contextBlocked?: boolean;
 	messages: Message[];
 	loading: boolean;
 	error: string | null;
@@ -27,6 +28,7 @@ export function ChatWindow({
 	conversationId,
 	onSend,
 	onUpload,
+	contextBlocked = false,
 }: ChatWindowProps) {
 	const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -76,10 +78,16 @@ export function ChatWindow({
 						<EmptyState onUpload={onUpload} />
 					)}
 				</div>
+				{contextBlocked && (
+					<p className="bg-amber-50 p-3 text-sm text-amber-900">
+						Agree the new brief before continuing chat. Previous messages remain
+						visible and may relate to the earlier task.
+					</p>
+				)}
 				<ChatInput
 					onSend={onSend}
 					onUpload={onUpload}
-					disabled={streaming}
+					disabled={streaming || contextBlocked}
 					hasDocument={hasDocument}
 				/>
 			</div>
@@ -103,10 +111,16 @@ export function ChatWindow({
 				</div>
 			</div>
 
+			{contextBlocked && (
+				<p className="bg-amber-50 p-3 text-sm text-amber-900">
+					Agree the new brief before continuing chat. Previous messages remain
+					visible and may relate to the earlier task.
+				</p>
+			)}
 			<ChatInput
 				onSend={onSend}
 				onUpload={onUpload}
-				disabled={streaming}
+				disabled={streaming || contextBlocked}
 				hasDocument={hasDocument}
 			/>
 		</div>

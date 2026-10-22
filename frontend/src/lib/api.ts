@@ -4,6 +4,7 @@ import type {
 	Document,
 	Message,
 } from "../types";
+import type { MatterBrief } from "./workspace";
 
 const BASE = "/api";
 
@@ -61,11 +62,12 @@ export async function sendMessage(
 	conversationId: string,
 	content: string,
 	signal?: AbortSignal,
+	task?: { objective: string; brief: MatterBrief | null },
 ): Promise<Response> {
 	const res = await fetch(`${BASE}/conversations/${conversationId}/messages`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ content }),
+		body: JSON.stringify({ content, ...task }),
 		signal,
 	});
 	if (!res.ok) {

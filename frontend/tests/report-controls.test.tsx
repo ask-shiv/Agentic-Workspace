@@ -1,3 +1,4 @@
+import { tenantBrief } from './brief-fixture';
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -102,9 +103,10 @@ test('restore conflicts remain visible inside history and leave current work int
  router.dispose();
 });
 
-test('objective submission ignores unchanged text, allows retry and records only successful reviews', async()=>{
+test('the purpose lock requires confirmation and failed investigation remains retryable', async()=>{
  let attempts=0; let finishReview: ((response: Response)=>void) | undefined;
- const saved={...current,review_objective:current.objective};
+ const brief={...tenantBrief,objective:current.objective};
+ const saved={...current,review_objective:current.objective,brief,review_brief:brief,report_brief:brief};
  globalThis.fetch=async(input)=>{
   if(String(input).endsWith('/review')) {
    attempts++;
@@ -115,46 +117,52 @@ test('objective submission ignores unchanged text, allows retry and records only
  };
  const router=mount(); const user=userEvent.setup();
  await screen.findByText('Saved revision 2');
- const submit=screen.getByRole('button',{name:'Update review'});
  const objective=screen.getByRole('textbox',{name:'What are you trying to achieve?'});
- assert(submit.hasAttribute('disabled'));
+ assert(objective.hasAttribute('disabled'));
+ assert(screen.getByRole('button',{name:'Review up to date'}).hasAttribute('disabled'));
  await user.type(screen.getByRole('textbox',{name:'Introduction'}),' Lawyer amendment.');
- assert(submit.hasAttribute('disabled'));
- await user.type(objective,'   '); assert(submit.hasAttribute('disabled'));
+ assert(screen.getByRole('button',{name:'Review up to date'}).hasAttribute('disabled'));
+ window.confirm=()=>false;
+ await user.click(screen.getByRole('button',{name:'Change purpose'}));assert(objective.hasAttribute('disabled'));
+ window.confirm=()=>true;
+ await user.click(screen.getByRole('button',{name:'Change purpose'}));assert(!objective.hasAttribute('disabled'));
+ await user.type(objective,'   ');
  assert.equal(screen.queryByText(/Objective changed/),null);
- await user.clear(objective); assert(submit.hasAttribute('disabled'));
- await user.type(objective,'Prioritise tenant exit flexibility'); assert(!submit.hasAttribute('disabled'));
+ const submit=screen.getByRole('button',{name:'Investigate brief'});assert(!submit.hasAttribute('disabled'));
  window.confirm=()=>false;
  await user.keyboard('{Enter}'); assert.equal(attempts,0);
  window.confirm=()=>true;
  await user.keyboard('{Enter}');
  await screen.findByText('Review unavailable. Try again.'); assert(!submit.hasAttribute('disabled'));
  await user.click(submit);
- assert(screen.getByRole('button',{name:'Updating review…'}).hasAttribute('disabled'));
+ assert(screen.getByRole('button',{name:'Investigating…'}).hasAttribute('disabled'));
  assert(objective.hasAttribute('disabled'));
  assert.equal(attempts,2);
  finishReview?.(Response.json({findings:[finding],gaps:[]}));
- await waitFor(()=>assert(screen.getByRole('button',{name:'Update review'}).hasAttribute('disabled')));
+ await waitFor(()=>assert(screen.getByRole('button',{name:'Review up to date'}).hasAttribute('disabled')));
+ assert(objective.hasAttribute('disabled'));
  assert((screen.getByRole('textbox',{name:'Introduction'}) as HTMLTextAreaElement).value.includes('Lawyer amendment.'));
- assert.equal(screen.queryByText('Review unavailable. Try again.'),null);
  router.dispose();
 });
 
-test('the first objective can be submitted and a successful empty review is not resubmitted unchanged',async()=>{
+test('planning requires agreement before investigation and successful empty reviews still lock the purpose',async()=>{
  let attempts=0;
- globalThis.fetch=async(input)=>{
+ globalThis.fetch=async(input,init)=>{
+  if(String(input).endsWith('/plan')) return Response.json({...tenantBrief,objective:JSON.parse(String(init?.body)).objective});
   if(String(input).endsWith('/review')) {attempts++;return Response.json({findings:[],gaps:['No matching provision found.']});}
   return Response.json({...emptyWorkspace(),version:1});
  };
  const router=mount(); const user=userEvent.setup();
  await screen.findByText('Saved revision 1');
- const submit=screen.getByRole('button',{name:'Review document'});
+ const submit=screen.getByRole('button',{name:'Plan my work'});
  assert(submit.hasAttribute('disabled'));
  await user.type(screen.getByRole('textbox',{name:'What are you trying to achieve?'}),'Review tenant exit rights');
- assert(!submit.hasAttribute('disabled'));
  await user.keyboard('{Enter}');
+ await screen.findByRole('dialog',{name:'Agree the brief'}); assert.equal(attempts,0);
+ await user.click(screen.getByRole('button',{name:'Agree brief and investigate'}));
  await screen.findByText('No matching provision found.');
- assert(screen.getByRole('button',{name:'Update review'}).hasAttribute('disabled'));
+ assert(screen.getByRole('button',{name:'Review up to date'}).hasAttribute('disabled'));
+ assert(screen.getByRole('textbox',{name:'What are you trying to achieve?'}).hasAttribute('disabled'));
  assert.equal(attempts,1);
  router.dispose();
 });
