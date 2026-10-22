@@ -97,3 +97,5 @@ Append one short entry per meaningful pass here: invariant affected, checks, and
 - Workspace setup simplification (#63): the shared intent entry must not expose the removed time-pressure checkbox. Keep saved brief fields compatible and verify both Home and document-upload setup remain free of that control. Brief me remains deferred.
 
 - Shell/viewer polish: show header branding only when navigation branding is hidden; keep the welcome atmosphere full-width while constraining form content. PDF status output must be a block with normal wrapping so inline padding cannot overlap the page. Preserve the source-byte and overlay boundaries.
+
+- Workflow chips: keep equal-width columns independent of selection/text length; animate only the decorative selected pill, retain native radio/focus semantics and disable transitions for reduced motion. No workflow changes should result from layout animation.
