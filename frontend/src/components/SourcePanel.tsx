@@ -18,6 +18,36 @@ export function SourcePanel({
 	const [mode, setMode] = useState<"pdf" | "text">(
 		preferences.readingMode ? "text" : "pdf",
 	);
+	const [integrity, setIntegrity] = useState<{
+		id: string;
+		status: string;
+		error?: string;
+	} | null>(null);
+	useEffect(() => {
+		const scope = new AbortController();
+		fetch(`/api/documents/${document.id}/integrity`, { signal: scope.signal })
+			.then(async (response) => {
+				if (!response.ok)
+					throw new Error(
+						response.status === 409
+							? "The original PDF failed its integrity check. Re-upload the trusted original."
+							: "Could not verify the original PDF. Try reopening it.",
+					);
+				const value = await response.json();
+				if (!scope.signal.aborted)
+					setIntegrity({ id: document.id, status: value.status });
+			})
+			.catch((error) => {
+				if (!scope.signal.aborted)
+					setIntegrity({
+						id: document.id,
+						status: "failed",
+						error: error.message,
+					});
+			});
+		return () => scope.abort();
+	}, [document.id]);
+	const sourceReady = integrity?.id === document.id;
 	const [text, setText] = useState("");
 	const [error, setError] = useState<string | null>(null);
 	useEffect(() => {
@@ -64,6 +94,17 @@ export function SourcePanel({
 					Page {page} of {document.page_count}
 				</span>
 			</div>
+			<p
+				role={integrity?.error ? "alert" : "status"}
+				className="border-b px-4 py-2 text-xs text-neutral-700"
+			>
+				{!sourceReady
+					? "Checking original PDF…"
+					: (integrity.error ??
+						(integrity.status === "verified"
+							? "Original PDF · matches upload fingerprint (SHA-256)"
+							: "Legacy upload · no upload-time fingerprint recorded. Re-upload the original to enable integrity verification."))}
+			</p>
 			{quote && (
 				<details className="border-b bg-amber-50 px-4 py-3 text-sm">
 					<summary className="cursor-pointer font-medium">
@@ -74,7 +115,7 @@ export function SourcePanel({
 					</blockquote>
 				</details>
 			)}
-			{mode === "pdf" ? (
+			{!sourceReady || integrity.error ? null : mode === "pdf" ? (
 				<DocumentViewer
 					key={`${document.id}-${page}`}
 					document={document}

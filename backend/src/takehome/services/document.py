@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import os
 import uuid
 
@@ -28,7 +29,9 @@ async def upload_document(
     # Check if conversation already has a document
     existing = await get_document_for_conversation(session, conversation_id)
     if existing is not None:
-        raise ValueError("Conversation already has a document. Only one document per conversation is allowed.")
+        raise ValueError(
+            "Conversation already has a document. Only one document per conversation is allowed."
+        )
 
     # Validate file type
     if file.content_type not in ("application/pdf", "application/x-pdf"):
@@ -46,7 +49,7 @@ async def upload_document(
         )
 
     # Generate a unique filename to avoid collisions
-    original_filename = file.filename or "document.pdf"
+    original_filename = os.path.basename(file.filename or "document.pdf")
     unique_name = f"{uuid.uuid4().hex}_{original_filename}"
     file_path = os.path.join(settings.upload_dir, unique_name)
 
@@ -56,6 +59,7 @@ async def upload_document(
     # Save the file to disk
     with open(file_path, "wb") as f:
         f.write(content)
+    os.chmod(file_path, 0o444)
 
     logger.info("Saved uploaded PDF", filename=original_filename, path=file_path, size=len(content))
 
@@ -91,6 +95,7 @@ async def upload_document(
         file_path=file_path,
         extracted_text=extracted_text if extracted_text else None,
         page_count=page_count,
+        source_sha256=hashlib.sha256(content).hexdigest(),
     )
     session.add(document)
     await session.commit()

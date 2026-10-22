@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Document as PDFDocument, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { getDocumentUrl } from "../lib/api";
-import { matchQuote, renderHighlighted } from "../lib/pdf-highlight";
+import { type HighlightBox, sourceHighlightBoxes } from "../lib/pdf-highlight";
 import type { Document } from "../types";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -17,10 +17,19 @@ export function DocumentViewer({
 	quote,
 }: { document: Document; page: number; quote: string }) {
 	const container = useRef<HTMLDivElement>(null);
+	const pageRoot = useRef<HTMLDivElement>(null);
 	const [width, setWidth] = useState(360);
-	const [items, setItems] = useState<string[]>([]);
 	const [error, setError] = useState<string | null>(null);
-	const highlights = useMemo(() => matchQuote(items, quote), [items, quote]);
+	const [overlay, setOverlay] = useState<{
+		key: string;
+		boxes: HighlightBox[];
+	} | null>(null);
+	const key = JSON.stringify([document.id, page, quote, width]);
+	const boxes = overlay?.key === key ? overlay.boxes : [];
+	const locate = useCallback(() => {
+		if (pageRoot.current)
+			setOverlay({ key, boxes: sourceHighlightBoxes(pageRoot.current, quote) });
+	}, [key, quote]);
 	useEffect(() => {
 		const target = container.current;
 		if (!target) return;
@@ -38,32 +47,42 @@ export function DocumentViewer({
 					{error} Use extracted text if the PDF cannot be rendered.
 				</p>
 			)}
-			<PDFDocument
-				file={getDocumentUrl(document.id)}
-				loading={<p className="p-4 text-sm">Loading original PDF…</p>}
-				onLoadError={(value) => setError(value.message)}
-			>
-				<Page
-					pageNumber={page}
-					width={width}
-					loading={<p className="p-4 text-sm">Rendering page…</p>}
-					onGetTextSuccess={(content) =>
-						setItems(
-							content.items.map((item) => ("str" in item ? item.str : "")),
-						)
-					}
-					customTextRenderer={({ str, itemIndex }) =>
-						renderHighlighted(str, highlights.get(itemIndex))
-					}
-				/>
-			</PDFDocument>
 			{quote && (
-				<p className="border-t bg-teal-50 p-3 text-xs text-teal-950">
-					{highlights.size
-						? "The matching source passage is highlighted. The PDF itself is unchanged."
-						: "No exact match in the rendered text layer. Compare the reference passage with the original page or extracted text."}
-				</p>
+				<output className="border-b bg-amber-50 p-3 text-xs text-amber-950">
+					{overlay?.key !== key
+						? "Locating the reference in the original page…"
+						: boxes.length
+							? "Exact passage highlighted with a visual overlay. Original PDF text and bytes are unchanged."
+							: "No exact passage found. This reference may combine or alter source text. No highlight has been drawn; compare the reference passage with the original."}
+				</output>
 			)}
+			<div ref={pageRoot} className="relative w-fit">
+				<PDFDocument
+					file={getDocumentUrl(document.id)}
+					loading={<p className="p-4 text-sm">Loading original PDF…</p>}
+					onLoadError={(value) => setError(value.message)}
+				>
+					<Page
+						pageNumber={page}
+						width={width}
+						loading={<p className="p-4 text-sm">Rendering page…</p>}
+						onRenderTextLayerSuccess={locate}
+					/>
+				</PDFDocument>
+				<div
+					aria-hidden="true"
+					className="pointer-events-none absolute inset-0 z-10"
+					data-testid="source-highlight-overlay"
+				>
+					{boxes.map((box) => (
+						<div
+							key={`${box.left}-${box.top}-${box.width}-${box.height}`}
+							className="absolute border-b-2 border-amber-700 bg-yellow-300/30"
+							style={box}
+						/>
+					))}
+				</div>
+			</div>
 		</div>
 	);
 }

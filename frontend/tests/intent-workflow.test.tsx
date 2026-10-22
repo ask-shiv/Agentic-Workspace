@@ -24,23 +24,23 @@ test('brief planning, protected outline replacement, drafting and reload share t
   if(init?.method==='PUT'){server={...body,version:server.version+1};return Response.json(server);}
   return Response.json(server);
  };
- window.confirm=()=>true;const user=userEvent.setup();const first=mount();
+ window.confirm=()=>{throw new Error("Native confirmation must not run for intent changes");};const user=userEvent.setup();const first=mount();
  await screen.findByText('Saved revision 2');
- await user.click(screen.getByRole('button',{name:'Change purpose'}));
+ await user.click(screen.getByRole('button',{name:'Change purpose'}));await user.click(await screen.findByRole('button',{name:'Unlock purpose'}));
  const objective=screen.getByRole('textbox',{name:'What are you trying to achieve?'});
  await user.clear(objective);await user.type(objective,tenantBrief.objective);await user.click(screen.getByRole('button',{name:'Plan my work'}));
  await screen.findByRole('dialog',{name:'Agree the brief'});
  assert.equal((screen.getByRole('textbox',{name:'Introduction',hidden:true}) as HTMLTextAreaElement).value,'Preserve my earlier advice.');
  assert(!calls.some(call=>call.action==='review'));
  const outcome=screen.getByRole('textbox',{name:'Intended outcome'});await user.clear(outcome);await user.type(outcome,'Prepare a short client update on 2029 exit feasibility.');
- await user.click(screen.getByRole('button',{name:'Agree brief and investigate'}));
+ await user.click(screen.getByRole('button',{name:'Agree brief and investigate'}));await user.click(await screen.findByRole('button',{name:'Replace and investigate'}));
  await screen.findByRole('button',{name:'Review up to date'});
  const agreed=calls.find(call=>call.action==='review')?.body.brief as typeof tenantBrief;
  assert.equal(agreed.outcome,'Prepare a short client update on 2029 exit feasibility.');
  assert.equal((screen.getByRole('textbox',{name:'Introduction'}) as HTMLTextAreaElement).value,'Preserve my earlier advice.');
  assert(screen.getByRole('button',{name:'Propose a draft'}).hasAttribute('disabled'));
- window.confirm=()=>false;await user.click(screen.getByRole('button',{name:'Use this report outline'}));assert(screen.getByRole('textbox',{name:'Introduction'}));
- window.confirm=()=>true;await user.click(screen.getByRole('button',{name:'Use this report outline'}));
+ await user.click(screen.getByRole('button',{name:'Use this report outline'}));await user.click(screen.getByRole('button',{name:'Cancel'}));assert(screen.getByRole('textbox',{name:'Introduction'}));
+ await user.click(screen.getByRole('button',{name:'Use this report outline'}));await user.click(screen.getByRole('button',{name:'Save and apply outline'}));
  await screen.findByRole('textbox',{name:'Exit feasibility'});
  const snapshot=calls.find(call=>call.action==='workspace');assert(snapshot);const preserved=(snapshot.body.sections as {content:string}[])[0];assert(preserved);assert(preserved.content.includes('Preserve my earlier advice.'));
  await user.click(screen.getByRole('button',{name:'Add to report'}));
@@ -55,7 +55,7 @@ test('brief planning, protected outline replacement, drafting and reload share t
  first.view.unmount();first.router.dispose();const second=mount();
  await screen.findByText('Saved revision 4');assert(screen.getByRole('textbox',{name:'What are you trying to achieve?'}).hasAttribute('disabled'));
  assert.equal((screen.getByRole('textbox',{name:'Conditions to resolve'}) as HTMLTextAreaElement).value,'Proposed client advice. [PDF page 1]');
- await user.click(screen.getByRole('button',{name:'Change purpose'}));assert(screen.getByRole('button',{name:'Download report'}).hasAttribute('disabled'));assert(JSON.parse(screen.getByTestId('chat-context').textContent??'{}').blocked);
+ await user.click(screen.getByRole('button',{name:'Change purpose'}));await user.click(await screen.findByRole('button',{name:'Unlock purpose'}));assert(screen.getByRole('button',{name:'Download report'}).hasAttribute('disabled'));assert(JSON.parse(screen.getByTestId('chat-context').textContent??'{}').blocked);
  await user.click(screen.getByRole('button',{name:'Save workspace'}));await screen.findByText('Saved revision 5');assert(server.purpose_unlocked);second.router.dispose();
 });
 

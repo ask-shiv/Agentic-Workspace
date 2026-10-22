@@ -27,6 +27,7 @@ import { CopyWorkspaceLink } from "./CopyWorkspaceLink";
 import { RevisionHistory } from "./RevisionHistory";
 import { SourceCitation } from "./SourceCitation";
 import { BriefReview, WorkflowSummary } from "./WorkflowBrief";
+import { useWorkflowConfirmation } from "./WorkflowConfirmation";
 import { WorkspaceMomentum } from "./WorkspaceMomentum";
 import {
 	Tooltip,
@@ -51,6 +52,7 @@ export function ReportWorkspace({
 	children,
 }: Props) {
 	const { preferences } = usePreferences();
+	const { confirm, dialog: confirmationDialog } = useWorkflowConfirmation();
 	const [data, setData] = useState<WorkspaceData>(emptyWorkspace);
 	const [briefProposal, setBriefProposal] = useState<MatterBrief | null>(null);
 	const [briefOpen, setBriefOpen] = useState(false);
@@ -102,9 +104,7 @@ export function ReportWorkspace({
 				citationKey(item) === key &&
 				item.page === pageFromSearch(location.search),
 		);
-		onCitation(
-			finding?.evidence_status === "source_checked" ? finding.quote : "",
-		);
+		onCitation(finding?.quote ?? "");
 	}, [data.findings, location.search, onCitation]);
 
 	const load = useCallback(
@@ -179,12 +179,15 @@ export function ReportWorkspace({
 	const planNeeded = !briefCurrent;
 	const purposeLocked =
 		!!(data.brief || data.review_objective) && !data.purpose_unlocked;
-	const unlockPurpose = () => {
+	const unlockPurpose = async () => {
 		if (busy || !loaded) return false;
 		if (
-			!window.confirm(
-				"Change the purpose of this workspace? Existing findings and report text will be preserved, but drafting, contextual chat and export will pause until you agree the brief and re-run the investigation.",
-			)
+			!(await confirm({
+				title: "Change workspace purpose?",
+				description:
+					"Existing findings and report text will be preserved. Drafting, contextual chat and download will pause until you agree the brief and re-run the investigation.",
+				action: "Unlock purpose",
+			}))
 		)
 			return false;
 		change({ ...data, purpose_unlocked: true });
@@ -209,7 +212,10 @@ export function ReportWorkspace({
 			}
 		});
 	};
-	const reviewFor = (current: WorkspaceData, replacementConfirmed = false) => {
+	const reviewFor = async (
+		current: WorkspaceData,
+		replacementConfirmed = false,
+	) => {
 		if (
 			!loaded ||
 			busy ||
@@ -220,9 +226,12 @@ export function ReportWorkspace({
 		if (
 			current.findings.length &&
 			!replacementConfirmed &&
-			!window.confirm(
-				"Replace the findings? Existing report text will stay, but its evidence attachments will be cleared.",
-			)
+			!(await confirm({
+				title: "Replace existing findings?",
+				description:
+					"Your report text will stay. Its evidence attachments will be cleared so you can link findings from the new investigation.",
+				action: "Replace and investigate",
+			}))
 		)
 			return;
 		run("review", async (signal) => {
@@ -250,7 +259,7 @@ export function ReportWorkspace({
 				});
 		});
 	};
-	const acceptBrief = () => {
+	const acceptBrief = async () => {
 		if (
 			!briefProposal ||
 			briefProposal.objective.trim() !== data.objective.trim()
@@ -258,9 +267,12 @@ export function ReportWorkspace({
 			return;
 		if (
 			data.findings.length &&
-			!window.confirm(
-				"Investigate the agreed brief and replace existing findings? Report text will stay, but its evidence attachments will be cleared.",
-			)
+			!(await confirm({
+				title: "Investigate this brief?",
+				description:
+					"This will replace existing findings. Your report text will stay, but its evidence attachments will be cleared. You can cancel and keep your current work.",
+				action: "Replace and investigate",
+			}))
 		)
 			return;
 		const next = { ...data, brief: briefProposal };
@@ -268,7 +280,7 @@ export function ReportWorkspace({
 		setBriefOpen(false);
 		reviewFor(next, true);
 	};
-	const applyOutline = () => {
+	const applyOutline = async () => {
 		const brief = data.brief;
 		if (!brief || !briefCurrent || !reviewCurrent) return;
 		const hasWork = data.sections.some(
@@ -276,9 +288,12 @@ export function ReportWorkspace({
 		);
 		if (
 			hasWork &&
-			!window.confirm(
-				"Save your current report as a revision, then replace its sections with this outline?",
-			)
+			!(await confirm({
+				title: "Apply the new report outline?",
+				description:
+					"Your current report will be saved as a recoverable revision before its sections are replaced with this outline.",
+				action: "Save and apply outline",
+			}))
 		)
 			return;
 		run("outline", async (signal) => {
@@ -448,6 +463,7 @@ export function ReportWorkspace({
 				onClose={() => setBriefOpen(false)}
 				onConfirm={acceptBrief}
 			/>
+			{confirmationDialog}
 			{!onboarded && (
 				<div className="border-b bg-blue-50 p-4 text-sm text-blue-950">
 					<strong>From document to working report.</strong> Set an objective,
@@ -607,8 +623,8 @@ export function ReportWorkspace({
 				<WorkflowSummary
 					data={data}
 					busy={!!busy || !loaded}
-					onEdit={() => {
-						if (!data.purpose_unlocked && !unlockPurpose()) return;
+					onEdit={async () => {
+						if (!data.purpose_unlocked && !(await unlockPurpose())) return;
 						setBriefProposal(data.brief ?? null);
 						setBriefOpen(true);
 					}}

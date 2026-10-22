@@ -168,11 +168,6 @@ body {
 .skip-link:focus {
 	transform: translateY(0);
 }
-.react-pdf__Page__textContent mark {
-	background: rgba(250, 204, 21, 0.3);
-	color: transparent;
-	border-bottom: 2px solid #854d0e;
-}
 
 html[data-text-size="small"] {
 	font-size: 16px;
@@ -320,4 +315,14 @@ select {
 }
 .review-workspace > :not(.report-layout) {
 	flex-shrink: 0;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+	cursor: not-allowed;
+}
+button:disabled {
+	opacity: 0.5;
 }
