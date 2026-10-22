@@ -68,6 +68,8 @@ export function BriefReview({
 						<span className="mt-2 block text-xs font-semibold">
 							Selected workflow:{" "}
 							{brief.workflow === "risk" ? "Assess risk" : "Build report"}
+							{brief.time_pressure &&
+								" · Time pressed: decision-critical findings first"}
 						</span>
 					)}
 				</p>

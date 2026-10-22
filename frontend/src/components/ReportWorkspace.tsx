@@ -73,6 +73,7 @@ export function ReportWorkspace({
 	const [search, setSearch] = useSearchParams();
 	const location = useLocation();
 	const initialIntent = useRef(location.state?.initialIntent);
+	const uploadFirst = useRef(location.state?.startWithUpload === true);
 	const [setupReady, setSetupReady] = useState(false);
 	const [editingIntent, setEditingIntent] = useState(false);
 	const requestedView = search.get("view");
@@ -132,9 +133,10 @@ export function ReportWorkspace({
 						!saved.version &&
 						!saved.objective &&
 						seed &&
-						["risk", "report"].includes(seed.workflow) &&
+						(seed.workflow === null ||
+							["risk", "report"].includes(seed.workflow)) &&
 						typeof seed.objective === "string" &&
-						seed.objective.trim().length >= 5 &&
+						(uploadFirst.current || seed.objective.trim().length >= 5) &&
 						seed.objective.length <= 2000;
 					setData(
 						seeded
@@ -142,12 +144,24 @@ export function ReportWorkspace({
 									...saved,
 									objective: seed.objective.trim(),
 									workflow: seed.workflow,
+									time_pressure: seed.time_pressure === true,
 								}
 							: saved,
 					);
-					setSetupReady(!!(seeded || saved.objective.trim().length >= 5));
+					setSetupReady(
+						!!(
+							uploadFirst.current ||
+							seeded ||
+							saved.objective.trim().length >= 5
+						),
+					);
 					setLoaded(true);
-					setDirty(!!seeded);
+					setDirty(
+						!!(
+							seeded &&
+							(seed.objective.trim() || seed.workflow || seed.time_pressure)
+						),
+					);
 				}
 			} catch (err) {
 				if (!signal.aborted)
@@ -253,6 +267,7 @@ export function ReportWorkspace({
 				{
 					objective: data.objective,
 					workflow: data.workflow ?? data.brief?.workflow ?? "risk",
+					...(data.time_pressure ? { time_pressure: true } : {}),
 				},
 				signal,
 			);
@@ -586,7 +601,13 @@ export function ReportWorkspace({
 				{tools}
 				{!setupReady || editingIntent ? (
 					<IntentStart
-						workflow={workflow}
+						workflow={selectedWorkflow ?? null}
+						timePressure={
+							data.time_pressure ?? data.brief?.time_pressure ?? false
+						}
+						onTimePressure={(value) =>
+							change({ ...data, time_pressure: value })
+						}
 						objective={data.objective}
 						disabled={!loaded}
 						onWorkflow={(value) => change({ ...data, workflow: value })}
@@ -600,21 +621,25 @@ export function ReportWorkspace({
 					/>
 				) : (
 					<div className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-6 px-5 py-10">
-						<div>
-							<p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
-								Your objective
-							</p>
-							<h2 className="mt-3 text-xl font-medium leading-relaxed">
-								{data.objective}
-							</h2>
-							<button
-								type="button"
-								className="quiet-button mt-3"
-								onClick={() => setEditingIntent(true)}
-							>
-								Edit objective
-							</button>
-						</div>
+						{data.objective && (
+							<div>
+								<p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+									{data.objective
+										? "Your objective"
+										: "Start with your documents"}
+								</p>
+								<h2 className="mt-3 text-xl font-medium leading-relaxed">
+									{data.objective || "Add a document for context"}
+								</h2>
+								<button
+									type="button"
+									className="quiet-button mt-3"
+									onClick={() => setEditingIntent(true)}
+								>
+									Edit objective
+								</button>
+							</div>
+						)}
 						{onUpload ? (
 							<EmptyState onUpload={onUpload} uploading={uploading} />
 						) : (
@@ -640,7 +665,11 @@ export function ReportWorkspace({
 				/>
 				{confirmationDialog}
 				<IntentStart
-					workflow={workflow}
+					workflow={selectedWorkflow ?? null}
+					timePressure={
+						data.time_pressure ?? data.brief?.time_pressure ?? false
+					}
+					onTimePressure={(value) => change({ ...data, time_pressure: value })}
 					objective={data.objective}
 					disabled={!!busy || !loaded}
 					onWorkflow={selectWorkflow}
@@ -648,10 +677,21 @@ export function ReportWorkspace({
 					onContinue={plan}
 					action={busy ? "Planning your work…" : "Plan my work"}
 				>
-					<p className="text-xs text-neutral-400">
-						Context: {document.filename} · The agent will propose a brief for
-						you to check before investigating.
-					</p>
+					<section
+						aria-label="Uploaded document context"
+						className="rounded-lg border p-4 text-sm"
+					>
+						<h3 className="font-medium">Your document context</h3>
+						<ul className="mt-2">
+							<li>
+								{document.filename} · {document.page_count} pages
+							</li>
+						</ul>
+						<p className="mt-2 text-xs text-neutral-400">
+							I’ll propose a brief for you to check before investigating. This
+							workspace currently supports one document.
+						</p>
+					</section>
 					{error && (
 						<p role="alert" className="text-sm text-red-300">
 							{error}

@@ -47,7 +47,16 @@ def workflow_guidance(workflow: Workflow | None) -> str:
     return "Follow the lawyer's agreed objective and deliverable."
 
 
+def pace_guidance(time_pressure: bool) -> str:
+    return (
+        "The lawyer is pressed for time. Prioritise up to three decision-critical findings and concise next enquiries, preserving all conditions of any right assessed and exposing limitations."
+        if time_pressure
+        else "Follow the agreed priorities at the normal level of detail."
+    )
+
+
 class MatterBrief(BriefProposal):
+    time_pressure: bool = False
     workflow: Workflow | None = None
     objective: str = Field(min_length=5, max_length=2000)
 
@@ -62,6 +71,7 @@ def task_context(objective: str, brief: MatterBrief | None) -> str:
             "objective": objective,
             "agreed_brief": brief.model_dump() if brief else None,
             "workflow_guidance": workflow_guidance(brief.workflow if brief else None),
+            "pace_guidance": pace_guidance(brief.time_pressure if brief else False),
         }
     )
 
@@ -101,7 +111,7 @@ brief_agent = Agent(
 
 
 async def propose_brief(
-    objective: str, overview: str, workflow: Workflow | None = None
+    objective: str, overview: str, workflow: Workflow | None = None, time_pressure: bool = False
 ) -> MatterBrief:
     result = await asyncio.wait_for(
         brief_agent.run(
@@ -110,6 +120,8 @@ async def propose_brief(
                     "objective": objective,
                     "document_overview": overview[:3000],
                     "workflow": workflow,
+                    "time_pressure": time_pressure,
+                    "pace_guidance": pace_guidance(time_pressure),
                     "workflow_guidance": workflow_guidance(workflow),
                 }
             ),
@@ -135,4 +147,6 @@ async def propose_brief(
                 "purpose": "Identify decisions for the lawyer and client, outstanding enquiries and next actions; do not invent deadlines or confirm compliance.",
             },
         ]
-    return MatterBrief(**proposal, objective=objective, workflow=workflow)
+    return MatterBrief(
+        **proposal, objective=objective, workflow=workflow, time_pressure=time_pressure
+    )

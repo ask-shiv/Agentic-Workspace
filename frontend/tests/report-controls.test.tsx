@@ -153,6 +153,7 @@ test('planning requires agreement before investigation and successful empty revi
  const submit=screen.getByRole('button',{name:'Plan my work'});
  assert(submit.hasAttribute('disabled'));
  await user.type(screen.getByRole('textbox',{name:'What are you trying to achieve?'}),'Review tenant exit rights');
+ await user.click(screen.getByRole('radio',{name:/Assess risk/}));
  await user.click(submit);
  await screen.findByRole('dialog',{name:'Agree the brief'}); assert.equal(attempts,0);
  await user.click(screen.getByRole('button',{name:'Agree brief and investigate'}));

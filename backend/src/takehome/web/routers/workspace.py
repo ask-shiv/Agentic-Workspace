@@ -19,6 +19,7 @@ from takehome.db.session import get_session
 from takehome.services.brief import (
     MatterBrief,
     Workflow,
+    pace_guidance,
     propose_brief,
     require_current_briefs,
     workflow_guidance,
@@ -37,6 +38,7 @@ class Section(BaseModel):
 
 
 class WorkspaceData(BaseModel):
+    time_pressure: bool = False
     workflow: Workflow | None = None
     purpose_unlocked: bool = False
     version: int = Field(default=0, ge=0)
@@ -181,6 +183,7 @@ async def restore_revision(
 
 
 class PlanRequest(BaseModel):
+    time_pressure: bool = False
     workflow: Workflow | None = None
     objective: str = Field(min_length=5, max_length=2000)
 
@@ -194,7 +197,9 @@ async def plan_workflow(
     if document is None or not document.extracted_text:
         raise HTTPException(422, "Upload a readable document before planning your work.")
     try:
-        return await propose_brief(body.objective, document.extracted_text, body.workflow)
+        return await propose_brief(
+            body.objective, document.extracted_text, body.workflow, body.time_pressure
+        )
     except Exception as exc:
         raise HTTPException(
             502, "Could not propose a brief. Your existing work is unchanged."
@@ -244,6 +249,9 @@ async def draft_section(
                 json.dumps(
                     {
                         **body.model_dump(exclude={"review_brief", "report_brief"}),
+                        "pace_guidance": pace_guidance(
+                            body.brief.time_pressure if body.brief else False
+                        ),
                         "workflow_guidance": workflow_guidance(
                             body.brief.workflow if body.brief else None
                         ),
@@ -276,6 +284,10 @@ async def export_workspace(
         )
     except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
+    if data.brief and data.time_pressure != data.brief.time_pressure:
+        raise HTTPException(
+            409, "Agree and investigate the selected working pace before exporting."
+        )
     document = await get_document_for_conversation(session, conversation_id)
 
     lines = [
@@ -291,6 +303,7 @@ async def export_workspace(
         lines.extend(
             [
                 f"Workflow: {data.brief.workflow or 'Legacy working brief'}",
+                f"Time pressure: {'Decision-critical findings first' if data.brief.time_pressure else 'Normal detail'}",
                 f"Representing: {data.brief.client_role}",
                 f"Outcome: {data.brief.outcome}",
                 f"Deliverable: {data.brief.deliverable}",
