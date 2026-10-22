@@ -170,3 +170,9 @@ The header now leads with the selected workflow and document name. Repeated coll
 With more time, I would build a system that learns from the user's behaviour to suggest relevant objectives and workflows. Signals could include seasonality, raw document and task volume, the types of work they undertake, and which suggestions they accept, edit or dismiss. The aim is to make starting useful work easier as the partnership develops, while the lawyer continues to choose the objective and direct the agent.
 
 For now, suggestions are dummy examples, not evidence of implemented behavioural learning or personalisation. A future implementation would make the reasons for suggestions visible and let users disable or clear this history, without carrying confidential facts between unrelated matters.
+
+## Glass welcome design (#57)
+
+The supplied landing-page design informs a quieter welcome: compact workflow choices sit above a translucent objective composer with a single thin light border and an upload entry point. The existing single-document journey and explicit agreement before investigation remain intact; the mockup's multiple documents and document-chat preset are not presented as delivered capabilities. Uploaded context continues to show the real filename and page count in the workspace.
+
+Motion is decorative CSS with twelve small particles and static radial gradients, without canvas, WebGL, external scripts or a new dependency. The particle entrance settles within five seconds; a restrained colour sweep is confined to workflow buttons on hover. Reduced-motion disables movement and high contrast removes the atmospheric background. This favours reading and input responsiveness over reproducing the heavier CodePen effects. This is a design pass, not a measured performance benchmark.
