@@ -130,10 +130,17 @@ export function SettingsPage() {
 			>
 				<h2 className="text-base font-semibold">Keyboard shortcuts</h2>
 				<p className="my-3 text-sm text-neutral-600">
-					Enable above. View shortcuts do not run while typing in an input,
-					editor or select.
+					Finding navigation is always available. Enable extra shortcuts above.
+					Navigation shortcuts do not run while typing in an input, editor or
+					select.
 				</p>
 				<dl className="space-y-3 text-sm">
+					<div className="flex justify-between gap-4">
+						<dt>Previous / next finding</dt>
+						<dd>
+							<kbd>Alt + ↑ / ↓</kbd>
+						</dd>
+					</div>
 					<div className="flex justify-between gap-4">
 						<dt>Assess risk</dt>
 						<dd>

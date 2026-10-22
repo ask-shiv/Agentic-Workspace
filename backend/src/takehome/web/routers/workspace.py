@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from datetime import UTC
+from datetime import UTC, datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -10,11 +10,11 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field, model_validator
 from pydantic_ai import Agent
 from pydantic_ai.usage import UsageLimits
-from sqlalchemy import update
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from takehome.db.models import Conversation, Workspace
+from takehome.db.models import Conversation, Workspace, WorkspaceRevision
 from takehome.db.session import get_session
 from takehome.services.document import get_document_for_conversation
 from takehome.services.review import Finding, check_evidence, split_pages
@@ -97,6 +97,11 @@ async def save_workspace(
                 raise HTTPException(
                     409, "A newer version exists. Reload the workspace before saving."
                 )
+        session.add(
+            WorkspaceRevision(
+                conversation_id=conversation_id, version=next_version, payload=payload
+            )
+        )
         await session.commit()
     except IntegrityError as exc:
         await session.rollback()
@@ -104,6 +109,62 @@ async def save_workspace(
             409, "A newer version exists. Reload the workspace before saving."
         ) from exc
     return body.model_copy(update={"version": next_version})
+
+
+class RevisionSummary(BaseModel):
+    version: int
+    created_at: datetime
+
+
+@router.get("/{conversation_id}/workspace/revisions", response_model=list[RevisionSummary])
+async def list_revisions(
+    conversation_id: str, session: AsyncSession = Depends(get_session)
+) -> list[RevisionSummary]:
+    await require_conversation(session, conversation_id)
+    rows = (
+        await session.execute(
+            select(WorkspaceRevision.version, WorkspaceRevision.created_at)
+            .where(WorkspaceRevision.conversation_id == conversation_id)
+            .order_by(WorkspaceRevision.version.desc())
+        )
+    ).all()
+    return [
+        RevisionSummary(
+            version=row.version,
+            created_at=row.created_at.replace(tzinfo=UTC),
+        )
+        for row in rows
+    ]
+
+
+@router.get("/{conversation_id}/workspace/revisions/{version}", response_model=WorkspaceData)
+async def get_revision(
+    conversation_id: str, version: int, session: AsyncSession = Depends(get_session)
+) -> WorkspaceData:
+    await require_conversation(session, conversation_id)
+    row = await session.get(WorkspaceRevision, (conversation_id, version))
+    if row is None:
+        raise HTTPException(404, "This saved revision is not available.")
+    return WorkspaceData(**json.loads(row.payload), version=row.version)
+
+
+class RestoreRequest(BaseModel):
+    current_version: int = Field(ge=1)
+
+
+@router.post(
+    "/{conversation_id}/workspace/revisions/{version}/restore", response_model=WorkspaceData
+)
+async def restore_revision(
+    conversation_id: str,
+    version: int,
+    body: RestoreRequest,
+    session: AsyncSession = Depends(get_session),
+) -> WorkspaceData:
+    snapshot = await get_revision(conversation_id, version, session)
+    return await save_workspace(
+        conversation_id, snapshot.model_copy(update={"version": body.current_version}), session
+    )
 
 
 class DraftRequest(BaseModel):
@@ -156,7 +217,6 @@ async def export_workspace(
         raise HTTPException(404, "Save your report before exporting.")
     data = WorkspaceData(**json.loads(workspace.payload), version=workspace.version)
     document = await get_document_for_conversation(session, conversation_id)
-    from datetime import datetime
 
     lines = [
         "# Document review report",

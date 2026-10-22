@@ -76,7 +76,7 @@ See [DECISIONS.md](DECISIONS.md) for rationale, trust boundaries and clearly mar
 3. Inspect each finding's quotation and PDF page. **Source checked** confirms a text match, not a legal conclusion. Unverified quotations are explicitly labelled.
 4. Switch to **Build report**. Choose a destination section and add findings, or drag them into the section. Edit the text directly; evidence remains attached for re-checking.
 5. Select **Propose a draft** on a section with evidence. Review the proposal and accept or reject it. Existing text is not replaced until acceptance.
-6. **Save workspace**, then **Export Markdown**. Return to the same conversation after reload to retrieve the saved work. Stale saves from another tab are rejected.
+6. **Save workspace**, then **Download report**. Return to the same conversation after reload to retrieve the saved work. Stale saves from another tab are rejected.
 
 Conversations and the source PDF can be toggled for narrow screens. Document chat remains available. No background observation or collaborative sharing is implemented. Keep this unauthenticated demo local.
 
@@ -111,3 +111,5 @@ Saved workspaces have bookmarkable URLs under `/workspaces/:id`. Review/report/c
 Open the avatar in the top right for local display settings: text size, contrast, reduced motion, reading view and optional shortcuts. Names and preferences stay in this browser. Speechify is not connected; selectable report/source text is provided for assistive reading workflows.
 
 Run `cd frontend && npm test` for typed navigation, report and accessibility regression tests. Automated semantic checks exclude contrast in jsdom; see DECISIONS.md for audit limits and jurisdictional sources. CI runs these checks on PRs and main. The checked-in `.agents/skills/` and AGENTS.md document the portable working conventions.
+
+Report history is available from the revision button. Previewing is read-only; restoring requires confirmation and creates a new revision. History begins at the state retained when the feature was enabled. Alt+Up/Down moves focus through findings outside editors and dialogs, even with optional shortcuts disabled. “Download report” exports the last saved report as a .md text file. The momentum strip shows current-workspace activity; it does not claim measured time savings.

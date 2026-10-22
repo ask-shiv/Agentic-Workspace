@@ -1,3 +1,4 @@
+import { Info } from "lucide-react";
 import {
 	type ReactNode,
 	useCallback,
@@ -18,7 +19,15 @@ import {
 } from "../lib/workspace";
 import type { Document } from "../types";
 import { CopyWorkspaceLink } from "./CopyWorkspaceLink";
+import { RevisionHistory } from "./RevisionHistory";
 import { SourceCitation } from "./SourceCitation";
+import { WorkspaceMomentum } from "./WorkspaceMomentum";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "./ui/tooltip";
 
 interface Props {
 	conversationId: string;
@@ -59,6 +68,8 @@ export function ReportWorkspace({
 		});
 		if (view !== "chat") setData((previous) => ({ ...previous, intent: view }));
 	};
+	const [activeFinding, setActiveFinding] = useState(0);
+	const findingRefs = useRef<(HTMLElement | null)[]>([]);
 	const [target, setTarget] = useState(1);
 	const [instruction, setInstruction] = useState(
 		"Draft this section for the client using the linked evidence and my objective.",
@@ -215,6 +226,44 @@ export function ReportWorkspace({
 				setDirty(false);
 			}
 		});
+	const restore = async (version: number) => {
+		if (
+			!window.confirm(
+				`Restore revision ${version} as a new revision? ${dirty ? "Your unsaved edits will be replaced." : "All saved revisions will remain available."}`,
+			)
+		)
+			return false;
+		let restored = false;
+		await run("restore", async (signal) => {
+			const result = await workspaceRequest<WorkspaceData>(
+				conversationId,
+				`workspace/revisions/${version}/restore`,
+				{ current_version: data.version },
+				signal,
+			);
+			if (!signal.aborted) {
+				setData(result);
+				setDirty(false);
+				setActiveFinding(0);
+				restored = true;
+			}
+		});
+		return restored;
+	};
+	const navigateFinding = (step: number) => {
+		if (!data.findings.length || chat) return;
+		const next = Math.max(
+			0,
+			Math.min(data.findings.length - 1, activeFinding + step),
+		);
+		setActiveFinding(next);
+		findingRefs.current[next]?.focus();
+	};
+	useEffect(() => {
+		setActiveFinding((current) =>
+			Math.min(current, Math.max(0, data.findings.length - 1)),
+		);
+	}, [data.findings]);
 	const draft = (index: number) =>
 		run("draft", async (signal) => {
 			const section = data.sections[index];
@@ -249,6 +298,7 @@ export function ReportWorkspace({
 			if (dirty) save();
 		},
 		chooseView,
+		navigateFinding,
 	);
 
 	const button = "toolbar-button";
@@ -277,7 +327,7 @@ export function ReportWorkspace({
 					</button>
 				</div>
 			)}
-			<header className="space-y-3 border-b bg-white p-4">
+			<header className="workspace-toolbar space-y-4 border-b bg-white px-5 py-5 md:px-8">
 				<div>
 					<p className="mb-1 text-xs font-semibold uppercase tracking-widest text-teal-800">
 						Document review
@@ -331,6 +381,13 @@ export function ReportWorkspace({
 								? "Unsaved changes"
 								: `Saved revision ${data.version}`}
 					</output>
+					<RevisionHistory
+						conversationId={conversationId}
+						version={data.version}
+						disabled={!!busy || !loaded}
+						onRestore={restore}
+						restoreError={error}
+					/>
 				</div>
 				<label
 					className="block text-xs font-medium text-neutral-600"
@@ -384,8 +441,26 @@ export function ReportWorkspace({
 							!data.sections.some((s) => s.content.trim())
 						}
 					>
-						Export Markdown
+						Download report
 					</button>
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<button
+									type="button"
+									className="icon-button"
+									aria-label="About downloading your report"
+								>
+									<Info aria-hidden="true" className="h-4 w-4" />
+								</button>
+							</TooltipTrigger>
+							<TooltipContent className="max-w-72 leading-relaxed">
+								Downloads the last saved report as a Markdown (.md) text file
+								with source references. Save your changes first. You can open it
+								in a text editor; PDF and Word export are planned.
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
 					<CopyWorkspaceLink />
 				</div>
 				{data.review_objective && data.review_objective !== data.objective && (
@@ -402,6 +477,17 @@ export function ReportWorkspace({
 					</output>
 				)}
 			</header>
+			{!chat && (
+				<div className="px-5 py-3 md:px-8">
+					<WorkspaceMomentum
+						dirty={dirty}
+						data={data}
+						onReport={() => chooseView("report")}
+						onSave={save}
+						disabled={!!busy || !loaded}
+					/>
+				</div>
+			)}
 			{error && (
 				<div role="alert" className="bg-red-50 p-3 text-sm text-red-800">
 					{error}{" "}
@@ -428,7 +514,7 @@ export function ReportWorkspace({
 				className={chat ? "hidden" : "report-layout min-h-0 flex-1"}
 			>
 				<section
-					className="finding-list min-w-0 space-y-4 overflow-y-auto p-4 md:p-6"
+					className="finding-list min-w-0 space-y-6 overflow-y-auto p-5 md:p-8"
 					aria-label="Review findings"
 				>
 					<h2 className="font-semibold">Evidence and findings</h2>
@@ -458,9 +544,47 @@ export function ReportWorkspace({
 							</select>
 						</label>
 					)}
+					{!!data.findings.length && (
+						<nav
+							aria-label="Finding navigation"
+							className="flex flex-wrap items-center gap-3 rounded-lg border bg-white p-3"
+						>
+							<button
+								type="button"
+								className={button}
+								disabled={!!busy || activeFinding === 0}
+								onClick={() => navigateFinding(-1)}
+								aria-keyshortcuts="Alt+ArrowUp"
+							>
+								Previous finding
+							</button>
+							<output className="text-sm">
+								Finding {activeFinding + 1} of {data.findings.length}
+							</output>
+							<button
+								type="button"
+								className={button}
+								disabled={!!busy || activeFinding >= data.findings.length - 1}
+								onClick={() => navigateFinding(1)}
+								aria-keyshortcuts="Alt+ArrowDown"
+							>
+								Next finding
+							</button>
+							<span className="text-xs text-neutral-600">
+								Alt + ↑ / ↓ · outside editors
+							</span>
+						</nav>
+					)}
 					{data.findings.map((finding, id) => (
 						<article
 							key={`${finding.title}-${id}`}
+							ref={(element) => {
+								findingRefs.current[id] = element;
+							}}
+							tabIndex={-1}
+							aria-label={`Finding ${id + 1}: ${finding.title}`}
+							onFocus={() => setActiveFinding(id)}
+							data-active={activeFinding === id}
 							draggable={!busy}
 							onDragStart={(e) =>
 								e.dataTransfer.setData(
@@ -555,7 +679,7 @@ export function ReportWorkspace({
 				</section>
 				{activeView === "report" && (
 					<section
-						className="report-builder min-w-0 space-y-4 overflow-y-auto p-4 md:p-6"
+						className="report-builder min-w-0 space-y-6 overflow-y-auto p-5 md:p-8"
 						aria-label="Report builder"
 					>
 						<h2 className="font-semibold">Working report</h2>
