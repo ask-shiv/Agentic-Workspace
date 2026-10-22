@@ -15,7 +15,6 @@ function WorkspaceWelcome() {
 	const navigate = useNavigate();
 	const [workflow, setWorkflow] = useState<Workflow | null>("report");
 	const [chatSelected, setChatSelected] = useState(false);
-	const [timePressure, setTimePressure] = useState(false);
 	const [objective, setObjective] = useState("");
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -49,7 +48,7 @@ function WorkspaceWelcome() {
 						initialIntent: {
 							workflow,
 							objective: objective.trim(),
-							time_pressure: timePressure,
+							time_pressure: false,
 						},
 					},
 				},
@@ -84,8 +83,6 @@ function WorkspaceWelcome() {
 				onContinue={() => start()}
 				onUploadFirst={() => start(true)}
 				onFile={(file) => start(true, file)}
-				timePressure={timePressure}
-				onTimePressure={setTimePressure}
 				disabled={busy}
 				action={
 					busy

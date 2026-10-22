@@ -202,25 +202,19 @@ export function IntentStart({
 						</p>
 					)}
 					{onFile && (
-						<>
-							<input
-								ref={fileInput}
-								type="file"
-								accept="application/pdf,.pdf"
-								aria-label="Choose PDF document"
-								className="sr-only"
-								disabled={disabled}
-								onChange={(event) => {
-									const file = event.target.files?.[0];
-									if (file) onFile(file);
-									event.target.value = "";
-								}}
-							/>
-							<p className="dropzone-hint">
-								Drop a PDF here or choose Add documents · one document per
-								workspace
-							</p>
-						</>
+						<input
+							ref={fileInput}
+							type="file"
+							accept="application/pdf,.pdf"
+							aria-label="Choose PDF document"
+							className="sr-only"
+							disabled={disabled}
+							onChange={(event) => {
+								const file = event.target.files?.[0];
+								if (file) onFile(file);
+								event.target.value = "";
+							}}
+						/>
 					)}
 					<label htmlFor="objective" className="sr-only">
 						What are you trying to achieve?
@@ -257,7 +251,7 @@ export function IntentStart({
 								}
 							>
 								<PlusCircle aria-hidden="true" className="h-4 w-4" />
-								Add documents
+								Add document
 							</button>
 						)}
 						<button
