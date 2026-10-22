@@ -1,4 +1,6 @@
+export type Workflow = "risk" | "report";
 export interface MatterBrief {
+	workflow?: Workflow | null;
 	objective: string;
 	client_role: "tenant" | "landlord" | "buyer" | "seller" | "unspecified";
 	outcome: string;
@@ -16,6 +18,7 @@ export function briefKey(brief?: MatterBrief | null): string {
 	return brief
 		? JSON.stringify([
 				brief.objective.trim(),
+				brief.workflow ?? null,
 				brief.client_role,
 				brief.outcome.trim(),
 				brief.deliverable,
@@ -26,7 +29,11 @@ export function briefKey(brief?: MatterBrief | null): string {
 		: "";
 }
 export function briefIsCurrent(data: WorkspaceData): boolean {
-	return !!data.brief && data.brief.objective.trim() === data.objective.trim();
+	return (
+		!!data.brief &&
+		data.brief.objective.trim() === data.objective.trim() &&
+		(!data.workflow || data.workflow === data.brief.workflow)
+	);
 }
 export function reviewIsCurrent(data: WorkspaceData): boolean {
 	return (
@@ -61,6 +68,7 @@ export interface Section {
 	finding_ids: number[];
 }
 export interface WorkspaceData {
+	workflow?: Workflow | null;
 	purpose_unlocked?: boolean;
 	brief?: MatterBrief | null;
 	review_brief?: MatterBrief | null;

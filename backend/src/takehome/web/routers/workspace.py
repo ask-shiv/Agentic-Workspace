@@ -16,7 +16,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from takehome.db.models import Conversation, Workspace, WorkspaceRevision
 from takehome.db.session import get_session
-from takehome.services.brief import MatterBrief, propose_brief, require_current_briefs
+from takehome.services.brief import (
+    MatterBrief,
+    Workflow,
+    propose_brief,
+    require_current_briefs,
+    workflow_guidance,
+)
 from takehome.services.document import get_document_for_conversation
 from takehome.services.review import Finding, check_evidence, split_pages
 
@@ -31,6 +37,7 @@ class Section(BaseModel):
 
 
 class WorkspaceData(BaseModel):
+    workflow: Workflow | None = None
     purpose_unlocked: bool = False
     version: int = Field(default=0, ge=0)
     objective: str = Field(default="", max_length=2000)
@@ -174,6 +181,7 @@ async def restore_revision(
 
 
 class PlanRequest(BaseModel):
+    workflow: Workflow | None = None
     objective: str = Field(min_length=5, max_length=2000)
 
 
@@ -186,7 +194,7 @@ async def plan_workflow(
     if document is None or not document.extracted_text:
         raise HTTPException(422, "Upload a readable document before planning your work.")
     try:
-        return await propose_brief(body.objective, document.extracted_text)
+        return await propose_brief(body.objective, document.extracted_text, body.workflow)
     except Exception as exc:
         raise HTTPException(
             502, "Could not propose a brief. Your existing work is unchanged."
@@ -233,7 +241,14 @@ async def draft_section(
     try:
         result = await asyncio.wait_for(
             draft_agent.run(
-                body.model_dump_json(exclude={"review_brief", "report_brief"}),
+                json.dumps(
+                    {
+                        **body.model_dump(exclude={"review_brief", "report_brief"}),
+                        "workflow_guidance": workflow_guidance(
+                            body.brief.workflow if body.brief else None
+                        ),
+                    }
+                ),
                 usage_limits=UsageLimits(request_limit=3, total_tokens_limit=20000),
             ),
             timeout=60,
@@ -253,6 +268,8 @@ async def export_workspace(
     if workspace is None:
         raise HTTPException(404, "Save your report before exporting.")
     data = WorkspaceData(**json.loads(workspace.payload), version=workspace.version)
+    if data.workflow and data.brief and data.workflow != data.brief.workflow:
+        raise HTTPException(409, "Agree and investigate the selected workflow before exporting.")
     try:
         require_current_briefs(
             data.objective, data.brief, data.review_brief, data.report_brief, data.purpose_unlocked
@@ -273,6 +290,7 @@ async def export_workspace(
     if data.brief:
         lines.extend(
             [
+                f"Workflow: {data.brief.workflow or 'Legacy working brief'}",
                 f"Representing: {data.brief.client_role}",
                 f"Outcome: {data.brief.outcome}",
                 f"Deliverable: {data.brief.deliverable}",

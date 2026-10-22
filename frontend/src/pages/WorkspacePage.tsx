@@ -124,6 +124,8 @@ function WorkspaceSession({ id }: { id: string }) {
 				)}
 				{(!error || document) && (
 					<ReportWorkspace
+						onUpload={handleUpload}
+						uploading={uploading}
 						conversationId={id}
 						document={document}
 						onDirty={setDirty}

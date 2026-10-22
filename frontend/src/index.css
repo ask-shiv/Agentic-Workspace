@@ -326,3 +326,234 @@ textarea:disabled {
 button:disabled {
 	opacity: 0.5;
 }
+
+:root {
+	color-scheme: dark;
+	--orbital-bg: #10131a;
+	--orbital-panel: #161b25;
+	--orbital-border: #303848;
+	--orbital-text: #eef0f5;
+	--orbital-muted: #aeb8ca;
+}
+body {
+	background: var(--orbital-bg);
+	color: var(--orbital-text);
+}
+.app-shell {
+	background: var(--orbital-bg);
+	color: var(--orbital-text);
+}
+.bg-white,
+.bg-neutral-50,
+.bg-\[\#f4f5f1\] {
+	background-color: var(--orbital-bg);
+}
+.bg-neutral-100,
+.bg-neutral-200 {
+	background-color: #1c2330;
+}
+.bg-neutral-900 {
+	background-color: #080b11;
+}
+.text-neutral-900,
+.text-neutral-800 {
+	color: var(--orbital-text);
+}
+.text-neutral-700,
+.text-neutral-600,
+.text-neutral-500,
+.text-neutral-400 {
+	color: var(--orbital-muted);
+}
+.border,
+.border-t,
+.border-b,
+.border-l,
+.border-r {
+	border-color: var(--orbital-border);
+}
+.text-teal-800,
+.text-teal-900,
+.text-teal-950 {
+	color: #aec5ff;
+}
+.bg-teal-50,
+.bg-blue-50 {
+	background-color: #18243b;
+}
+.bg-teal-900 {
+	background-color: #315efb;
+}
+.border-teal-200,
+.border-teal-300 {
+	border-color: #3b527f;
+}
+.bg-amber-50 {
+	background-color: #252115;
+}
+.bg-amber-200 {
+	background-color: #594419;
+}
+.text-amber-950,
+.text-amber-900,
+.text-amber-800 {
+	color: #f6d48c;
+}
+.border-amber-200,
+.border-amber-300 {
+	border-color: #6b5425;
+}
+.bg-red-50 {
+	background-color: #331c27;
+}
+.text-red-800,
+.text-red-700 {
+	color: #ffb5c0;
+}
+input,
+textarea,
+select {
+	background: #121722;
+	color: var(--orbital-text);
+	border-color: #3b4558;
+}
+input::placeholder,
+textarea::placeholder {
+	color: #8e9bb1;
+}
+.toolbar-button {
+	background: #1b2230;
+	color: #e2e8f4;
+	border-color: #394559;
+}
+.toolbar-button:hover,
+.quiet-button:hover,
+.hover\:bg-neutral-100:hover {
+	background-color: #283246;
+}
+.quiet-button {
+	color: #bac5d7;
+}
+.primary-button {
+	background: #315efb;
+	color: white;
+}
+.primary-button:hover {
+	background: #4772ff;
+}
+.workspace-navigation {
+	background: #0c1017;
+}
+.workspace-navigation .text-teal-100,
+.workspace-navigation .text-teal-50 {
+	color: #aeb8ca;
+}
+.sidebar-link {
+	display: flex;
+	align-items: center;
+	gap: .75rem;
+	padding: .75rem;
+	border-radius: .5rem;
+	font-size: .875rem;
+	color: #b6c1d3;
+}
+.sidebar-link:hover {
+	background: #182132;
+	color: white;
+}
+.sidebar-link-active {
+	color: #dce6ff;
+	background: #1e2d4f;
+	box-shadow: inset 3px 0 #5a86ff;
+}
+.sidebar-tools .toolbar-button,
+.sidebar-tools .quiet-button {
+	justify-content: flex-start;
+	width: 100%;
+}
+.sidebar-tools fieldset {
+	display: flex;
+	flex-direction: column;
+	gap: .5rem;
+	padding: 0;
+	border: 0;
+}
+.sidebar-tools {
+	flex-shrink: 0;
+}
+.workspace-navigation {
+	overflow-y: auto;
+}
+.workflow-option {
+	background: #151b27;
+	border-color: #394154;
+}
+.workflow-option:hover {
+	background: #1d2638;
+	border-color: #6a80a7;
+}
+.workflow-option-selected {
+	background: #1a294b;
+	border-color: #7298ff;
+	box-shadow: 0 0 0 1px #7298ff;
+}
+.workflow-option[data-disabled="true"] {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+.intent-start {
+	min-height: min(42rem, 100%);
+}
+.review-workspace .workspace-toolbar {
+	background: transparent;
+}
+.finding-list > h2,
+.report-builder > h2 {
+	font-size: 1.125rem;
+}
+.finding-card,
+.report-section {
+	background: #151b26;
+	border-color: #354156;
+}
+.report-section h3 {
+	font-family: inherit;
+}
+:focus-visible {
+	outline-color: #91b3ff;
+}
+.skip-link {
+	background: #315efb;
+	color: white;
+}
+html[data-contrast="high"] body {
+	background: black;
+	color: white;
+}
+html[data-contrast="high"]
+	:is(
+		.text-neutral-400,
+		.text-neutral-500,
+		.text-neutral-600,
+		.text-neutral-700,
+		.text-teal-100,
+		.text-teal-50
+	) {
+	color: #f5f5f5;
+}
+html[data-contrast="high"]
+	:is(
+		input,
+		textarea,
+		select,
+		.toolbar-button,
+		.report-section,
+		.finding-card,
+		.workflow-option
+	) {
+	border-color: #ddd;
+}
+html[data-contrast="high"] :focus-visible {
+	outline-color: #fff;
+	box-shadow: 0 0 0 6px #315efb;
+}

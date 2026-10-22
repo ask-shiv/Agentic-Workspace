@@ -18,7 +18,7 @@ test('brief planning, protected outline replacement, drafting and reload share t
  globalThis.fetch=async(input,init)=>{
   const action=String(input).split('/').at(-1)??'';const body=init?.body?JSON.parse(String(init.body)):{};
   if(init?.method!=='GET' && init?.body) calls.push({action,body});
-  if(action==='plan')return Response.json({...tenantBrief,objective:body.objective});
+  if(action==='plan')return Response.json({...tenantBrief,objective:body.objective,workflow:body.workflow});
   if(action==='review')return Response.json({findings:[finding],gaps:['Need service records.']});
   if(action==='draft')return Response.json({content:'Proposed client advice. [PDF page 1]'});
   if(init?.method==='PUT'){server={...body,version:server.version+1};return Response.json(server);}

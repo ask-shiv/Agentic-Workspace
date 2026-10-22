@@ -38,7 +38,7 @@ export function AppShell() {
 		window.document.getElementById("page-title")?.focus();
 	}, [location.pathname]);
 	const createWorkspace = async () => {
-		navigate("/?new=1");
+		navigate("/");
 	};
 	const navigation = (
 		<WorkspaceNavigation
@@ -61,7 +61,10 @@ export function AppShell() {
 		/>
 	);
 	return (
-		<div className="app-shell flex h-dvh bg-[#f4f5f1] text-neutral-900">
+		<div
+			data-workspace-shell
+			className="app-shell flex h-dvh bg-[#10131a] text-neutral-900"
+		>
 			<a href="#main-content" className="skip-link">
 				Skip to workspace content
 			</a>
@@ -72,7 +75,7 @@ export function AppShell() {
 			)}
 			{!desktop && (
 				<Dialog open={mobileNav} onOpenChange={setMobileNav}>
-					<DialogContent className="left-0 top-0 h-dvh w-72 max-w-[90vw] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none border-0 bg-[#102a2a] p-0">
+					<DialogContent className="left-0 top-0 h-dvh w-72 max-w-[90vw] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none border-0 bg-[#0c1017] p-0">
 						<DialogTitle className="sr-only">Workspaces</DialogTitle>
 						<DialogDescription className="sr-only">
 							Choose a saved workspace or create one.
@@ -96,10 +99,10 @@ export function AppShell() {
 							</button>
 						)}
 						<Link to="/" className="text-sm font-semibold tracking-tight">
-							Agentic Workspace
+							Orbital · Working together
 						</Link>
 						<span className="hidden text-xs text-neutral-600 sm:inline">
-							Evidence into advice
+							Your intent. Our shared workspace.
 						</span>
 					</div>
 					<div className="flex shrink-0 items-center gap-2">

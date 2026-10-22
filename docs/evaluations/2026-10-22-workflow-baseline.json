@@ -1,0 +1,99 @@
+{
+  "timestamp_utc": "2026-10-22T14:20:26.605817+00:00",
+  "model": "claude-haiku-4-5-20251001",
+  "fixture_sha256": "e1c2e8e13efeff20c6c807f0e4be8eac2b0454d84554b8d0ec7f1abd32e39bb5",
+  "objective": "I am advising a tenant considering this lease. I need to understand the commercial risks before negotiations and prepare a concise client update.",
+  "scope": "Same synthetic document and objective, two explicit working presets. Proposed briefs are engineering inputs, not lawyer-approved plans. No legal accuracy or consistency benchmark is claimed; quotes retain their actual verification status. Draft/chat context has model-free coverage.",
+  "cases": [
+    {
+      "workflow": "risk",
+      "brief": {
+        "client_role": "tenant",
+        "outcome": "Meridian Consulting Group LLP is evaluating a 15-year lease for Floors 8\u201310 at 100 Bishopsgate with Initial Rent of \u00a3850,000 p.a. This risk memo identifies key commercial exposures\u2014including rent review mechanics, repairing obligations, service charge scope, and assignment/sub-letting restrictions\u2014that will shape negotiating capacity and long-term financial obligation. The analysis flags material unknowns requiring immediate investigation before Meridian enters negotiations or commits to terms. Evidence is grounded in the draft lease excerpts; gaps are explicit and actionable.",
+        "deliverable": "risk_memo",
+        "priorities": [
+          "Rent review mechanism and collar: establish whether 1 January 2029 and 2034 reviews are open-ended, indexed, or subject to upward/downward collars; quantify potential exposure or protection.",
+          "Tenant repairing and maintenance obligations: identify the full scope of repair, decoration and service contributions to determine capital and operating cost risk over the 15-year term.",
+          "Break clause and exit flexibility: determine whether Meridian has contractual break rights, on what notice and conditions, and the financial or operational triggers; assess early termination cost.",
+          "Service charge scope, apportionment method and cap: clarify which building services are recoverable, how Meridian's share is calculated (by area, occupancy, or other), and whether there is a cost control or cap mechanism."
+        ],
+        "open_questions": [
+          "What is the rent review methodology at 1 January 2029 and 2034\u2014market rent (open) with a surveyor determination, RPI indexation, or a collar (minimum/maximum) mechanism, and does the lease specify comparables or valuation basis?",
+          "What are Meridian's full repair, maintenance and decoration obligations, including structural, mechanical, external, and decoration cycles, and are these capped or subject to 'reasonable and proper' standards?",
+          "Are there tenant break clause rights (e.g., at Year 5 or 10), and if so, what are the exercise notice period, any financial penalty (break fee or rent in lieu), and the condition precedent?",
+          "What is the service charge scope (building services, management, insurance, utilities recovery), the apportionment basis (area or occupancy), and is there an annual reconciliation, cash advance, or cost ceiling?"
+        ],
+        "sections": [
+          {
+            "title": "Rent and Financial Exposure",
+            "purpose": "Establish the true cost of the lease by clarifying rent review mechanics, escalation risk, and any collars or caps that protect or limit Meridian's rent liability at 2029 and 2034 review dates."
+          },
+          {
+            "title": "Repairing Obligations and Hidden Costs",
+            "purpose": "Map Meridian's responsibility for repair, maintenance, decoration and structural works to quantify capital and operating costs and identify any overlap with landlord-retained or service charge items."
+          },
+          {
+            "title": "Exit Flexibility and Break Rights",
+            "purpose": "Assess whether Meridian can exit early (by break clause or other mechanism), what conditions or costs apply, and whether the 15-year term is locked without relief."
+          },
+          {
+            "title": "Service Charge and Shared Costs",
+            "purpose": "Determine the scope of recoverable building services, Meridian's apportionment share, payment and reconciliation cycles, and any caps or protections against landlord cost escalation."
+          },
+          {
+            "title": "Assignment and Sub-Letting Restrictions",
+            "purpose": "Clarify permitted assignment and sub-letting rights, any landlord consent requirements, rent-sharing clauses or profit-capture terms, and the impact on Meridian's future flexibility or monetisation options."
+          }
+        ],
+        "workflow": "risk",
+        "objective": "I am advising a tenant considering this lease. I need to understand the commercial risks before negotiations and prepare a concise client update."
+      },
+      "error": "UsageLimitExceeded"
+    },
+    {
+      "workflow": "report",
+      "brief": {
+        "client_role": "tenant",
+        "outcome": "Tenant-focused client update identifying key commercial and structural lease risks requiring investigation before entering negotiations. The brief will equip Meridian Consulting Group LLP to prioritize legal and commercial concerns, flag areas for landlord negotiation, and clarify missing information critical to informed decision-making on a 15-year commitment at \u00a3850,000 p.a.",
+        "deliverable": "client_update",
+        "priorities": [
+          "Map rent review mechanism and escalation exposure: understand how rents are determined at 5th and 10th anniversary review points and whether tenant has break rights or collar protections",
+          "Assess repairing obligations and service charge risk: clarify tenant's repair liability for Floors 8\u201310 and building common parts, and identify capped/uncapped service charge exposure",
+          "Evaluate exit and assignment flexibility: determine break clauses, notice periods, and restrictions on subletting or assignment to preserve future optionality",
+          "Verify insurance and indemnity allocation: confirm whether tenant bears insurance cost, rebuild risk, and landlord indemnity scope for defects, liability and third-party claims"
+        ],
+        "open_questions": [
+          "Are there rent review provisions with any collar, cap, or tenant review rights, and does the lease include termination/break options at or near the review dates?",
+          "What are the tenant's precise repairing obligations (decoration, structural, mechanical), and is the service charge capped, recoverable only for reasonable costs, or subject to annual limits?",
+          "Does the lease permit subletting and assignment, and if so, what landlord consents, tenant guarantees, or profit-sharing requirements apply?",
+          "What is the landlord's insurance obligation, cost allocation, and tenant indemnity liability for personal injury, property damage, and environmental/defect claims?"
+        ],
+        "sections": [
+          {
+            "title": "Rent and Review Risk",
+            "purpose": "Summarize the rent commencement (\u00a3850,000 p.a.), review points (1 Jan 2029, 2034), and identify gaps in review mechanism, escalation caps, and tenant protections. Highlight whether review forecasts or historical comparables are available."
+          },
+          {
+            "title": "Tenant Obligations and Repair Liability",
+            "purpose": "Outline the scope of tenant repairing obligations for the demised premises and building common parts, identify whether repairs are open-ended or specified, and assess service charge recovery terms and caps."
+          },
+          {
+            "title": "Exit and Assignment Constraints",
+            "purpose": "Detail any break clauses, notice periods, conditions for exercise, and restrictions on subletting or assignment. Flag if no early exit option exists and implications for 15-year commitment."
+          },
+          {
+            "title": "Insurance, Indemnity and Liability Allocation",
+            "purpose": "Clarify who bears insurance cost and rebuild risk, scope of tenant indemnity to landlord, and whether tenant is liable for landlord's negligence or pre-existing defects."
+          },
+          {
+            "title": "Use and Planning Compliance",
+            "purpose": "Confirm permitted use (Class E(g)(i) offices) aligns with tenant's business, verify planning history and landlord consent procedures for changes, and note any covenant restrictions."
+          }
+        ],
+        "workflow": "report",
+        "objective": "I am advising a tenant considering this lease. I need to understand the commercial risks before negotiations and prepare a concise client update."
+      },
+      "error": "UsageLimitExceeded"
+    }
+  ]
+}

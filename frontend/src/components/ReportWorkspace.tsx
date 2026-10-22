@@ -15,6 +15,7 @@ import {
 	type Finding,
 	type MatterBrief,
 	type TaskContext,
+	type Workflow,
 	type WorkspaceData,
 	briefIsCurrent,
 	emptyWorkspace,
@@ -25,7 +26,10 @@ import {
 import type { Document } from "../types";
 import { AttentionPanel } from "./AttentionPanel";
 import { CopyWorkspaceLink } from "./CopyWorkspaceLink";
+import { EmptyState } from "./EmptyState";
+import { IntentStart, WorkflowChoices } from "./IntentStart";
 import { RevisionHistory } from "./RevisionHistory";
+import { SidebarTools } from "./SidebarTools";
 import { SourceCitation } from "./SourceCitation";
 import { BriefReview, WorkflowSummary } from "./WorkflowBrief";
 import { useWorkflowConfirmation } from "./WorkflowConfirmation";
@@ -38,6 +42,8 @@ import {
 } from "./ui/tooltip";
 
 interface Props {
+	onUpload?: (file: File) => void;
+	uploading?: boolean;
 	conversationId: string;
 	document: Document | null;
 	onCitation: (quote: string) => void;
@@ -46,6 +52,8 @@ interface Props {
 }
 
 export function ReportWorkspace({
+	onUpload,
+	uploading = false,
 	conversationId,
 	document,
 	onCitation,
@@ -63,6 +71,9 @@ export function ReportWorkspace({
 	const [busy, setBusy] = useState<string | null>(null);
 	const [search, setSearch] = useSearchParams();
 	const location = useLocation();
+	const initialIntent = useRef(location.state?.initialIntent);
+	const [setupReady, setSetupReady] = useState(false);
+	const [editingIntent, setEditingIntent] = useState(false);
 	const requestedView = search.get("view");
 	const activeView =
 		requestedView === "chat" ||
@@ -89,13 +100,7 @@ export function ReportWorkspace({
 		index: number;
 		content: string;
 	} | null>(null);
-	const [onboarded, setOnboarded] = useState(() => {
-		try {
-			return localStorage.getItem("orbital-workspace-onboarded") === "yes";
-		} catch {
-			return false;
-		}
-	});
+
 	const controller = useRef<AbortController | null>(null);
 
 	useEffect(() => {
@@ -119,9 +124,27 @@ export function ReportWorkspace({
 					signal,
 				);
 				if (!signal.aborted) {
-					setData(saved);
+					const seed = initialIntent.current;
+					const seeded =
+						!saved.version &&
+						!saved.objective &&
+						seed &&
+						["risk", "report"].includes(seed.workflow) &&
+						typeof seed.objective === "string" &&
+						seed.objective.trim().length >= 5 &&
+						seed.objective.length <= 2000;
+					setData(
+						seeded
+							? {
+									...saved,
+									objective: seed.objective.trim(),
+									workflow: seed.workflow,
+								}
+							: saved,
+					);
+					setSetupReady(!!(seeded || saved.objective.trim().length >= 5));
 					setLoaded(true);
-					setDirty(false);
+					setDirty(!!seeded);
 				}
 			} catch (err) {
 				if (!signal.aborted)
@@ -191,20 +214,43 @@ export function ReportWorkspace({
 			}))
 		)
 			return false;
-		change({ ...data, purpose_unlocked: true });
+		change({
+			...data,
+			purpose_unlocked: true,
+			workflow: data.workflow ?? data.brief?.workflow ?? "risk",
+		});
 		return true;
 	};
 	useEffect(() => {
 		if (data.purpose_unlocked && !briefOpen)
 			window.document.getElementById("objective")?.focus();
 	}, [data.purpose_unlocked, briefOpen]);
+	const selectedWorkflow = data.workflow ?? data.brief?.workflow;
+	const workflow = selectedWorkflow ?? "risk";
+	const selectWorkflow = async (nextWorkflow: Workflow) => {
+		if (
+			busy ||
+			!loaded ||
+			(data.workflow === nextWorkflow && !data.purpose_unlocked)
+		)
+			return;
+		if (purposeLocked && !(await unlockPurpose())) return;
+		change({
+			...data,
+			workflow: nextWorkflow,
+			purpose_unlocked: purposeLocked || !!data.purpose_unlocked,
+		});
+	};
 	const plan = () => {
 		if (!loaded || busy || data.objective.trim().length < 5) return;
 		return run("plan", async (signal) => {
 			const result = await workspaceRequest<MatterBrief>(
 				conversationId,
 				"plan",
-				{ objective: data.objective },
+				{
+					objective: data.objective,
+					workflow: data.workflow ?? data.brief?.workflow ?? "risk",
+				},
 				signal,
 			);
 			if (!signal.aborted) {
@@ -276,7 +322,11 @@ export function ReportWorkspace({
 			}))
 		)
 			return;
-		const next = { ...data, brief: briefProposal };
+		const next = {
+			...data,
+			workflow: briefProposal.workflow ?? data.workflow,
+			brief: briefProposal,
+		};
 		change(next);
 		setBriefOpen(false);
 		reviewFor(next, true);
@@ -453,9 +503,164 @@ export function ReportWorkspace({
 					blocked: !!data.purpose_unlocked || (!!data.brief && !briefCurrent),
 				})
 			: children;
-	if (!document) return <>{chatContent}</>;
+	const tools = (
+		<SidebarTools>
+			<output className="block text-xs text-neutral-400">
+				{!loaded
+					? "Loading workspace…"
+					: dirty
+						? "Unsaved changes"
+						: `Saved revision ${data.version}`}
+			</output>
+			<RevisionHistory
+				conversationId={conversationId}
+				version={data.version}
+				disabled={!!busy || !loaded}
+				onRestore={restore}
+				restoreError={error}
+			/>
+			<fieldset
+				className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-neutral-100 pt-2"
+				aria-label="Saved workspace actions"
+			>
+				<button
+					type="button"
+					className="quiet-button"
+					onClick={save}
+					aria-keyshortcuts={
+						preferences.shortcuts ? "Control+s Meta+s" : undefined
+					}
+					disabled={!!busy || !loaded || !dirty}
+				>
+					{busy === "save" ? "Saving…" : "Save workspace"}
+				</button>
+				<button
+					type="button"
+					className="quiet-button"
+					onClick={download}
+					disabled={
+						!!busy ||
+						!loaded ||
+						dirty ||
+						!reportCurrent ||
+						!data.sections.some((s) => s.content.trim())
+					}
+				>
+					Download report
+				</button>
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<button
+								type="button"
+								className="quiet-button h-10 w-10 px-0"
+								aria-label="About downloading your report"
+							>
+								<Info aria-hidden="true" className="h-4 w-4" />
+							</button>
+						</TooltipTrigger>
+						<TooltipContent className="max-w-72 leading-relaxed">
+							Downloads the last saved report as a Markdown (.md) text file with
+							source references. Save your changes first. You can open it in a
+							text editor; PDF and Word export are planned.
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
+				<CopyWorkspaceLink />
+			</fieldset>
+			<WorkspaceMomentum
+				dirty={dirty}
+				data={data}
+				onReport={() => chooseView("report")}
+				onSave={save}
+				disabled={!!busy || !loaded}
+			/>
+		</SidebarTools>
+	);
+	if (!document)
+		return (
+			<div className="review-workspace flex min-h-0 flex-1 flex-col overflow-y-auto">
+				{tools}
+				{!setupReady || editingIntent ? (
+					<IntentStart
+						workflow={workflow}
+						objective={data.objective}
+						disabled={!loaded}
+						onWorkflow={(value) => change({ ...data, workflow: value })}
+						onObjective={(value) => change({ ...data, objective: value })}
+						onContinue={() => {
+							change({ ...data, workflow });
+							setSetupReady(true);
+							setEditingIntent(false);
+						}}
+						action="Add document context"
+					/>
+				) : (
+					<div className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-6 px-5 py-10">
+						<div>
+							<p className="text-xs font-semibold uppercase tracking-widest text-blue-300">
+								Your objective
+							</p>
+							<h2 className="mt-3 text-xl font-medium leading-relaxed">
+								{data.objective}
+							</h2>
+							<button
+								type="button"
+								className="quiet-button mt-3"
+								onClick={() => setEditingIntent(true)}
+							>
+								Edit objective
+							</button>
+						</div>
+						{onUpload ? (
+							<EmptyState onUpload={onUpload} uploading={uploading} />
+						) : (
+							chatContent
+						)}
+					</div>
+				)}
+			</div>
+		);
+	const starting =
+		!data.brief && !data.review_objective && !data.findings.length;
+	if (starting)
+		return (
+			<div className="review-workspace flex min-h-0 flex-1 flex-col overflow-y-auto">
+				{tools}
+				<BriefReview
+					brief={briefProposal}
+					open={briefOpen}
+					busy={!!busy}
+					onChange={setBriefProposal}
+					onClose={() => setBriefOpen(false)}
+					onConfirm={acceptBrief}
+				/>
+				{confirmationDialog}
+				<IntentStart
+					workflow={workflow}
+					objective={data.objective}
+					disabled={!!busy || !loaded}
+					onWorkflow={selectWorkflow}
+					onObjective={(value) => change({ ...data, objective: value })}
+					onContinue={plan}
+					action={busy ? "Planning your work…" : "Plan my work"}
+				>
+					<p className="text-xs text-neutral-400">
+						Context: {document.filename} · The agent will propose a brief for
+						you to check before investigating.
+					</p>
+					{error && (
+						<p role="alert" className="text-sm text-red-300">
+							{error}
+						</p>
+					)}
+				</IntentStart>
+			</div>
+		);
+
 	return (
 		<div className="review-workspace flex min-h-0 flex-1 flex-col bg-neutral-50">
+			{tools}
 			<BriefReview
 				brief={briefProposal}
 				open={briefOpen}
@@ -465,90 +670,34 @@ export function ReportWorkspace({
 				onConfirm={acceptBrief}
 			/>
 			{confirmationDialog}
-			{!onboarded && (
-				<div className="border-b bg-blue-50 p-4 text-sm text-blue-950">
-					<strong>From document to working report.</strong> Set an objective,
-					inspect the evidence, and bring findings into your report. AI
-					interpretation requires your judgment. Nothing is observed in the
-					background.
-					<button
-						type="button"
-						className={`${button} ml-3`}
-						onClick={() => {
-							setOnboarded(true);
-							try {
-								localStorage.setItem("orbital-workspace-onboarded", "yes");
-							} catch {
-								return;
-							}
-						}}
-					>
-						Get started
-					</button>
-				</div>
-			)}
-			<header className="workspace-toolbar space-y-3 border-b bg-white px-5 py-5 md:px-8">
+
+			<header className="workspace-toolbar mx-auto w-full max-w-3xl space-y-4 px-5 py-8 md:px-8">
+				<p className="text-xs text-neutral-400">
+					{dirty ? "Unsaved draft · save in Workspace tools" : "Saved locally"}
+				</p>
 				<div>
 					<p className="mb-1 text-xs font-semibold uppercase tracking-widest text-teal-800">
-						Document review
+						Your working objective
 					</p>
 					<h2 className="break-words text-xl font-semibold tracking-tight">
 						{document.filename}
 					</h2>
 				</div>
-				<div className="flex flex-wrap items-center justify-between gap-2">
-					<div
-						className="flex max-w-full flex-wrap gap-1 rounded-lg bg-neutral-100 p-1"
-						aria-label="Workspace intent"
-					>
-						{(
-							[
-								["risk", "Assess risk"],
-								["report", "Build report"],
-							] as const
-						).map(([intent, label]) => (
-							<button
-								type="button"
-								key={intent}
-								aria-pressed={activeView === intent}
-								aria-keyshortcuts={
-									preferences.shortcuts
-										? `Alt+Shift+${intent === "risk" ? "1" : "2"}`
-										: undefined
-								}
-								disabled={!!busy || !loaded}
-								className={`min-h-10 rounded-md px-3 py-2 text-sm font-medium ${activeView === intent ? "bg-teal-900 text-white shadow-sm" : "text-neutral-700 hover:bg-white"}`}
-								onClick={() => {
-									chooseView(intent);
-								}}
-							>
-								{label}
-							</button>
-						))}
-						<button
-							type="button"
-							className="px-3 py-2 text-sm"
-							aria-pressed={chat}
-							onClick={() => chooseView(chat ? data.intent : "chat")}
-						>
-							Document chat
-						</button>
-					</div>
-					<output className="text-xs text-neutral-500">
-						{!loaded
-							? "Loading workspace…"
-							: dirty
-								? "Unsaved changes"
-								: `Saved revision ${data.version}`}
-					</output>
-					<RevisionHistory
-						conversationId={conversationId}
-						version={data.version}
+				<p className="text-xs font-medium uppercase tracking-widest text-blue-300">
+					{selectedWorkflow
+						? workflow === "report"
+							? "Build report"
+							: "Assess risk"
+						: "Existing working brief"}{" "}
+					· Working together
+				</p>
+				{data.purpose_unlocked && (
+					<WorkflowChoices
+						value={workflow}
 						disabled={!!busy || !loaded}
-						onRestore={restore}
-						restoreError={error}
+						onChange={selectWorkflow}
 					/>
-				</div>
+				)}
 
 				<form
 					onSubmit={(event) => {
@@ -623,65 +772,25 @@ export function ReportWorkspace({
 				</form>
 				<AttentionPanel items={data.gaps} current={reviewCurrent} />
 				<WorkflowSummary
+					reportOpen={activeView === "report"}
 					data={data}
 					busy={!!busy || !loaded}
 					onEdit={async () => {
 						if (!data.purpose_unlocked && !(await unlockPurpose())) return;
-						setBriefProposal(data.brief ?? null);
+						setBriefProposal(
+							data.brief
+								? {
+										...data.brief,
+										workflow: data.workflow ?? data.brief.workflow ?? "risk",
+									}
+								: null,
+						);
 						setBriefOpen(true);
 					}}
 					onOutline={applyOutline}
 					onReport={() => chooseView("report")}
 				/>
-				<fieldset
-					className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-neutral-100 pt-2"
-					aria-label="Saved workspace actions"
-				>
-					<button
-						type="button"
-						className="quiet-button"
-						onClick={save}
-						aria-keyshortcuts={
-							preferences.shortcuts ? "Control+s Meta+s" : undefined
-						}
-						disabled={!!busy || !loaded || !dirty}
-					>
-						{busy === "save" ? "Saving…" : "Save workspace"}
-					</button>
-					<button
-						type="button"
-						className="quiet-button"
-						onClick={download}
-						disabled={
-							!!busy ||
-							!loaded ||
-							dirty ||
-							!reportCurrent ||
-							!data.sections.some((s) => s.content.trim())
-						}
-					>
-						Download report
-					</button>
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<button
-									type="button"
-									className="quiet-button h-10 w-10 px-0"
-									aria-label="About downloading your report"
-								>
-									<Info aria-hidden="true" className="h-4 w-4" />
-								</button>
-							</TooltipTrigger>
-							<TooltipContent className="max-w-72 leading-relaxed">
-								Downloads the last saved report as a Markdown (.md) text file
-								with source references. Save your changes first. You can open it
-								in a text editor; PDF and Word export are planned.
-							</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
-					<CopyWorkspaceLink />
-				</fieldset>
+
 				{data.review_objective && objectiveChanged && (
 					<p className="text-xs text-amber-800">
 						Objective changed. Existing findings reflect:{" "}
@@ -696,17 +805,7 @@ export function ReportWorkspace({
 					</output>
 				)}
 			</header>
-			{!chat && (
-				<div className="px-5 py-3 md:px-8">
-					<WorkspaceMomentum
-						dirty={dirty}
-						data={data}
-						onReport={() => chooseView("report")}
-						onSave={save}
-						disabled={!!busy || !loaded}
-					/>
-				</div>
-			)}
+
 			{error && (
 				<div role="alert" className="bg-red-50 p-3 text-sm text-red-800">
 					{error}{" "}

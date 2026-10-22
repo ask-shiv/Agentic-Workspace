@@ -1,5 +1,14 @@
-import { FileText, Plus, Trash2 } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
+import {
+	FilePenLine,
+	FileText,
+	Home,
+	ListChecks,
+	MessageSquare,
+	Plus,
+	Settings,
+	Trash2,
+} from "lucide-react";
+import { Link, NavLink, useLocation, useMatch } from "react-router-dom";
 import type { Conversation } from "../types";
 
 interface Props {
@@ -23,36 +32,67 @@ export function WorkspaceNavigation({
 	onFollow,
 	onDelete,
 }: Props) {
+	const match = useMatch("/workspaces/:workspaceId");
+	const location = useLocation();
+	const view = new URLSearchParams(location.search).get("view") ?? "risk";
 	return (
 		<nav
 			aria-label="Workspace navigation"
-			className="workspace-navigation flex h-full w-full lg:w-64 flex-col bg-[#102a2a] text-white"
+			className="workspace-navigation flex h-full w-full lg:w-64 flex-col bg-[#0c1017] text-white"
 		>
 			<Link
 				to="/"
 				onClick={onFollow}
 				className="flex items-center gap-3 border-b border-white/15 px-5 py-6 text-lg font-semibold tracking-tight"
 			>
-				<span
-					aria-hidden="true"
-					className="flex h-9 w-9 items-center justify-center rounded-full border border-teal-300 text-teal-200"
-				>
-					O
-				</span>
-				Workspace
+				<img
+					src={new URL("../assets/orbital-logo.svg", import.meta.url).href}
+					alt="Orbital"
+					width={108}
+					height={32}
+				/>
+				<span className="sr-only">Workspace home</span>
 			</Link>
 			<div className="p-4">
 				<button
 					type="button"
-					className="flex w-full items-center justify-center gap-2 rounded-lg bg-teal-100 px-3 py-3 text-sm font-semibold text-teal-950 hover:bg-white"
+					className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-3 text-sm font-semibold text-white hover:bg-blue-500"
 					onClick={onCreate}
 				>
 					<Plus size={17} aria-hidden="true" />
 					New workspace
 				</button>
 			</div>
+			<div className="space-y-1 px-3 pb-5">
+				<Link to="/" onClick={onFollow} className="sidebar-link">
+					<Home aria-hidden="true" size={17} /> Home
+				</Link>
+				{match &&
+					(
+						[
+							{ view: "risk", label: "Evidence & findings", icon: ListChecks },
+							{ view: "report", label: "Working report", icon: FilePenLine },
+							{ view: "chat", label: "Ask a follow-up", icon: MessageSquare },
+						] as const
+					).map((item) => {
+						const query = new URLSearchParams(location.search);
+						query.set("view", item.view);
+						return (
+							<Link
+								key={item.view}
+								to={{ pathname: location.pathname, search: query.toString() }}
+								onClick={onFollow}
+								aria-current={view === item.view ? "page" : undefined}
+								className={`sidebar-link ${view === item.view ? "sidebar-link-active" : ""}`}
+							>
+								<item.icon aria-hidden="true" size={17} />
+								{item.label}
+							</Link>
+						);
+					})}
+			</div>
 			<p className="px-5 pb-2 text-xs font-medium uppercase tracking-widest text-teal-100">
-				Your documents
+				Your work
 			</p>
 			<div className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-4">
 				{loading && (
@@ -100,6 +140,21 @@ export function WorkspaceNavigation({
 					</div>
 				))}
 			</div>
+			{match && (
+				<details className="sidebar-tools border-t border-white/10 p-4">
+					<summary className="cursor-pointer py-2 text-sm font-medium">
+						Workspace tools
+					</summary>
+					<div id="workspace-actions" className="mt-3 space-y-4" />
+				</details>
+			)}
+			<Link
+				to="/settings"
+				className="sidebar-link mx-3 mb-3"
+				onClick={onFollow}
+			>
+				<Settings size={17} aria-hidden="true" /> Settings & accessibility
+			</Link>
 			<div className="border-t border-white/15 px-5 py-4 text-xs leading-relaxed text-teal-100">
 				Local workspace
 				<br />

@@ -54,3 +54,6 @@ docker compose exec -T backend uv run python backend/tests/intent_eval.py --leas
 ```
 
 This run is opt-in and billed, bounded by production request/token/time limits. It changes no user workspace. Its role/deliverable/keyword/distinct-outline checks are narrow heuristics, not semantic grading or a legal acceptance gate.
+
+
+The later [workflow preset experiment](workflows.md) retains usage-limit, timeout and quotation failures alongside one targeted completed report. This is separate from the earlier tenant/landlord objective comparison.

@@ -36,7 +36,19 @@ class BriefProposal(BaseModel):
         return self
 
 
+Workflow = Literal["risk", "report"]
+
+
+def workflow_guidance(workflow: Workflow | None) -> str:
+    if workflow == "risk":
+        return "Assess risk: investigate commercial exposure for the represented client. Prioritise material risks, conditional rights, missing facts and negotiation decisions. Default to a risk memo with evidence, impact and next enquiries unless the lawyer explicitly requests another deliverable. Respect that requested format while prioritising risk decisions; do not default to a generic summary."
+    if workflow == "report":
+        return "Build report: work towards an audience-specific written deliverable. Investigate evidence needed for its sections, distinguish material findings from background, and organise a concise client update or negotiation brief with outstanding questions and actions. Respect any explicitly requested deliverable format over this default. Do not present every extracted fact as equally important."
+    return "Follow the lawyer's agreed objective and deliverable."
+
+
 class MatterBrief(BriefProposal):
+    workflow: Workflow | None = None
     objective: str = Field(min_length=5, max_length=2000)
 
 
@@ -46,7 +58,11 @@ def task_context(objective: str, brief: MatterBrief | None) -> str:
             "The agreed brief belongs to a different objective. Agree a new brief first."
         )
     return json.dumps(
-        {"objective": objective, "agreed_brief": brief.model_dump() if brief else None}
+        {
+            "objective": objective,
+            "agreed_brief": brief.model_dump() if brief else None,
+            "workflow_guidance": workflow_guidance(brief.workflow if brief else None),
+        }
     )
 
 
@@ -84,12 +100,39 @@ brief_agent = Agent(
 )
 
 
-async def propose_brief(objective: str, overview: str) -> MatterBrief:
+async def propose_brief(
+    objective: str, overview: str, workflow: Workflow | None = None
+) -> MatterBrief:
     result = await asyncio.wait_for(
         brief_agent.run(
-            json.dumps({"objective": objective, "document_overview": overview[:3000]}),
+            json.dumps(
+                {
+                    "objective": objective,
+                    "document_overview": overview[:3000],
+                    "workflow": workflow,
+                    "workflow_guidance": workflow_guidance(workflow),
+                }
+            ),
             usage_limits=UsageLimits(request_limit=3, total_tokens_limit=12000),
         ),
         timeout=45,
     )
-    return MatterBrief(**result.output.model_dump(), objective=objective)
+    proposal = result.output.model_dump()
+    if workflow == "report":
+        middle = [
+            section
+            for section in proposal["sections"]
+            if section["title"].casefold() not in {"client position", "decisions and next steps"}
+        ][:3]
+        proposal["sections"] = [
+            {
+                "title": "Client position",
+                "purpose": "Give the intended audience a concise overview of the agreed objective, evidence-supported position and important limitations.",
+            },
+            *middle,
+            {
+                "title": "Decisions and next steps",
+                "purpose": "Identify decisions for the lawyer and client, outstanding enquiries and next actions; do not invent deadlines or confirm compliance.",
+            },
+        ]
+    return MatterBrief(**proposal, objective=objective, workflow=workflow)

@@ -64,6 +64,12 @@ export function BriefReview({
 				</DialogDescription>
 				<p className="rounded-lg bg-neutral-50 p-3 text-sm">
 					<strong>Your objective:</strong> {brief.objective}
+					{brief.workflow && (
+						<span className="mt-2 block text-xs font-semibold">
+							Selected workflow:{" "}
+							{brief.workflow === "risk" ? "Assess risk" : "Build report"}
+						</span>
+					)}
 				</p>
 				<div className="grid gap-4 sm:grid-cols-2">
 					<label className="text-sm font-medium">
@@ -224,12 +230,14 @@ export function WorkflowSummary({
 	onEdit,
 	onOutline,
 	onReport,
+	reportOpen = false,
 }: {
 	data: WorkspaceData;
 	busy: boolean;
 	onEdit: () => void;
 	onOutline: () => void;
 	onReport: () => void;
+	reportOpen?: boolean;
 }) {
 	const brief = data.brief;
 	if (!brief)
@@ -243,106 +251,108 @@ export function WorkflowSummary({
 	const reviewed = reviewIsCurrent(data);
 	const outlined = briefKey(brief) === briefKey(data.report_brief);
 	return (
-		<details
-			className="rounded-xl border border-teal-200 bg-teal-50 p-4"
-			open={!current || !reviewed || !outlined}
-		>
-			<summary className="cursor-pointer text-sm font-semibold">
-				{deliverableNames[brief.deliverable]} · {brief.client_role} ·{" "}
-				{current
-					? reviewed
-						? outlined
-							? "Ready to build"
-							: "Investigation ready"
-						: "Investigation needed"
-					: "Goal changed"}
-			</summary>
-			<div className="mt-3 space-y-3 text-sm">
-				<p>{brief.outcome}</p>
-				<ol
-					className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-teal-950"
-					aria-label="Workflow progress"
-				>
-					<li>1. {current ? "Brief agreed" : "Agree new brief"}</li>
-					<li>2. {reviewed ? "Investigated" : "Investigate evidence"}</li>
-					<li>3. {outlined ? "Outline applied" : "Apply outline"}</li>
-					<li>4. Draft and review</li>
-				</ol>
-				{!current && (
-					<p className="text-amber-900">
-						The objective has changed. Plan and agree the new brief before
-						drafting or continuing contextual chat.
-					</p>
-				)}
-				{current && !reviewed && (
-					<p className="text-amber-900">
-						Findings reflect an earlier brief. Investigate this brief before
-						adding evidence or drafting.
-					</p>
-				)}
-				<div className="grid gap-4 md:grid-cols-2">
-					<div>
-						<h3 className="font-medium">Investigation priorities</h3>
-						<ul className="mt-1 list-disc space-y-1 pl-5">
-							{brief.priorities.map((item) => (
-								<li key={item}>{item}</li>
-							))}
-						</ul>
-						{!!brief.open_questions.length && (
-							<>
-								<h3 className="mt-3 font-medium">Context still needed</h3>
-								<ul className="mt-1 list-disc space-y-1 pl-5">
-									{brief.open_questions.map((item) => (
-										<li key={item}>{item}</li>
-									))}
-								</ul>
-							</>
-						)}
-					</div>
-					<div>
-						<h3 className="font-medium">Your proposed outline</h3>
-						<ol className="mt-1 list-decimal space-y-1 pl-5">
-							{brief.sections.map((item) => (
-								<li key={item.title}>{item.title}</li>
-							))}
-						</ol>
-					</div>
-				</div>
-				<div className="flex flex-wrap gap-2">
-					<button
-						type="button"
-						className="toolbar-button"
-						disabled={busy || !current}
-						onClick={onEdit}
+		<div className="space-y-3">
+			<details className="rounded-xl border border-teal-200 bg-teal-50 p-4">
+				<summary className="cursor-pointer text-sm font-semibold">
+					{deliverableNames[brief.deliverable]} · {brief.client_role} ·{" "}
+					{current
+						? reviewed
+							? outlined
+								? "Ready to build"
+								: "Investigation ready"
+							: "Investigation needed"
+						: "Goal changed"}
+				</summary>
+				<div className="mt-3 space-y-3 text-sm">
+					<p>{brief.outcome}</p>
+					<ol
+						className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-teal-950"
+						aria-label="Workflow progress"
 					>
-						Edit agreed brief
-					</button>
-					{!outlined ? (
-						<button
-							type="button"
-							className="primary-button"
-							disabled={busy || !current || !reviewed}
-							onClick={onOutline}
-						>
-							Use this report outline
-						</button>
-					) : (
+						<li>1. {current ? "Brief agreed" : "Agree new brief"}</li>
+						<li>2. {reviewed ? "Investigated" : "Investigate evidence"}</li>
+						<li>3. {outlined ? "Outline applied" : "Apply outline"}</li>
+						<li>4. Draft and review</li>
+					</ol>
+					{!current && (
+						<p className="text-amber-900">
+							The objective has changed. Plan and agree the new brief before
+							drafting or continuing contextual chat.
+						</p>
+					)}
+					{current && !reviewed && (
+						<p className="text-amber-900">
+							Findings reflect an earlier brief. Investigate this brief before
+							adding evidence or drafting.
+						</p>
+					)}
+					<div className="grid gap-4 md:grid-cols-2">
+						<div>
+							<h3 className="font-medium">Investigation priorities</h3>
+							<ul className="mt-1 list-disc space-y-1 pl-5">
+								{brief.priorities.map((item) => (
+									<li key={item}>{item}</li>
+								))}
+							</ul>
+							{!!brief.open_questions.length && (
+								<>
+									<h3 className="mt-3 font-medium">Context still needed</h3>
+									<ul className="mt-1 list-disc space-y-1 pl-5">
+										{brief.open_questions.map((item) => (
+											<li key={item}>{item}</li>
+										))}
+									</ul>
+								</>
+							)}
+						</div>
+						<div>
+							<h3 className="font-medium">Your proposed outline</h3>
+							<ol className="mt-1 list-decimal space-y-1 pl-5">
+								{brief.sections.map((item) => (
+									<li key={item.title}>{item.title}</li>
+								))}
+							</ol>
+						</div>
+					</div>
+					<div className="flex flex-wrap gap-2">
 						<button
 							type="button"
 							className="toolbar-button"
-							disabled={busy}
-							onClick={onReport}
+							disabled={busy || !current}
+							onClick={onEdit}
 						>
-							Continue to report
+							Edit agreed brief
 						</button>
-					)}
+					</div>
+					<p className="text-xs text-neutral-600">
+						Applying an outline is explicit. Existing report text is saved as a
+						revision before replacement. Save the workspace to retain the latest
+						brief and work.
+					</p>
 				</div>
-				<p className="text-xs text-neutral-600">
-					Applying an outline is explicit. Existing report text is saved as a
-					revision before replacement. Save the workspace to retain the latest
-					brief and work.
-				</p>
+			</details>
+			<div className="flex flex-wrap gap-2">
+				{" "}
+				{!outlined ? (
+					<button
+						type="button"
+						className="primary-button"
+						disabled={busy || !current || !reviewed}
+						onClick={onOutline}
+					>
+						Use this report outline
+					</button>
+				) : !reportOpen ? (
+					<button
+						type="button"
+						className="toolbar-button"
+						disabled={busy}
+						onClick={onReport}
+					>
+						Continue to report
+					</button>
+				) : null}
 			</div>
-		</details>
+		</div>
 	);
 }

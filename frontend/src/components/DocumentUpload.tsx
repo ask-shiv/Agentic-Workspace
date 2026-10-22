@@ -55,6 +55,7 @@ export function DocumentUpload({
 	return (
 		<button
 			type="button"
+			disabled={uploading}
 			className={`w-full max-w-md cursor-pointer rounded-xl border-2 border-dashed px-8 py-10 text-center transition-colors ${
 				dragOver
 					? "border-neutral-400 bg-neutral-100"

@@ -13,11 +13,11 @@ export function EmptyState({ onUpload, uploading }: EmptyStateProps) {
 				<FileSearch className="h-7 w-7 text-white" />
 			</div>
 			<h2 className="mb-2 text-lg font-semibold text-neutral-800">
-				Upload a document to get started
+				Add a document for context
 			</h2>
 			<p className="mb-8 max-w-sm text-center text-sm text-neutral-500">
-				Ask questions about leases, title reports, contracts, and other legal
-				documents
+				Your objective leads the work. Add a lease or another text-based PDF so
+				your collaborator can investigate the evidence.
 			</p>
 			<DocumentUpload onUpload={onUpload} uploading={uploading} />
 		</div>
