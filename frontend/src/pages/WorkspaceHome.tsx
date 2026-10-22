@@ -64,7 +64,7 @@ function WorkspaceWelcome() {
 	};
 	return (
 		<section
-			className="flex min-h-0 flex-1 overflow-y-auto"
+			className="workspace-home flex min-h-0 flex-1 overflow-y-auto"
 			aria-label="Start your work"
 		>
 			<h1 id="page-title" tabIndex={-1} className="sr-only">
