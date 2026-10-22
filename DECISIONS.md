@@ -1,20 +1,22 @@
 # Decisions
 
-Document chat leaves lawyers to turn answers into usable work. I chose an intent-led workspace: state an objective, investigate a lease, inspect the evidence, and assemble an editable report. A PydanticAI review agent searches and reads document pages; the lawyer selects findings, writes their advice, and accepts or rejects proposed section drafts. The working slice is one text-based PDF, two intents (assess risk and build report), persistent report sections, and Markdown export.
+I built an intent-led workspace that helps a commercial property lawyer turn one document into useful working advice. The lawyer can state an objective or ask for a proposed brief, agree the direction, investigate evidence, and assemble an editable report with citations back to the original PDF. The agent proposes work; the lawyer chooses findings, applies judgment and explicitly accepts any generated amendments.
 
-I prioritised this over voice, broad integrations, and passive observation because it completes a concrete workflow beyond summarisation. Trust comes from showing exact passages and physical PDF pages, distinguishing source checks from interpretation, exposing missing facts, and keeping amendments under user control. The report remains editable and saves explicitly with revision checks. Review and drafting use separate configurations in the same co-agent experience; this is not an independent multi-agent verification system. Quotation matching establishes provenance, not legal accuracy or completeness.
+I chose this over adding more chat features, voice or integrations because the gap is between receiving an answer and completing a deliverable. The same lease should produce different priorities for a tenant considering an exit and a landlord preparing negotiations. Comparative live checks demonstrated those differences. Exact source passages, visible uncertainty, immutable source rendering, revision history and explicit saves support review, but quotation matching does not establish that a legal interpretation is correct. Draft evaluation still exposed unsupported wording and a calculated notice deadline, so generated advice remains subject to lawyer review.
 
-With more time, the report would become an organisation-restricted living document with comments and attributable history. A brand kit could produce client-ready PDFs, and authorised Slack/Teams actions could distribute links. Explicitly saved preferences could inform future drafts; one client's decisions must not silently become another client's defaults. These are planned extensions, not implemented capabilities. Visual refinement follows the functional pass; a larger feature catalogue would weaken the initial demonstration.
+With more time, I would prioritise lawyer-reviewed evaluations and claim-level draft checks, then extend the workflow to related documents such as a lease and its amendment. Organisation-restricted collaboration, branded exports and optional suggestions based on saved workflow preferences would follow once access controls and reliability are established. “Brief me” would offer a concise view of completed work while retaining the full findings. These are future extensions; the delivered slice remains one PDF, a confirmed brief and a persistent evidence-linked working report.
+
+The implementation history and verification limits follow below.
 
 ## Built and verified
 
 - Request cancellation/stale-response guards; visible conversation/upload errors; failed AI streams are not saved as answers.
-- Review tools, a 100-second timeout, ten-model-request and 90,000-token limits, and a 600,000-character document cap. Keyword retrieval is deliberately simple.
+- Bounded source-passage selection, a 100-second review timeout, at most two model requests/30,000 tokens, and a 600,000-character document cap. Oversized evidence packs are explicitly labelled partial reviews.
 - Up to eight structured findings; source quotation checks normalise whitespace and compare against the stated page. Unmatched evidence remains visibly unverified. The user can mark findings reviewed; this records their action, not certification.
 - Intent and objective, finding cards, source inspection/navigation, add/drag into three editable sections, proposed drafts, and explicit acceptance.
 - Postgres-backed report state with optimistic revision checks. Immutable saved snapshots support preview and restore as a new revision, alongside stale-write protection. Starting a new review preserves report text but clears old evidence attachments after confirmation.
 - Server-generated Markdown attachment containing saved text, source quotations, review status, objective, revision and export date. Unsaved work must be saved first.
-- Eleven focused Python tests, fifteen typed frontend tests including semantic accessibility checks, frontend lint/TypeScript production build, live persistence/conflict checks, and live review/drafting through the browser. The reusable smoke script checks a running stack without making model calls.
+- Current regression baseline: 42 backend tests and 33 frontend tests, including semantic accessibility checks, plus frontend lint/TypeScript production build and live persistence/conflict checks. Live model checks and their failures are documented separately; the smoke script does not call a model.
 - Adversarial review identified a proposal/save race and an oversized-section edge case; both were corrected before merge.
 
 ## Limits and follow-ups — would complete with more time
@@ -29,7 +31,7 @@ With more time, the report would become an organisation-restricted living docume
 
 ## Submission still required
 
-Part 1 technical-achievement Markdown and the 2–3 minute Loom are still to be supplied by the candidate. No placeholders are presented as completed submissions.
+The submission form asks for Part 1 as a separate 1–2-page PDF; the candidate has prepared this independently. Part 2 requires this public repository, rationale and a recorded 2–3-minute Loom linked in the README. The recording link still needs to be supplied; a script is not presented as a completed video.
 
 ## Shared working conventions
 
@@ -215,3 +217,7 @@ The starting field is explicitly “(Optional) Tell me what you’re working tow
 I ran a fresh live comparison against the same synthetic 100 Bishopsgate lease: a tenant seeking a 2029 exit versus a landlord preparing negotiations. Both runs produced the requested party/deliverable and different priorities and outlines. Tenant findings led with break notice/conditions and exit costs; landlord findings led with assignment consent, upward-only rent review and subletting controls. The first-section drafts followed those different topics. All 30 attached quotations, including supporting passages, matched their stated source pages with whitespace normalisation. Raw outputs are retained locally for inspection and are not included in this documentation change. This demonstrates a meaningful change in investigation and drafting, not just introductory wording; follow-up context has model-free regression coverage, not a fresh live comparison.
 
 The evaluator's mechanical checks passed, but engineering inspection found a prohibited calculated notice deadline in the tenant draft and an overbroad statement that the lease did not address whole-building subletting/licence arrangements despite whole-premises subletting provisions elsewhere. Therefore this is a pass for objective-sensitive behaviour and source-text matching, not legal interpretation or draft reliability. These failures remain acceptance cases for the existing claim-level reliability follow-up (#28). With more time, I would add repeated comparative runs, explicit negative assertions/deadline checks and lawyer-reviewed criteria before claiming consistent coverage or legal correctness. Blank-purpose inference has model-free tests in this pass; it is a proposed starting point, not knowledge of the user's unstated intent.
+
+## Submission rehearsal (#78)
+
+A fresh browser journey covered synthetic PDF upload, objective entry, brief correction/agreement, investigation, citation inspection, report outline/evidence selection, draft rejection, human editing, save/download and reload. The saved edit and citations survived reload and the downloaded report excluded the rejected calendar deadline. A same-view navigation focus/scroll issue was fixed. The [rehearsal record](docs/REHEARSAL.md) distinguishes completed interactions from observed planning/review/draft failures: this is a usable review workflow, not verified legal advice. AI proposals now explicitly state that they require lawyer review. Part 1 follows the submission form's separate PDF instruction; the Loom recording remains the candidate's final submission step.
