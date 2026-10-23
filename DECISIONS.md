@@ -232,3 +232,7 @@ The document-chat layout now constrains its message region and preserves the com
 ## Workflow selector refinement (#82)
 
 A quieter dark track and inset selected pill reduce the visual weight of the landing choices. Sentence-case labels remain equally sized and preserve the existing keyboard, selection and reduced-motion behaviour.
+
+## Landing design review (#84)
+
+Kept the established intent-first hierarchy and bottom-aligned glass composer. Removed the extra chip shimmer, enlarged action targets and clarified hover, disabled and focus states. Narrow-screen typography and input spacing are tuned for reading and touch without adding onboarding copy or new product behaviour.

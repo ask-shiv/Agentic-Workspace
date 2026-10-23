@@ -645,26 +645,6 @@ html[data-contrast="high"] :focus-visible {
 	overflow: hidden;
 	background: #ffffff06;
 }
-.intent-start .workflow-option::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	opacity: 0;
-	background: linear-gradient(
-		115deg,
-		transparent 15%,
-		#77d9d522 40%,
-		#9c91ee22 60%,
-		transparent 85%
-	);
-	transform: translateX(-65%);
-}
-.intent-start .workflow-option:hover::before {
-	opacity: 1;
-	transform: translateX(65%);
-	transition: transform 1.2s ease, opacity 0.3s;
-}
 .intent-start .workflow-option-selected {
 	background: #a8c8ed15;
 	border-color: #b6cee7;
@@ -696,7 +676,11 @@ html[data-contrast="high"] :focus-visible {
 	color: #f3f5fa;
 }
 .intent-composer textarea:focus-visible {
-	outline-offset: -4px;
+	outline: none;
+}
+.intent-composer textarea::placeholder {
+	color: #a6b3c5;
+	opacity: 1;
 }
 .composer-actions {
 	display: flex;
@@ -705,6 +689,9 @@ html[data-contrast="high"] :focus-visible {
 	justify-content: space-between;
 	gap: 0.75rem;
 	padding: 0.4rem;
+}
+.composer-actions button {
+	min-height: 2.75rem;
 }
 .composer-actions .quiet-button {
 	display: inline-flex;
@@ -737,10 +724,6 @@ html[data-contrast="high"] :focus-visible {
 @media (prefers-reduced-motion: reduce) {
 	.welcome-atmosphere span {
 		animation: none;
-	}
-	.intent-start .workflow-option:hover::before {
-		transition: none;
-		transform: none;
 	}
 }
 html[data-contrast="high"] .welcome-atmosphere {
@@ -875,6 +858,21 @@ html[data-contrast="high"] .intent-start .workflow-option-selected {
 	min-width: 0;
 	white-space: normal;
 	text-align: center;
+	min-height: 2.75rem;
+	transition: color 160ms ease;
+}
+.intent-start .workflow-option:not(.workflow-option-selected):hover {
+	color: #f3f5fa;
+}
+.intent-start .workflow-option[data-disabled="true"] {
+	cursor: not-allowed;
+	opacity: 0.55;
+}
+.intent-start .workflow-option > span:first-of-type {
+	border-radius: 999px;
+}
+.intent-start .workflow-option:focus-within {
+	outline-offset: 2px;
 }
 .intent-start .workflow-option-selected {
 	background: transparent;
@@ -891,7 +889,8 @@ html[data-contrast="high"] .intent-start .workflow-option-selected {
 	color: white;
 }
 @media (prefers-reduced-motion: reduce) {
-	.intent-start .workflow-choices::after {
+	.intent-start .workflow-choices::after,
+	.intent-start .workflow-option {
 		transition: none;
 	}
 }
@@ -943,4 +942,21 @@ html[data-contrast="high"] .intent-start .workflow-option-selected {
 }
 .workspace-home .welcome-form > .intent-composer {
 	margin-top: auto;
+}
+
+@media (max-width: 540px) {
+	.welcome-heading {
+		font-size: clamp(1.65rem, 6vw, 1.9rem);
+		max-width: 24rem;
+	}
+	.welcome-description {
+		max-width: 26rem;
+	}
+	.intent-composer textarea {
+		font-size: 1rem;
+		padding: 0.875rem;
+	}
+	.composer-actions {
+		gap: 0.625rem;
+	}
 }
