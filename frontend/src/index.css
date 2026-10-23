@@ -1106,3 +1106,17 @@ html[data-motion="reduced"] .planning-spinner {
 	outline: 1px solid #c6ab5f;
 	outline-offset: 3px;
 }
+
+.report-layout[data-master="true"] {
+	grid-template-columns: minmax(0, 1fr);
+	flex: 0 0 auto;
+	overflow: visible;
+}
+.report-layout[data-master="true"] .finding-list {
+	display: none;
+}
+.report-layout[data-master="true"] .report-builder {
+	grid-row: 1;
+	border-left: 0;
+	overflow: visible;
+}

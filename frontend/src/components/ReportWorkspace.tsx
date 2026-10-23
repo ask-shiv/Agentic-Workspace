@@ -99,10 +99,14 @@ export function ReportWorkspace({
 			? requestedView
 			: data.intent;
 	const chat = activeView === "chat";
+	const [reportOpenRequest, setReportOpenRequest] = useState(0);
+	const masterReport =
+		activeView === "report" && search.get("report") === "master";
 	const chooseView = (view: "risk" | "report" | "chat") => {
 		setSearch((previous) => {
 			const next = new URLSearchParams(previous);
 			next.set("view", view);
+			next.delete("report");
 			return next;
 		});
 		if (view !== "chat") setData((previous) => ({ ...previous, intent: view }));
@@ -122,12 +126,23 @@ export function ReportWorkspace({
 	useEffect(() => {
 		const changed = previousView.current !== activeView;
 		previousView.current = activeView;
-		if (!changed || !loaded || !workReady || search.get("source") === "1")
+		if (
+			(!changed && !masterReport) ||
+			!loaded ||
+			!workReady ||
+			search.get("source") === "1"
+		)
 			return;
 		const heading = window.document.getElementById(`view-${activeView}`);
 		heading?.focus({ preventScroll: true });
 		heading?.scrollIntoView?.({ block: "start" });
-	}, [activeView, loaded, workReady, search]);
+	}, [activeView, loaded, workReady, search, masterReport]);
+	useEffect(() => {
+		if (!reportOpenRequest || !masterReport) return;
+		const heading = window.document.getElementById("view-report");
+		heading?.focus({ preventScroll: true });
+		heading?.scrollIntoView?.({ block: "start" });
+	}, [reportOpenRequest, masterReport]);
 	const [objectiveHelpOpen, setObjectiveHelpOpen] = useState(false);
 	const [activeFinding, setActiveFinding] = useState(0);
 	const findingRefs = useRef<(HTMLElement | null)[]>([]);
@@ -811,7 +826,10 @@ export function ReportWorkspace({
 			/>
 			{confirmationDialog}
 
-			<header className="workspace-toolbar mx-auto w-full max-w-3xl space-y-4 px-5 py-8 md:px-8">
+			<header
+				hidden={masterReport}
+				className="workspace-toolbar mx-auto w-full max-w-3xl space-y-4 px-5 py-8 md:px-8"
+			>
 				<p className="text-xs font-medium uppercase tracking-widest text-blue-300">
 					{selectedWorkflow
 						? workflow === "report"
@@ -1025,6 +1043,7 @@ export function ReportWorkspace({
 			</div>
 			<div
 				data-view={activeView}
+				data-master={masterReport}
 				className={chat ? "hidden" : "report-layout min-h-0 flex-1"}
 			>
 				<section
@@ -1199,8 +1218,17 @@ export function ReportWorkspace({
 						aria-label="Report builder"
 					>
 						<h2 id="view-report" tabIndex={-1} className="font-semibold">
-							Write report
+							{masterReport ? "Master report" : "Write report"}
 						</h2>
+						{masterReport && (
+							<button
+								type="button"
+								className="toolbar-button"
+								onClick={() => chooseView("risk")}
+							>
+								Back to findings
+							</button>
+						)}
 						{!reportCurrent && (
 							<p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
 								This report is preserved from an earlier brief or investigation.
@@ -1387,12 +1415,15 @@ export function ReportWorkspace({
 							data.sections.some((section) => !!section.content.trim())
 						}
 						onOpen={() => {
-							chooseView("report");
-							requestAnimationFrame(() => {
-								const heading = window.document.getElementById("view-report");
-								heading?.focus({ preventScroll: true });
-								heading?.scrollIntoView?.({ block: "start" });
+							setReportOpenRequest((previous) => previous + 1);
+							setSearch((previous) => {
+								const next = new URLSearchParams(previous);
+								next.set("view", "report");
+								next.set("report", "master");
+								next.delete("source");
+								return next;
 							});
+							setData((previous) => ({ ...previous, intent: "report" }));
 						}}
 						onSave={save}
 						onExport={exportPdf}
