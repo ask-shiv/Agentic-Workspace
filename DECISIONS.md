@@ -6,6 +6,12 @@ I chose this over adding more chat features, voice or integrations because the g
 
 With more time, I would prioritise lawyer-reviewed evaluations and claim-level draft checks, then extend the workflow to related documents such as a lease and its amendment. Organisation-restricted collaboration, branded exports and optional suggestions based on saved workflow preferences would follow once access controls and reliability are established. “Brief me” would offer a concise view of completed work while retaining the full findings. These are future extensions; the delivered slice remains one PDF, a confirmed brief and a persistent evidence-linked working report.
 
+## Why regression tests were added
+
+The starter had no substantive automated tests. I added regression coverage alongside fixes and features to protect the lawyer’s work as the prototype evolved: failed AI responses must not become saved answers, navigation must preserve edits, changed objectives must require a new agreed review, citations must retain their source identity, and saves/revisions must reject conflicts. The tests run in CI without paid model calls, making these behaviours repeatable rather than relying on a successful demo.
+
+Separate opt-in live agent evaluations check generated outputs against synthetic source documents and retain observed failures. Regression tests verify application safeguards and evaluation logic; they do not prove legal accuracy or production readiness. See [the evaluation notes](docs/evaluations/README.md) and [the recorded rehearsal](docs/REHEARSAL.md).
+
 The implementation history and verification limits follow below.
 
 ## Built and verified
@@ -16,7 +22,7 @@ The implementation history and verification limits follow below.
 - Intent and objective, finding cards, source inspection/navigation, add/drag into three editable sections, proposed drafts, and explicit acceptance.
 - Postgres-backed report state with optimistic revision checks. Immutable saved snapshots support preview and restore as a new revision, alongside stale-write protection. Starting a new review preserves report text but clears old evidence attachments after confirmation.
 - Server-generated Markdown attachment containing saved text, source quotations, review status, objective, revision and export date. Unsaved work must be saved first.
-- Current regression baseline: 48 backend tests and 33 frontend tests, including semantic accessibility checks, plus frontend lint/TypeScript production build and live persistence/conflict checks. Live model checks and their failures are documented separately; the smoke script does not call a model.
+- Current regression baseline: 48 backend tests and 34 frontend tests, including semantic accessibility checks, plus frontend lint/TypeScript production build and live persistence/conflict checks. Live model checks and their failures are documented separately; the smoke script does not call a model.
 - Adversarial review identified a proposal/save race and an oversized-section edge case; both were corrected before merge.
 
 ## Limits and follow-ups — would complete with more time
