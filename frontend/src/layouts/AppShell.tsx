@@ -1,4 +1,4 @@
-import { Menu, PanelRight } from "lucide-react";
+import { PanelRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
 	Link,
@@ -9,12 +9,6 @@ import {
 	useSearchParams,
 } from "react-router-dom";
 import { WorkspaceNavigation } from "../components/WorkspaceNavigation";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogTitle,
-} from "../components/ui/dialog";
 import { avatarInitials, usePreferences } from "../context/preferences";
 import type { WorkspaceStage } from "../context/workspace-shell";
 import { useConversations } from "../hooks/use-conversations";
@@ -23,8 +17,8 @@ import { useMediaQuery } from "../hooks/use-media-query";
 export function AppShell() {
 	const { preferences } = usePreferences();
 	const { conversations, loading, error, refresh, remove } = useConversations();
-	const [desktopNav, setDesktopNav] = useState(true);
-	const [mobileNav, setMobileNav] = useState(false);
+	const [wideExpanded, setWideExpanded] = useState(true);
+	const [narrowExpanded, setNarrowExpanded] = useState(false);
 	const [workspaceStage, setWorkspaceStage] = useState<{
 		id: string;
 		stage: WorkspaceStage;
@@ -32,12 +26,12 @@ export function AppShell() {
 	} | null>(null);
 
 	const desktop = useMediaQuery("(min-width: 1024px)");
+	const expanded = desktop ? wideExpanded : narrowExpanded;
 	const match = useMatch("/workspaces/:workspaceId");
 	const [search, setSearch] = useSearchParams();
 	const navigate = useNavigate();
 	const location = useLocation();
 	useEffect(() => {
-		setMobileNav(false);
 		window.document.title =
 			location.pathname === "/settings"
 				? "Settings · Agentic Workspace"
@@ -45,22 +39,15 @@ export function AppShell() {
 		window.document.getElementById("page-title")?.focus();
 	}, [location.pathname]);
 	const createWorkspace = async () => {
-		setMobileNav(false);
 		navigate("/");
 	};
 	const navigation = (
 		<WorkspaceNavigation
 			conversations={conversations}
-			onClose={() => {
-				if (desktop) {
-					setDesktopNav(false);
-					requestAnimationFrame(() =>
-						window.document
-							.getElementById("open-workspace-navigation")
-							?.focus(),
-					);
-				} else setMobileNav(false);
-			}}
+			collapsed={!expanded}
+			onToggle={() =>
+				desktop ? setWideExpanded(!expanded) : setNarrowExpanded(!expanded)
+			}
 			currentView={
 				workspaceStage?.id === match?.params.workspaceId
 					? workspaceStage?.view
@@ -85,62 +72,25 @@ export function AppShell() {
 						navigate("/", { replace: true, state: { deletedWorkspace: id } });
 				}
 			}}
-			onFollow={() => setMobileNav(false)}
 		/>
 	);
 	return (
 		<div
 			data-workspace-shell
-			className="app-shell flex h-dvh bg-[#10131a] text-neutral-900"
+			className="app-shell flex h-dvh overflow-x-auto bg-[#10131a] text-neutral-900"
 		>
 			<a href="#main-content" className="skip-link">
 				Skip to workspace content
 			</a>
-			{desktop && desktopNav && (
-				<aside className="min-h-0 overflow-hidden shrink-0 border-r border-teal-950">
-					{navigation}
-				</aside>
-			)}
-			{!desktop && (
-				<Dialog open={mobileNav} onOpenChange={setMobileNav}>
-					<DialogContent className="flex flex-col min-h-0 left-0 top-0 h-dvh w-72 max-w-[90vw] translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-none [&>button]:hidden border-0 bg-[#0c1017] p-0">
-						<DialogTitle className="sr-only">Workspaces</DialogTitle>
-						<DialogDescription className="sr-only">
-							Choose a saved workspace or create one.
-						</DialogDescription>
-						{navigation}
-					</DialogContent>
-				</Dialog>
-			)}
-			<div className="flex min-w-0 flex-1 flex-col">
+			<aside
+				className="navigation-rail min-h-0 shrink-0 overflow-hidden border-r border-teal-950"
+				data-expanded={expanded}
+			>
+				{navigation}
+			</aside>
+			<div className="workspace-main flex min-w-0 flex-1 flex-col">
 				<header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 md:px-6">
-					<div className="flex min-w-0 items-center gap-3">
-						{(!desktop || !desktopNav) && (
-							<button
-								type="button"
-								id="open-workspace-navigation"
-								aria-label="Open workspace navigation"
-								aria-expanded={desktop ? desktopNav : mobileNav}
-								className="icon-button"
-								onClick={() =>
-									desktop ? setDesktopNav(true) : setMobileNav(true)
-								}
-							>
-								<Menu size={20} aria-hidden="true" />
-							</button>
-						)}
-						{!(desktop && desktopNav) && !mobileNav && (
-							<Link to="/" className="text-sm font-semibold tracking-tight">
-								<img
-									src={
-										new URL("../assets/orbital-mark.svg", import.meta.url).href
-									}
-									alt="Orbital"
-									className="h-7 w-auto"
-								/>
-							</Link>
-						)}
-					</div>
+					<div />
 					<div className="flex shrink-0 items-center gap-2">
 						{match && (
 							<button

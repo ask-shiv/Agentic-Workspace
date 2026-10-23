@@ -838,12 +838,12 @@ html[data-contrast="high"] .intent-start .workflow-option-selected {
 .navigation-header {
 	box-sizing: border-box;
 }
-.navigation-header .navigation-close {
+.navigation-header .navigation-toggle {
 	background: transparent;
 	color: #b8c4d7;
 	border-color: transparent;
 }
-.navigation-header .navigation-close:hover {
+.navigation-header .navigation-toggle:hover {
 	background: #ffffff0c;
 	color: white;
 }
@@ -988,4 +988,66 @@ html[data-contrast="high"] .intent-start .workflow-option-selected {
 }
 html[data-contrast="high"] .intent-start .workflow-option::before {
 	display: none;
+}
+
+.navigation-rail {
+	width: 16rem;
+	transition: width 200ms ease;
+}
+.navigation-rail[data-expanded="false"] {
+	width: 4rem;
+}
+.workspace-navigation[data-collapsed="true"] {
+	scrollbar-gutter: auto;
+}
+.workspace-navigation[data-collapsed="true"] .navigation-label,
+.workspace-navigation[data-collapsed="true"] .navigation-brand,
+.workspace-navigation[data-collapsed="true"] .navigation-delete,
+.workspace-navigation[data-collapsed="true"] .sidebar-tools {
+	display: none;
+}
+.workspace-navigation[data-collapsed="true"] .navigation-header {
+	justify-content: center;
+	padding-inline: 0;
+}
+.workspace-navigation[data-collapsed="true"] .navigation-create {
+	padding: 0.75rem 0.5rem;
+}
+.workspace-navigation[data-collapsed="true"] .navigation-create button {
+	padding-inline: 0;
+}
+.workspace-navigation[data-collapsed="true"] .sidebar-link,
+.workspace-navigation[data-collapsed="true"] .workspace-link {
+	justify-content: center;
+	padding: 0.75rem 0;
+	min-height: 2.75rem;
+}
+.workspace-navigation[data-collapsed="true"]
+	#workspace-navigation-items
+	> .space-y-1 {
+	padding-inline: 0.5rem;
+}
+.workspace-navigation[data-collapsed="true"] .sidebar-link.mx-3 {
+	margin-inline: 0.5rem;
+}
+@media (max-width: 1023px) {
+	.navigation-rail[data-expanded="true"] + .workspace-main {
+		min-width: 18rem;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.navigation-rail {
+		transition: none;
+	}
+}
+
+.workspace-navigation .navigation-header {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background: #0c1017;
+}
+.navigation-toggle {
+	min-width: 2.75rem;
+	min-height: 2.75rem;
 }

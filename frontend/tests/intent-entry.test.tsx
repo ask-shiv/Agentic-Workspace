@@ -137,20 +137,26 @@ test('setup sidebar explains the next step instead of offering inert view links'
 });
 
 
-test('start new work closes the mobile drawer even when already on Home',async()=>{
+test('narrow navigation stays visible and expands inline while starting fresh work',async()=>{
  const originalMedia=window.matchMedia;
  window.matchMedia=query=>({...originalMedia(query),matches:false});
  globalThis.fetch=async()=>Response.json([]);
  const router=createMemoryRouter([{element:<PreferencesProvider><AppShell/></PreferencesProvider>,children:[{path:'/',element:<WorkspaceHome/>}]}],{initialEntries:['/']});
  try {
   render(<RouterProvider router={router}/>);const user=userEvent.setup();
-  for(let attempt=0;attempt<2;attempt++){
-   await user.click(screen.getByRole('button',{name:'Open workspace navigation'}));
-   await screen.findByRole('dialog',{name:'Workspaces'});
-   await user.click(screen.getByRole('button',{name:'Start new work'}));
-   await waitFor(()=>assert.equal(screen.queryByRole('dialog',{name:'Workspaces'}),null));
-   assert.equal((screen.getByRole('textbox',{name:'What are you trying to achieve?'}) as HTMLTextAreaElement).value,'');
-  }
+  const nav=screen.getByRole('navigation',{name:'Workspace navigation'});
+  assert.equal(nav.getAttribute('data-collapsed'),'true');
+  await user.click(screen.getByRole('button',{name:'Expand workspace navigation'}));
+  assert.equal(nav.getAttribute('data-collapsed'),'false');
+  assert.equal(screen.queryByRole('dialog',{name:'Workspaces'}),null);
+  await user.type(screen.getByRole('textbox',{name:'What are you trying to achieve?'}),'A different objective');
+  await user.click(screen.getByRole('button',{name:'Start new work'}));
+  assert.equal((screen.getByRole('textbox',{name:'What are you trying to achieve?'}) as HTMLTextAreaElement).value,'');
+  assert.equal(nav.getAttribute('data-collapsed'),'false');
+  await user.click(screen.getByRole('button',{name:'Collapse workspace navigation'}));
+  assert.equal(nav.getAttribute('data-collapsed'),'true');
+  assert(screen.getByRole('link',{name:'Home'}));
+  assert(screen.getByRole('link',{name:'Settings & accessibility'}));
  } finally {router.dispose();window.matchMedia=originalMedia;}
 });
 
@@ -203,4 +209,22 @@ test('blank objective can be proposed but still requires agreement before invest
  await screen.findByRole('button',{name:'Agree brief and investigate'});
  assert.equal((document.querySelector('#objective') as HTMLTextAreaElement).value,inferred);
  assert(!calls.some(url=>url.endsWith('/review')));
+});
+
+
+test('desktop navigation collapses into a labelled rail without changing the route',async()=>{
+ globalThis.fetch=async()=>Response.json([{id:'a',title:'Tenant exit review',has_document:true}]);
+ const router=createMemoryRouter([{element:<PreferencesProvider><AppShell/></PreferencesProvider>,children:[{path:'/',element:<WorkspaceHome/>}]}],{initialEntries:['/']});
+ render(<RouterProvider router={router}/>);const user=userEvent.setup();
+ const link=await screen.findByRole('link',{name:'Tenant exit review'});
+ const nav=screen.getByRole('navigation',{name:'Workspace navigation'});
+ assert.equal(nav.getAttribute('data-collapsed'),'false');
+ await user.click(screen.getByRole('button',{name:'Collapse workspace navigation'}));
+ assert.equal(nav.getAttribute('data-collapsed'),'true');
+ assert.equal(link.getAttribute('href'),'/workspaces/a');
+ assert.equal(link.getAttribute('title'),'Tenant exit review');
+ assert.equal(router.state.location.pathname,'/');
+ await user.click(screen.getByRole('button',{name:'Expand workspace navigation'}));
+ assert.equal(nav.getAttribute('data-collapsed'),'false');
+ router.dispose();
 });

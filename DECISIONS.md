@@ -242,3 +242,7 @@ Kept the established intent-first hierarchy and bottom-aligned glass composer. R
 Extracted WorkflowChoices without changing selection logic, included the shorter welcome wording and restored the requested hover shimmer with motion/contrast safeguards. Added a portable code-quality skill linked from AGENTS.md rather than undertaking a repository-wide reorganisation before submission.
 
 ReportWorkspace remains approximately 1,300 lines and combines request lifecycle, persistence, navigation, investigation and report editing. With more time, split it along those responsibilities in small behaviour-preserving PRs, retaining regression coverage for cancellation, objective locks, evidence identity, draft acceptance and save/history conflicts. The roughly 300-line convention is a review threshold, not a justification for arbitrary fragmentation.
+
+## Persistent workspace navigation (#88)
+
+Replaced the dismissible drawer with a persistent sidebar: expanded by default on desktop and an icon rail at narrow widths. An inline width control expands the saved-work list and pushes the workspace rather than covering it. Labels remain accessible and available as hover titles; destructive controls and detailed tools require expansion. On very narrow screens the pushed layout can scroll horizontally so the working content is not squeezed below a usable minimum. The toggle stays reachable while the navigation list scrolls; reduced-motion preferences remove the width transition.
