@@ -111,3 +111,5 @@ Append one short entry per meaningful pass here: invariant affected, checks, and
 - Planning/date and chat follow-up (#80, #81): calendar dates introduced by planning must be in the explicit objective or trigger bounded retry/rejection; keep the partial overview unverified and blank-goal party unspecified. Test the exact unsupported-date failure, valid retry and persistent failure. Do not confuse this format-limited guard with draft or legal verification. Chat flex ancestors and message region require min-height:0, with a non-shrinking input and keyboard-accessible scroll region; check long content at a short viewport. Favicon reuses the existing vector mark.
 
 - Chat scroll accessibility: a named section remains focusable for keyboard scrolling; its file-scoped Biome tabindex exception permits that scroll region, not arbitrary focus stops. CI must still pass the remaining accessibility rules.
+
+- Selector refinement (#82): keep equal-width native radio choices and an inset sliding indicator, with reduced-motion and high-contrast overrides. Visual polish must not alter the selected workflow or objective.
