@@ -30,7 +30,7 @@ export function ChatWindow({
 	onUpload,
 	contextBlocked = false,
 }: ChatWindowProps) {
-	const scrollRef = useRef<HTMLDivElement>(null);
+	const scrollRef = useRef<HTMLElement>(null);
 
 	// Auto-scroll to bottom when new messages arrive or during streaming
 	const messagesLength = messages.length;
@@ -102,9 +102,8 @@ export function ChatWindow({
 				</div>
 			)}
 
-			<div
+			<section
 				ref={scrollRef}
-				role="region"
 				aria-label="Chat messages"
 				tabIndex={0}
 				className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4"
@@ -115,7 +114,7 @@ export function ChatWindow({
 					))}
 					{streaming && <StreamingBubble content={streamingContent} />}
 				</div>
-			</div>
+			</section>
 
 			{contextBlocked && (
 				<p className="bg-amber-50 p-3 text-sm text-amber-900">
