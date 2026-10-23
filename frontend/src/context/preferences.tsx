@@ -6,10 +6,15 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import {
+	type DevelopmentProfile,
+	parseDevelopmentProfile,
+} from "../components/ProfessionalDevelopment/utils";
 import { useMediaQuery } from "../hooks/use-media-query";
 
 export interface Preferences {
 	name: string;
+	developmentProfile: DevelopmentProfile;
 	textSize: "small" | "medium" | "large";
 	contrast: boolean;
 	reducedMotion: boolean;
@@ -18,6 +23,7 @@ export interface Preferences {
 }
 export const defaultPreferences: Preferences = {
 	name: "",
+	developmentProfile: parseDevelopmentProfile(null),
 	textSize: "small",
 	contrast: false,
 	reducedMotion: false,
@@ -30,6 +36,7 @@ export function parsePreferences(raw: string | null): Preferences {
 		const value = JSON.parse(raw ?? "{}");
 		if (!value || typeof value !== "object") return { ...defaultPreferences };
 		return {
+			developmentProfile: parseDevelopmentProfile(value.developmentProfile),
 			name: typeof value.name === "string" ? value.name.slice(0, 80) : "",
 			textSize: ["small", "medium", "large"].includes(value.textSize)
 				? value.textSize

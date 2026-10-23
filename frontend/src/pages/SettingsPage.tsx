@@ -1,3 +1,4 @@
+import { ProfessionalDevelopment } from "../components/ProfessionalDevelopment";
 import { avatarInitials, usePreferences } from "../context/preferences";
 
 export function SettingsPage() {
@@ -176,6 +177,7 @@ export function SettingsPage() {
 					integration would need explicit permission and privacy review.
 				</p>
 			</section>
+			<ProfessionalDevelopment />
 			<p className="mt-6 text-xs leading-relaxed text-neutral-600">
 				Accessibility foundations target WCAG 2.2 AA. Independent
 				assistive-technology and UK/US rollout audits remain open; these

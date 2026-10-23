@@ -252,3 +252,9 @@ ReportWorkspace remains approximately 1,300 lines and combines request lifecycle
 ## Persistent workspace navigation (#88)
 
 Replaced the dismissible drawer with a persistent sidebar: expanded by default on desktop and an icon rail at narrow widths. An inline width control expands the saved-work list and pushes the workspace rather than covering it. Labels remain accessible and available as hover titles; destructive controls and detailed tools require expansion. On very narrow screens the pushed layout can scroll horizontally so the working content is not squeezed below a usable minimum. The toggle stays reachable while the navigation list scrolls; reduced-motion preferences remove the width transition.
+
+## Professional development concept (#94)
+
+Settings now includes an explicitly experimental profile and two static learning-strategy cards. Years of experience, a local reference date and optional support areas use existing browser preferences; completed anniversaries are calculated on render/load and capped at 40. A 29 February reference advances on 1 March in non-leap years. Manual adjustments reset the reference date. The optional PDF/DOCX CV stays only in component memory and is cleared on leaving Settings or reload: no content reading, upload, parsing, backend storage or agent integration is implemented.
+
+The cards distinguish expert-defined evaluations from consent-based, validated workflow feedback, and both from model training. They demonstrate a possible product direction without monitoring activity, collecting feedback, creating datasets or changing agent prompts/requests. Tests cover anniversary boundaries, corrupt stored values, profile persistence/clearing, CV replacement/removal and zero network requests from the new controls. Existing agent and report behaviour remains untouched. This is a demo UI, not adaptive coaching or a competency assessment.
