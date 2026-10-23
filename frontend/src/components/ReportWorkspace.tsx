@@ -28,11 +28,12 @@ import type { Document } from "../types";
 import { AttentionPanel } from "./AttentionPanel";
 import { CopyWorkspaceLink } from "./CopyWorkspaceLink";
 import { EmptyState } from "./EmptyState";
-import { IntentStart, WorkflowChoices } from "./IntentStart";
+import { IntentStart } from "./IntentStart";
 import { RevisionHistory } from "./RevisionHistory";
 import { SidebarTools } from "./SidebarTools";
 import { SourceCitation } from "./SourceCitation";
 import { BriefReview, WorkflowSummary } from "./WorkflowBrief";
+import { WorkflowChoices } from "./WorkflowChoices";
 import { useWorkflowConfirmation } from "./WorkflowConfirmation";
 import { WorkspaceMomentum } from "./WorkspaceMomentum";
 import {

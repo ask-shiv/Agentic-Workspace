@@ -650,6 +650,26 @@ html[data-contrast="high"] :focus-visible {
 	border-color: #b6cee7;
 	box-shadow: 0 0 0 1px #b6cee733;
 }
+.intent-start .workflow-option::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	opacity: 0;
+	background: linear-gradient(
+		115deg,
+		transparent 15%,
+		#77d9d522 40%,
+		#9c91ee22 60%,
+		transparent 85%
+	);
+	transform: translateX(-65%);
+}
+.intent-start .workflow-option:not([data-disabled="true"]):hover::before {
+	opacity: 1;
+	transform: translateX(65%);
+	transition: transform 1.2s ease, opacity 0.3s;
+}
 .intent-start .workflow-description {
 	position: absolute;
 	width: 1px;
@@ -959,4 +979,13 @@ html[data-contrast="high"] .intent-start .workflow-option-selected {
 	.composer-actions {
 		gap: 0.625rem;
 	}
+}
+
+@media (prefers-reduced-motion: reduce), (forced-colors: active) {
+	.intent-start .workflow-option::before {
+		display: none;
+	}
+}
+html[data-contrast="high"] .intent-start .workflow-option::before {
+	display: none;
 }
