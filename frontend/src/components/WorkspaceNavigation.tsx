@@ -66,20 +66,7 @@ export function WorkspaceNavigation({
 			onTouchMove={revealScrollbar}
 			className="workspace-navigation block min-h-0 h-full w-full bg-[#0c1017] text-white"
 		>
-			<div className="navigation-header flex h-16 shrink-0 items-center justify-between border-b border-white/15 px-5">
-				<Link
-					to="/"
-					onClick={onFollow}
-					className="navigation-brand flex items-center gap-3"
-				>
-					<img
-						src={new URL("../assets/orbital-mark.svg", import.meta.url).href}
-						alt="Orbital"
-						width={22}
-						height={38}
-					/>
-					<span className="sr-only">Workspace home</span>
-				</Link>
+			<div className="navigation-header flex h-16 shrink-0 items-center justify-end border-b border-white/15 px-5">
 				{onToggle && (
 					<button
 						type="button"
