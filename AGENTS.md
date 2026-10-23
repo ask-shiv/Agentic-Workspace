@@ -9,6 +9,7 @@
 
 | Task | Skill |
 | --- | --- |
+| Code quality and maintainability | [code-quality](.agents/skills/code-quality/SKILL.md) |
 | Small fixes and maintenance | [bau-workflow](.agents/skills/bau-workflow/SKILL.md) |
 | Reported bug to PR | [bug-to-pr](.agents/skills/bug-to-pr/SKILL.md) |
 | Behaviour-preserving extraction | [move-dont-redesign](.agents/skills/move-dont-redesign/SKILL.md) |
@@ -115,3 +116,5 @@ Append one short entry per meaningful pass here: invariant affected, checks, and
 - Selector refinement (#82): keep equal-width native radio choices and an inset sliding indicator, with reduced-motion and high-contrast overrides. Visual polish must not alter the selected workflow or objective.
 
 - Landing design tidy (#84): preserve bottom-aligned composer and fresh entry behaviour. Keep 44px minimum landing actions, a visible outer composer focus indicator, native radio focus, readable mobile input text and reduced-motion support. Decorative effects must not compete with workflow selection.
+
+- Focused quality pass (#86): WorkflowChoices owns the existing radio selector in a separate file; preserve both landing and working-workspace callers. Hover shimmer is intentional, pointer-transparent and disabled for reduced motion/high contrast. The user’s shorter welcome wording is included. ReportWorkspace decomposition remains follow-up work; use the code-quality skill for scoped future passes.

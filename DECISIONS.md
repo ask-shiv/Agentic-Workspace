@@ -236,3 +236,9 @@ A quieter dark track and inset selected pill reduce the visual weight of the lan
 ## Landing design review (#84)
 
 Kept the established intent-first hierarchy and bottom-aligned glass composer. Removed the extra chip shimmer, enlarged action targets and clarified hover, disabled and focus states. Narrow-screen typography and input spacing are tuned for reading and touch without adding onboarding copy or new product behaviour.
+
+## Focused maintainability pass (#86)
+
+Extracted WorkflowChoices without changing selection logic, included the shorter welcome wording and restored the requested hover shimmer with motion/contrast safeguards. Added a portable code-quality skill linked from AGENTS.md rather than undertaking a repository-wide reorganisation before submission.
+
+ReportWorkspace remains approximately 1,300 lines and combines request lifecycle, persistence, navigation, investigation and report editing. With more time, split it along those responsibilities in small behaviour-preserving PRs, retaining regression coverage for cancellation, objective locks, evidence identity, draft acceptance and save/history conflicts. The roughly 300-line convention is a review threshold, not a justification for arbitrary fragmentation.
