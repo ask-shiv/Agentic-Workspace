@@ -113,3 +113,5 @@ Append one short entry per meaningful pass here: invariant affected, checks, and
 - Chat scroll accessibility: a named section remains focusable for keyboard scrolling; its file-scoped Biome tabindex exception permits that scroll region, not arbitrary focus stops. CI must still pass the remaining accessibility rules.
 
 - Selector refinement (#82): keep equal-width native radio choices and an inset sliding indicator, with reduced-motion and high-contrast overrides. Visual polish must not alter the selected workflow or objective.
+
+- Landing design tidy (#84): preserve bottom-aligned composer and fresh entry behaviour. Keep 44px minimum landing actions, a visible outer composer focus indicator, native radio focus, readable mobile input text and reduced-motion support. Decorative effects must not compete with workflow selection.
