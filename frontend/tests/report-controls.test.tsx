@@ -16,9 +16,9 @@ afterEach(() => { cleanup(); localStorage.clear(); globalThis.fetch = originalFe
 const finding: Finding = { title:'Break notice', interpretation:'Check notice.', relevance:'Exit', next_step:'Confirm.', uncertainty:'Review facts.', page:1, quote:'Notice in writing.', evidence_status:'source_checked' };
 const current = { ...emptyWorkspace(), version:2, objective:'Current objective', findings:[finding, {...finding, title:'Repair obligation'}], sections:[{title:'Introduction', content:'Current advice', finding_ids:[0]}] };
 const older = {...current, version:1, objective:'Earlier objective', sections:[{title:'Introduction', content:'Earlier advice', finding_ids:[0]}]};
-function mount() {
+function mount(initial="/workspaces/a?view=report") {
  function Workspace(){const [,setDirty] = useState(false); return <PreferencesProvider><ReportWorkspace conversationId='a' document={{id:'d',conversation_id:'a',filename:'lease.pdf',page_count:2,uploaded_at:'2026-10-21'}} onCitation={()=>{}} onDirty={setDirty}><p>Chat</p></ReportWorkspace></PreferencesProvider>;}
- const router = createMemoryRouter([{path:'*',element:<Workspace/>}], {initialEntries:['/workspaces/a?view=report']});
+ const router = createMemoryRouter([{path:'*',element:<Workspace/>}], {initialEntries:[initial]});
  render(<main><h1>Workspace</h1><RouterProvider router={router}/></main>);
  return router;
 }
@@ -161,5 +161,30 @@ test('planning requires agreement before investigation and successful empty revi
  assert(screen.getByRole('button',{name:'Review up to date'}).hasAttribute('disabled'));
  assert(screen.getByRole('textbox',{name:'What are you trying to achieve?'}).hasAttribute('disabled'));
  assert.equal(attempts,1);
+ router.dispose();
+});
+
+
+test('master report opens a dedicated view, repeats reliably and preserves edits on return', async()=>{
+ globalThis.fetch=async()=>Response.json(current);
+ const router=mount('/workspaces/a?view=report&source=1');const user=userEvent.setup();
+ const editor=await screen.findByRole('textbox',{name:'Introduction'});
+ await user.type(editor,' human edit');
+ await user.click(screen.getByRole('button',{name:'Open master report'}));
+ const heading=screen.getByRole('heading',{name:'Master report'});
+ await waitFor(()=>assert.equal(document.activeElement,heading));
+ assert.equal(new URLSearchParams(router.state.location.search).get('report'),'master');
+ assert.equal(new URLSearchParams(router.state.location.search).get('source'),null);
+ assert.equal(document.querySelector('.workspace-toolbar')?.hasAttribute('hidden'),true);
+ assert.equal(document.querySelector('.report-layout')?.getAttribute('data-master'),'true');
+ assert.equal((screen.getByRole('textbox',{name:'Introduction'}) as HTMLTextAreaElement).value,'Current advice human edit');
+ editor.focus();
+ await user.click(screen.getByRole('button',{name:'Open master report'}));
+ await waitFor(()=>assert.equal(document.activeElement,heading));
+ await user.click(screen.getByRole('button',{name:'Back to findings'}));
+ assert.equal(new URLSearchParams(router.state.location.search).get('view'),'risk');
+ assert.equal(new URLSearchParams(router.state.location.search).get('report'),null);
+ await user.click(screen.getByRole('button',{name:'Open master report'}));
+ assert.equal((screen.getByRole('textbox',{name:'Introduction'}) as HTMLTextAreaElement).value,'Current advice human edit');
  router.dispose();
 });
