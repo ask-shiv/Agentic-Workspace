@@ -15,7 +15,7 @@ Start with [the three-paragraph rationale](DECISIONS.md), [the completed enginee
 5. Open **Write report**, apply the agreed outline if prompted, write your advice or request a proposed draft, and review it before accepting.
 6. Use **Workspace tools** to save and download the saved report. Reload the workspace to check persistence; history can preview and restore saved revisions.
 
-**Scope:** one text-based PDF per workspace; local, unauthenticated persistence; Markdown downloads. No organisation sharing, multi-document analysis, OCR or PDF/Word export. Source checks verify quoted text, not legal correctness. Generated drafts require review, particularly dates, negative assertions and conditions. See [evaluation limits](docs/evaluations/reliability.md) and DECISIONS.md.
+**Scope:** one text-based PDF per workspace; local, unauthenticated persistence; Markdown and PDF downloads. No organisation sharing, multi-document analysis, OCR or Word export. Source checks verify quoted text, not legal correctness. Generated drafts require review, particularly dates, negative assertions and conditions. See [evaluation limits](docs/evaluations/reliability.md) and DECISIONS.md.
 
 ---
 

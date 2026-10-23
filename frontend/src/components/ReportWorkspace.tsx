@@ -1,4 +1,4 @@
-import { Info, Target } from "lucide-react";
+import { Info, LoaderCircle, Target } from "lucide-react";
 import {
 	type ReactNode,
 	useCallback,
@@ -29,6 +29,8 @@ import { AttentionPanel } from "./AttentionPanel";
 import { CopyWorkspaceLink } from "./CopyWorkspaceLink";
 import { EmptyState } from "./EmptyState";
 import { IntentStart } from "./IntentStart";
+import { ReportDestination } from "./ReportDestination";
+import { ReportTray } from "./ReportTray";
 import { RevisionHistory } from "./RevisionHistory";
 import { SidebarTools } from "./SidebarTools";
 import { SourceCitation } from "./SourceCitation";
@@ -76,6 +78,12 @@ export function ReportWorkspace({
 	const [dirty, setDirty] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [busy, setBusy] = useState<string | null>(null);
+	useEffect(() => {
+		if (busy === "review")
+			window.document
+				.getElementById("review-progress")
+				?.scrollIntoView?.({ block: "nearest" });
+	}, [busy]);
 	const [search, setSearch] = useSearchParams();
 	const location = useLocation();
 	const initialIntent = useRef(location.state?.initialIntent);
@@ -123,6 +131,12 @@ export function ReportWorkspace({
 	const [activeFinding, setActiveFinding] = useState(0);
 	const findingRefs = useRef<(HTMLElement | null)[]>([]);
 	const [target, setTarget] = useState(1);
+	const [reportNotice, setReportNotice] = useState("");
+	useEffect(() => {
+		setTarget((current) =>
+			Math.min(current, Math.max(0, data.sections.length - 1)),
+		);
+	}, [data.sections.length]);
 	const [instruction, setInstruction] = useState(
 		"Draft this section for the client using the linked evidence and my objective.",
 	);
@@ -339,6 +353,7 @@ export function ReportWorkspace({
 			}))
 		)
 			return;
+		setReportNotice("");
 		run("review", async (signal) => {
 			const result = await workspaceRequest<{
 				findings: Finding[];
@@ -449,6 +464,7 @@ export function ReportWorkspace({
 			);
 			return;
 		}
+		setReportNotice(`Added “${finding.title}” to ${section.title}.`);
 		change({
 			...data,
 			sections: data.sections.map((s, index) =>
@@ -533,6 +549,29 @@ export function ReportWorkspace({
 			);
 			if (!signal.aborted) setProposal({ index, content: result.content });
 		});
+	const exportPdf = () =>
+		run("export", async (signal) => {
+			if (dirty || !reportCurrent) return;
+			const response = await fetch(
+				`/api/conversations/${conversationId}/workspace/export?format=pdf`,
+				{ signal },
+			);
+			if (!response.ok)
+				throw new Error(
+					"Could not export PDF. Save the report and check its agreed brief before retrying.",
+				);
+			const blob = await response.blob();
+			if (signal.aborted) return;
+			const url = URL.createObjectURL(blob);
+			const anchor = window.document.createElement("a");
+			anchor.href = url;
+			anchor.download = "document-review.pdf";
+			window.document.body.appendChild(anchor);
+			anchor.click();
+			anchor.remove();
+			setTimeout(() => URL.revokeObjectURL(url), 1000);
+		});
+
 	const download = () => {
 		const anchor = window.document.createElement("a");
 		anchor.href = `/api/conversations/${conversationId}/workspace/export`;
@@ -620,7 +659,8 @@ export function ReportWorkspace({
 						<TooltipContent className="max-w-72 leading-relaxed">
 							Downloads the last saved report as a Markdown (.md) text file with
 							source references. Save your changes first. You can open it in a
-							text editor; PDF and Word export are planned.
+							text editor; Use Export PDF in the report tray for a PDF copy.
+							Word export remains planned.
 						</TooltipContent>
 					</Tooltip>
 				</TooltipProvider>
@@ -724,6 +764,7 @@ export function ReportWorkspace({
 					onWorkflow={selectWorkflow}
 					onObjective={(value) => change({ ...data, objective: value })}
 					onContinue={plan}
+					preparing={busy === "plan"}
 					action={
 						busy
 							? "Planning your work…"
@@ -866,7 +907,8 @@ export function ReportWorkspace({
 						/>
 						<button
 							type="submit"
-							className="primary-button shrink-0"
+							className="primary-button inline-flex items-center justify-center gap-2 shrink-0"
+							aria-busy={busy === "plan" || busy === "review"}
 							disabled={
 								!!busy ||
 								!loaded ||
@@ -874,6 +916,12 @@ export function ReportWorkspace({
 								(!planNeeded && reviewCurrent)
 							}
 						>
+							{(busy === "plan" || busy === "review") && (
+								<LoaderCircle
+									aria-hidden="true"
+									className="planning-spinner h-4 w-4 animate-spin motion-reduce:animate-none"
+								/>
+							)}
 							{busy === "plan"
 								? "Planning your work…"
 								: busy === "review"
@@ -916,13 +964,32 @@ export function ReportWorkspace({
 						{data.review_objective}
 					</p>
 				)}
-				{busy && (
-					<output className="block text-xs text-neutral-600">
-						{busy === "review"
-							? "Searching and reading relevant provisions. This can take up to 100 seconds."
-							: "Working on your request. Existing text is preserved."}
+				{busy === "review" ? (
+					<output
+						id="review-progress"
+						aria-label="Investigation progress"
+						className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm"
+					>
+						<LoaderCircle
+							aria-hidden="true"
+							className="planning-spinner mt-0.5 h-5 w-5 shrink-0 animate-spin motion-reduce:animate-none"
+						/>
+						<span>
+							<span className="block font-semibold">
+								Investigating your agreed brief…
+							</span>
+							<span className="mt-1 block leading-relaxed">
+								I’m preparing your findings and next steps. Searching and
+								reading relevant provisions can take up to 100 seconds. Check
+								back here shortly, and keep this workspace open while I work.
+							</span>
+						</span>
 					</output>
-				)}
+				) : busy ? (
+					<output className="block text-xs text-neutral-600">
+						Working on your request. Existing text is preserved.
+					</output>
+				) : null}
 			</header>
 
 			{error && (
@@ -976,21 +1043,29 @@ export function ReportWorkspace({
 							the original PDF.
 						</p>
 					)}
-					{!!data.findings.length && (
-						<label className="block text-xs">
-							Add findings to{" "}
-							<select
-								className="ml-2 rounded border p-1"
-								value={target}
-								onChange={(e) => setTarget(Number(e.target.value))}
+					{data.brief && !reportCurrent && briefCurrent && reviewCurrent && (
+						<div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
+							<p>
+								Your agreed brief has its own report outline. Set up those
+								sections before assembling the report.
+							</p>
+							<button
+								type="button"
+								className="toolbar-button mt-2"
+								disabled={!!busy}
+								onClick={applyOutline}
 							>
-								{data.sections.map((s, index) => (
-									<option key={s.title} value={index}>
-										{s.title}
-									</option>
-								))}
-							</select>
-						</label>
+								Set up report sections
+							</button>
+						</div>
+					)}
+					{!!data.findings.length && (
+						<ReportDestination
+							sections={data.sections}
+							target={target}
+							disabled={!!busy || !reviewCurrent}
+							onChange={setTarget}
+						/>
 					)}
 					{!!data.findings.length && (
 						<nav
@@ -1308,6 +1383,30 @@ export function ReportWorkspace({
 					</section>
 				)}
 			</div>
+			{!chat &&
+				(data.findings.length > 0 ||
+					data.sections.some((section) => section.content.trim())) && (
+					<ReportTray
+						sections={data.sections}
+						notice={reportNotice}
+						dirty={dirty}
+						busy={busy}
+						canExport={
+							reportCurrent &&
+							data.sections.some((section) => !!section.content.trim())
+						}
+						onOpen={() => {
+							chooseView("report");
+							requestAnimationFrame(() => {
+								const heading = window.document.getElementById("view-report");
+								heading?.focus({ preventScroll: true });
+								heading?.scrollIntoView?.({ block: "start" });
+							});
+						}}
+						onSave={save}
+						onExport={exportPdf}
+					/>
+				)}
 		</div>
 	);
 }

@@ -188,6 +188,9 @@ async def test_export_rejects_saved_unlocked_purpose_and_workflow_drift():
         with pytest.raises(HTTPException) as error:
             await workspace.export_workspace("a", session)
         assert error.value.status_code == 409
+        with pytest.raises(HTTPException) as pdf_error:
+            await workspace.export_workspace("a", session, format="pdf")
+        assert pdf_error.value.status_code == 409
 
 
 @pytest.mark.asyncio

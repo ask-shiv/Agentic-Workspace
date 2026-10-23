@@ -22,7 +22,7 @@ The implementation history and verification limits follow below.
 - Intent and objective, finding cards, source inspection/navigation, add/drag into three editable sections, proposed drafts, and explicit acceptance.
 - Postgres-backed report state with optimistic revision checks. Immutable saved snapshots support preview and restore as a new revision, alongside stale-write protection. Starting a new review preserves report text but clears old evidence attachments after confirmation.
 - Server-generated Markdown attachment containing saved text, source quotations, review status, objective, revision and export date. Unsaved work must be saved first.
-- Current regression baseline: 48 backend tests and 34 frontend tests, including semantic accessibility checks, plus frontend lint/TypeScript production build and live persistence/conflict checks. Live model checks and their failures are documented separately; the smoke script does not call a model.
+- Current regression baseline: 50 backend tests and 40 frontend tests, including semantic accessibility checks, plus frontend lint/TypeScript production build and live persistence/conflict checks. Live model checks and their failures are documented separately; the smoke script does not call a model.
 - Adversarial review identified a proposal/save race and an oversized-section edge case; both were corrected before merge.
 
 ## Limits and follow-ups — would complete with more time
@@ -258,3 +258,13 @@ Replaced the dismissible drawer with a persistent sidebar: expanded by default o
 Settings now includes an explicitly experimental profile and two static learning-strategy cards. Years of experience, a local reference date and optional support areas use existing browser preferences; completed anniversaries are calculated on render/load and capped at 40. A 29 February reference advances on 1 March in non-leap years. Manual adjustments reset the reference date. The optional PDF/DOCX CV stays only in component memory and is cleared on leaving Settings or reload: no content reading, upload, parsing, backend storage or agent integration is implemented.
 
 The cards distinguish expert-defined evaluations from consent-based, validated workflow feedback, and both from model training. They demonstrate a possible product direction without monitoring activity, collecting feedback, creating datasets or changing agent prompts/requests. Tests cover anniversary boundaries, corrupt stored values, profile persistence/clearing, CV replacement/removal and zero network requests from the new controls. Existing agent and report behaviour remains untouched. This is a demo UI, not adaptive coaching or a competency assessment.
+
+## Visible planning and investigation progress (#97)
+
+Brief preparation and investigation show spinners and disabled actions while pending. After agreement, a nearby live status explains the bounded 100-second investigation and asks users to keep the workspace open; it does not imply a background job or promise notifications. Pending/success transitions are regression-tested, with saved and system reduced-motion settings respected.
+
+## Visible report assembly and PDF export (#98)
+
+Section cards show the destination, linked-finding counts and whether drafting has started. A persistent report tray confirms additions and offers the master report, explicit save and PDF download. PDF export uses the existing PyMuPDF dependency to paginate the saved report and its supporting quotations, review gaps and revision metadata; all user text is escaped before layout. Unsaved or outdated report contexts cannot export through the UI, and backend brief checks are shared with Markdown export. The original uploaded PDF is never rewritten.
+
+Report-flow verification: 50 backend and 40 frontend tests pass. A separate synthetic browser workspace verified choosing the break-clause section, adding one finding, opening the master report, editing, saving revision 2 and downloading a three-page PDF. Extracted PDF text retained the human edit, saved revision and both page-7 quotations; all pages were rendered and visually checked. No model calls or existing workspace edits were needed for this verification.

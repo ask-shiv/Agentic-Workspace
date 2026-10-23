@@ -1074,3 +1074,14 @@ html[data-contrast="high"] .intent-start .workflow-option::before {
 		padding: 0.5rem;
 	}
 }
+
+html[data-motion="reduced"] .planning-spinner {
+	animation: none;
+}
+
+.review-workspace > .report-tray {
+	position: sticky;
+	bottom: 0;
+	z-index: 5;
+	flex-shrink: 0;
+}
