@@ -2,9 +2,11 @@
 
 An intent-led workspace for commercial property lawyers: agree the work, investigate a document, inspect cited evidence and turn selected findings into an editable client briefing. The lawyer owns the judgment and the final wording; the agent proposes evidence and drafts.
 
+**[Watch the Loom walkthrough](https://www.loom.com/share/19f7c0b923db4598a8029010ed68bd91)**
+
 Start with [the three-paragraph rationale](DECISIONS.md), [the completed engineering rehearsal](docs/REHEARSAL.md), then [the walkthrough script](docs/LOOM_SCRIPT.md). This is an independently created repository, not a GitHub fork.
 
-**Submission status:** the working prototype and evaluation notes are included. Part 1 should be uploaded separately as a PDF through the assignment form. The recorded 2–3-minute Loom link is still required; it is not represented as complete.
+**Submission status:** the working prototype, Loom walkthrough and evaluation notes are included. Upload Part 1 separately as a PDF through the assignment form, and submit this public repository URL for Part 2.
 
 ## Try the core journey
 
@@ -122,7 +124,7 @@ The smoke script creates and removes its own test conversation. API credentials 
 
 ### Submission status
 
-Loom walkthrough: awaiting the candidate’s recording link. Part 1: the candidate’s two-page achievement PDF is supplied separately through the submission form. The [recording script](docs/LOOM_SCRIPT.md) is preparation material, not a recorded video.
+[Loom walkthrough](https://www.loom.com/share/19f7c0b923db4598a8029010ed68bd91). Part 1: upload the two-page achievement PDF separately through the submission form. Part 2: submit [this public, non-fork repository](https://github.com/ask-shiv/Agentic-Workspace), which includes setup instructions and the [written rationale](DECISIONS.md).
 
 ### Navigation and reading preferences
 
