@@ -19,6 +19,13 @@ One early attempt was interrupted by a development hot reload before saving; the
 
 The rehearsal confirms the interaction and persistence path. It also reconfirms the open claim-reliability limitation (#28): planning and investigation can introduce unsupported factual framing, and drafting can repeat an instruction-prohibited deadline. The UI now explicitly labels generated proposals as requiring lawyer review, with reminders to check dates, clauses, conditions and unsupported claims. This is a review safeguard, not automatic verification or a claim that those generation errors have been fixed.
 
-Validation: 42 backend tests and 33 frontend tests, frontend lint/type checks and production build. No fresh-database destructive reset or independent screen-reader audit was performed. Credentials were not displayed in the rehearsal or committed.
+Validation after follow-up fixes: 48 backend tests and 33 frontend tests, frontend lint/type checks and production build. No fresh-database destructive reset or independent screen-reader audit was performed. Credentials were not displayed in the rehearsal or committed.
 
 The Part 1 achievement PDF is submitted separately through the assignment form. The Loom script is prepared, but a real recording and README link must still be supplied by the candidate.
+
+
+## Follow-up checks — 23 October 2026
+
+The exact unsupported planning-date case now has a deterministic output validator. A calendar date in a planning proposal must already appear in the lawyer's objective; the partial overview is deliberately not treated as verified authority for new date assertions. PydanticAI can retry within the existing three-request/12,000-token/45-second limits, and persistent violations fail instead of displaying the proposal. Six regression cases cover named, ISO and slash-separated dates, successful retry and persistent failure. A fresh live plan against the same synthetic lease completed in 13.68 seconds with no calendar dates, retaining tenant/client-update context. Recognition is limited to the supported explicit date formats; this does not validate every date expression, amount or interpretation. Blank-objective proposals keep the represented-party field unspecified for confirmation.
+
+Long document chat was checked in the browser: content height 1,121 px within a 504 px scroll region, with scroll position moving from 0 to 617 and back. At 600×420 the region remained constrained (204 px high) with overflow available; temporary viewport settings were reset. Chat messages have a keyboard-focusable scroll region and the input does not shrink away. The SVG favicon reuses the supplied orange logo mark and its served bytes match the source asset.

@@ -638,7 +638,7 @@ export function ReportWorkspace({
 		return (
 			<div className="flex min-h-0 flex-1 flex-col">
 				{tools}
-				<div className="flex items-center justify-between border-b p-4">
+				<div className="flex shrink-0 items-center justify-between border-b p-4">
 					<h2>Document chat</h2>
 					<button
 						type="button"

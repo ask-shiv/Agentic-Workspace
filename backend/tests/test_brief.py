@@ -251,8 +251,66 @@ async def test_blank_objective_proposes_an_outcome_without_overwriting_explicit_
     assert payload["document_overview"] == "Synthetic lease overview"
     assert "Do not assume a represented party" in payload["objective"]
     assert inferred.objective == proposal.outcome
+    assert inferred.client_role == "unspecified"
     explicit = "Advise the landlord about rental income."
     supplied = await service.propose_brief(explicit, "Same lease", "risk")
     assert supplied.objective == explicit
     assert json.loads(run.call_args.args[0])["objective"] == explicit
     assert workspace.PlanRequest().objective == ""
+
+
+@pytest.mark.parametrize("date", ["5 January 2029", "January 5, 2029", "2029-01-05", "05/01/2029"])
+def test_planning_rejects_calendar_dates_not_supplied_by_lawyer(date):
+    from pydantic_ai import ModelRetry
+
+    from takehome.services.brief import BriefProposal, validate_planning_dates
+
+    proposed = BriefProposal.model_validate(
+        tenant_brief(priorities=[f"Check review on {date}"]).model_dump()
+    )
+    with pytest.raises(ModelRetry, match="calendar date"):
+        validate_planning_dates("Help the tenant exit in 2029", proposed)
+    assert validate_planning_dates(f"Investigate the date {date}", proposed) == proposed
+
+
+@pytest.mark.asyncio
+async def test_planner_retries_unsupported_date_before_returning_proposal():
+    from pydantic_ai.messages import ModelResponse, ToolCallPart
+    from pydantic_ai.models.function import FunctionModel
+
+    from takehome.services.brief import BriefProposal, brief_agent, propose_brief
+
+    calls = []
+    clean = BriefProposal.model_validate(tenant_brief().model_dump())
+    bad = clean.model_copy(update={"priorities": ["Rent review on 5 January 2029"]})
+
+    def respond(messages, info):
+        calls.append(messages)
+        value = bad if len(calls) == 1 else clean
+        return ModelResponse([ToolCallPart(info.output_tools[0].name, value.model_dump())])
+
+    with brief_agent.override(model=FunctionModel(respond)):
+        result = await propose_brief("Help my tenant exit in 2029", "Partial synthetic overview")
+    assert len(calls) == 2
+    assert result.priorities == clean.priorities
+    assert "5 January 2029" not in result.model_dump_json()
+
+
+@pytest.mark.asyncio
+async def test_planner_does_not_return_persistent_unsupported_dates():
+    from pydantic_ai.exceptions import UnexpectedModelBehavior
+    from pydantic_ai.messages import ModelResponse, ToolCallPart
+    from pydantic_ai.models.function import FunctionModel
+
+    from takehome.services.brief import BriefProposal, brief_agent, propose_brief
+
+    bad = BriefProposal.model_validate(
+        tenant_brief(priorities=["Rent review on 5 January 2029"]).model_dump()
+    )
+
+    def respond(messages, info):
+        return ModelResponse([ToolCallPart(info.output_tools[0].name, bad.model_dump())])
+
+    with brief_agent.override(model=FunctionModel(respond)):
+        with pytest.raises(UnexpectedModelBehavior):
+            await propose_brief("Help my tenant exit in 2029", "Partial synthetic overview")

@@ -221,3 +221,10 @@ The evaluator's mechanical checks passed, but engineering inspection found a pro
 ## Submission rehearsal (#78)
 
 A fresh browser journey covered synthetic PDF upload, objective entry, brief correction/agreement, investigation, citation inspection, report outline/evidence selection, draft rejection, human editing, save/download and reload. The saved edit and citations survived reload and the downloaded report excluded the rejected calendar deadline. A same-view navigation focus/scroll issue was fixed. The [rehearsal record](docs/REHEARSAL.md) distinguishes completed interactions from observed planning/review/draft failures: this is a usable review workflow, not verified legal advice. AI proposals now explicitly state that they require lawyer review. Part 1 follows the submission form's separate PDF instruction; the Loom recording remains the candidate's final submission step.
+
+
+## Planning-date recheck, chat scrolling and favicon (#80, #81)
+
+I rechecked the unsupported planning date instead of accepting a manually corrected demo as a fix. Planning now rejects recognised calendar dates absent from the lawyer's objective and asks for a topic-based proposal within existing retry/token/time limits; persistent failures are not shown as a valid brief. The partial overview is not treated as verified authority for inserting dates. Regression tests cover the exact failure, correction and rejection. One fresh live planning run returned the intended tenant/client-update context in 13.68 seconds with no calendar dates. This protects a specific output boundary, not general factual correctness or draft deadline assertions; those remain subject to review. Blank-objective planning leaves the represented party unspecified.
+
+The document-chat layout now constrains its message region and preserves the composer, verified with a long conversation and a short/narrow viewport. The requested favicon uses the supplied orange logo mark. The [rehearsal record](docs/REHEARSAL.md) records measurements, supported checks and remaining limits.
