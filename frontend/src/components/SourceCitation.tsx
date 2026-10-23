@@ -11,8 +11,12 @@ import {
 export function SourceCitation({
 	finding,
 	compact = false,
-}: { finding: Finding; compact?: boolean }) {
+	view,
+}: { finding: Finding; compact?: boolean; view?: "report" }) {
 	const location = useLocation();
+	const params = new URLSearchParams(location.search);
+	const destination = new URLSearchParams(location.search);
+	if (view) destination.set("view", view);
 	return (
 		<TooltipProvider>
 			<span className="inline-flex flex-wrap gap-2">
@@ -20,10 +24,17 @@ export function SourceCitation({
 					<Tooltip key={citationKey(source)}>
 						<TooltipTrigger asChild>
 							<Link
-								className="text-sm font-medium text-teal-900 underline decoration-teal-300 underline-offset-4"
+								aria-current={
+									params.get("source") === "1" &&
+									params.get("citation") === citationKey(source) &&
+									params.get("page") === String(source.page)
+										? "location"
+										: undefined
+								}
+								className="source-citation text-sm font-medium text-teal-900 underline decoration-teal-300 underline-offset-4"
 								to={{
 									pathname: location.pathname,
-									search: citationSearch(location.search, source),
+									search: citationSearch(destination.toString(), source),
 								}}
 								aria-label={`Inspect source on PDF page ${source.page}`}
 							>

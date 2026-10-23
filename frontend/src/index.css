@@ -1085,3 +1085,14 @@ html[data-motion="reduced"] .planning-spinner {
 	z-index: 5;
 	flex-shrink: 0;
 }
+
+.report-evidence[data-source-active="true"] {
+	border-color: #c6ab5f;
+	background: #c6ab5f12;
+}
+.source-citation[aria-current="location"] {
+	border-radius: 0.25rem;
+	background: #c6ab5f33;
+	outline: 1px solid #c6ab5f;
+	outline-offset: 3px;
+}

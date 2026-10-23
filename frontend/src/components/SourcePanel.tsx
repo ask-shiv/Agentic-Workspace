@@ -7,11 +7,13 @@ export function SourcePanel({
 	document,
 	page,
 	quote,
+	contextLabel,
 	onPage,
 }: {
 	document: Document;
 	page: number;
 	quote: string;
+	contextLabel?: string;
 	onPage: (page: number) => void;
 }) {
 	const { preferences } = usePreferences();
@@ -73,6 +75,11 @@ export function SourcePanel({
 	}, [document.id, page, mode]);
 	return (
 		<div className="flex min-h-0 min-w-0 flex-1 flex-col">
+			{contextLabel && (
+				<p className="px-4 pt-3 text-xs font-semibold text-teal-900">
+					{contextLabel}
+				</p>
+			)}
 			<p className="break-words px-4 pt-3 text-sm font-medium">
 				{document.filename}
 			</p>

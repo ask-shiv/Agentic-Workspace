@@ -128,3 +128,5 @@ Append one short entry per meaningful pass here: invariant affected, checks, and
 - Planning feedback (#97): pending brief preparation needs a spinner, disabled repeat submission and a nearby live status, removed when the request settles. Respect both system and saved reduced-motion settings. Keep brief agreement and request cancellation unchanged.
 
 - Report assembly (#98): make the selected destination, per-section occupancy and add confirmation visible. Keep the master report reachable without losing evidence or edits. PDF export renders the same saved-revision content and source references as Markdown, uses escaped text only, and retains current-brief/conflict safeguards. Never claim that a PDF export validates its legal contents.
+
+- Report citation parity (#100): report edit and reading modes must expose section-level evidence through the shared citation links and source viewer. Citation navigation preserves view=report and unsaved text; active page/quote identity highlights the report evidence and source overlay together. Use the side panel from 1200px and an accessible dialog below it; never rewrite source text or PDF bytes.
