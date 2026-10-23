@@ -441,6 +441,16 @@ textarea::placeholder {
 .primary-button:hover {
 	background: #4772ff;
 }
+.primary-button[aria-busy="true"]:disabled {
+	opacity: 1;
+	cursor: progress;
+}
+.primary-button .planning-spinner {
+	width: 1.25rem;
+	height: 1.25rem;
+	flex-shrink: 0;
+	stroke-width: 3;
+}
 .workspace-navigation {
 	background: #0c1017;
 }
