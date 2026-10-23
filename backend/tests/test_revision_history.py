@@ -204,3 +204,15 @@ async def test_multiple_source_passages_survive_save_reload_revision_and_export(
         assert b"Notice in writing." in exported.body
         assert b"Additional evidence: PDF page 2" in exported.body
         assert b"A six month premium is payable." in exported.body
+
+        pdf = await export_workspace(identity, session, format="pdf")
+        assert pdf.media_type == "application/pdf"
+        import pymupdf
+
+        with pymupdf.open(stream=pdf.body, filetype="pdf") as document:
+            text = " ".join(page.get_text() for page in document)
+            assert "Lawyer review pending" in text
+            assert "Notice in writing." in text
+            assert "Additional evidence: PDF page 2" in text
+            assert "A six month premium is payable." in text
+            assert "Saved revision: 1" in text

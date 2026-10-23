@@ -1,4 +1,4 @@
-import { ArrowRight, PlusCircle } from "lucide-react";
+import { ArrowRight, LoaderCircle, PlusCircle } from "lucide-react";
 import { type ReactNode, useRef, useState } from "react";
 import { usePreferences } from "../context/preferences";
 import type { Workflow } from "../lib/workspace";
@@ -11,6 +11,7 @@ export function IntentStart({
 	onObjective,
 	onContinue,
 	disabled = false,
+	preparing = false,
 	action = "Continue",
 	children,
 	onUploadFirst,
@@ -24,6 +25,7 @@ export function IntentStart({
 	onObjective: (value: string) => void;
 	onContinue: () => void;
 	disabled?: boolean;
+	preparing?: boolean;
 	action?: string;
 	children?: ReactNode;
 	onUploadFirst?: () => void;
@@ -167,6 +169,7 @@ export function IntentStart({
 						<button
 							className="primary-button composer-submit"
 							type="submit"
+							aria-busy={preparing}
 							disabled={
 								disabled ||
 								(!chatSelected &&
@@ -175,10 +178,25 @@ export function IntentStart({
 							}
 						>
 							{action}
-							<ArrowRight aria-hidden="true" className="h-4 w-4" />
+							{preparing ? (
+								<LoaderCircle
+									aria-hidden="true"
+									className="planning-spinner h-4 w-4 animate-spin motion-reduce:animate-none"
+								/>
+							) : (
+								<ArrowRight aria-hidden="true" className="h-4 w-4" />
+							)}
 						</button>
 					</div>
 				</section>
+				{preparing && (
+					<output
+						aria-label="Brief preparation"
+						className="block text-center text-sm text-neutral-400"
+					>
+						Preparing a brief for you to review…
+					</output>
+				)}
 				{children}
 			</form>
 		</div>

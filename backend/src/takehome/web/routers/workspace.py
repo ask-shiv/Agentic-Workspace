@@ -26,6 +26,7 @@ from takehome.services.brief import (
     workflow_guidance,
 )
 from takehome.services.document import get_document_for_conversation
+from takehome.services.report_pdf import render_report_pdf
 from takehome.services.review import Finding, check_evidence, split_pages
 
 router = APIRouter(prefix="/api/conversations", tags=["workspace"])
@@ -281,7 +282,9 @@ async def draft_section(
 
 @router.get("/{conversation_id}/workspace/export")
 async def export_workspace(
-    conversation_id: str, session: AsyncSession = Depends(get_session)
+    conversation_id: str,
+    session: AsyncSession = Depends(get_session),
+    format: Literal["markdown", "pdf"] = "markdown",
 ) -> Response:
     workspace = await session.get(Workspace, conversation_id)
     if workspace is None:
@@ -322,9 +325,10 @@ async def export_workspace(
             ]
         )
     for section in data.sections:
+        lines.append(f"## {section.title}")
         if section.purpose:
             lines.append(f"Section purpose: {section.purpose}")
-        lines.extend([f"## {section.title}", section.content])
+        lines.append(section.content)
         for id in section.finding_ids:
             finding = data.findings[id]
             status = (
@@ -354,6 +358,18 @@ async def export_workspace(
                     ]
                 )
     lines.extend(["## Review gaps", *[f"- {gap}" for gap in data.gaps]])
+    if format == "pdf":
+        try:
+            pdf = await asyncio.to_thread(render_report_pdf, "\n\n".join(lines))
+        except Exception as exc:
+            raise HTTPException(
+                502, "Could not export PDF. Your saved report is unchanged."
+            ) from exc
+        return Response(
+            pdf,
+            media_type="application/pdf",
+            headers={"Content-Disposition": 'attachment; filename="document-review.pdf"'},
+        )
     return Response(
         "\n\n".join(lines),
         media_type="text/markdown",

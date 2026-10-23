@@ -124,3 +124,7 @@ Append one short entry per meaningful pass here: invariant affected, checks, and
 - Centred branding: render one home-linked orange mark in the main top bar, centred independently of source/profile widths. Keep the navigation width toggle separate; verify narrow header controls do not overlap the mark.
 
 - Development profile demo (#94): keep non-sensitive profile preferences in browser storage and CV File objects only in Settings component memory. Never read/parse/transmit CV contents or add profile fields to agent requests without a separately authorised integration. Static learning cards must remain visibly labelled concepts; do not invent telemetry or learning progress. Test completed-anniversary boundaries, caps, reference reset, local clearing and no-network behaviour. Nested utility tests must be included in the test command.
+
+- Planning feedback (#97): pending brief preparation needs a spinner, disabled repeat submission and a nearby live status, removed when the request settles. Respect both system and saved reduced-motion settings. Keep brief agreement and request cancellation unchanged.
+
+- Report assembly (#98): make the selected destination, per-section occupancy and add confirmation visible. Keep the master report reachable without losing evidence or edits. PDF export renders the same saved-revision content and source references as Markdown, uses escaped text only, and retains current-brief/conflict safeguards. Never claim that a PDF export validates its legal contents.

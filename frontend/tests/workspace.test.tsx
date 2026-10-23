@@ -91,6 +91,9 @@ test('report deep link restores evidence, saves edits and keeps citation navigat
  assert.deepEqual(audit.violations.map(item=>item.id),[]);
  assert(screen.getByRole('region',{name:'Report builder'}));
  await user.click(screen.getByRole('button',{name:'Add to report'}));
+ assert(screen.getByRole('complementary',{name:'Your working report'}).textContent?.includes('1 linked finding'));
+ assert(screen.getByRole('status',{name:'Report additions'}).textContent?.includes('Key findings'));
+ assert(screen.getByRole('button',{name:'Export PDF'}).hasAttribute('disabled'));
  const section=screen.getByRole('textbox',{name:'Key findings'}) as HTMLTextAreaElement;
  assert(section.value.includes('Review the notice provision.'));
  await user.type(section,' Lawyer decision: request clarification.');

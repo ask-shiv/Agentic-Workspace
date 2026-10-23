@@ -228,3 +228,45 @@ test('desktop navigation collapses into a labelled rail without changing the rou
  assert.equal(nav.getAttribute('data-collapsed'),'false');
  router.dispose();
 });
+
+
+test('planning shows accessible pending feedback until the proposed brief arrives',async()=>{
+ let finish!: (value:Response)=>void;
+ let finishReview!: (value:Response)=>void;
+ globalThis.fetch=async input=>String(input).endsWith('/plan')?new Promise<Response>(resolve=>{finish=resolve;}):String(input).endsWith('/review')?new Promise<Response>(resolve=>{finishReview=resolve;}):Response.json({...emptyWorkspace(),objective:tenantBrief.objective,workflow:'report'});
+ const router=createMemoryRouter([{path:'*',element:<PreferencesProvider><ReportWorkspace conversationId='a' document={doc} onDirty={()=>{}} onCitation={()=>{}}><p>Chat</p></ReportWorkspace></PreferencesProvider>}],{initialEntries:['/workspaces/a']});
+ render(<RouterProvider router={router}/>);const user=userEvent.setup();
+ const submit=await screen.findByRole('button',{name:'Plan my work'});
+ await user.click(submit);
+ const pending=screen.getByRole('button',{name:'Planning your work…'});
+ assert.equal(pending.getAttribute('aria-busy'),'true');
+ assert(pending.hasAttribute('disabled'));
+ assert(pending.querySelector('.planning-spinner'));
+ assert(screen.getByRole('status',{name:'Brief preparation'}).textContent?.includes('Preparing a brief'));
+ await act(async()=>finish(Response.json({...tenantBrief,workflow:"report"})));
+ await screen.findByRole('dialog',{name:'Agree the brief'});
+ assert.equal(screen.queryByRole('status',{name:'Brief preparation'}),null);
+ assert.equal(submit.getAttribute('aria-busy'),'false');
+ await user.click(screen.getByRole('button',{name:'Agree brief and investigate'}));
+ const investigating=screen.getByRole('status',{name:'Investigation progress'});
+ assert(investigating.textContent?.includes('Investigating your agreed brief'));
+ assert(investigating.textContent?.includes('keep this workspace open'));
+ assert(investigating.querySelector('.planning-spinner'));
+ const investigateButton=screen.getByRole('button',{name:'Investigating…'});
+ assert(investigateButton.hasAttribute('disabled'));
+ await act(async()=>finishReview(Response.json({findings:[],gaps:[]})));
+ assert.equal(screen.queryByText('Investigating your agreed brief…'),null);
+ router.dispose();
+});
+
+
+test('failed planning clears loading feedback and leaves preparation retryable',async()=>{
+ globalThis.fetch=async input=>String(input).endsWith('/plan')?Response.json({detail:'Planning temporarily unavailable'},{status:503}):Response.json({...emptyWorkspace(),objective:tenantBrief.objective,workflow:'report'});
+ const router=createMemoryRouter([{path:'*',element:<PreferencesProvider><ReportWorkspace conversationId='a' document={doc} onDirty={()=>{}} onCitation={()=>{}}><p>Chat</p></ReportWorkspace></PreferencesProvider>}],{initialEntries:['/workspaces/a']});
+ render(<RouterProvider router={router}/>);const user=userEvent.setup();
+ await user.click(await screen.findByRole('button',{name:'Plan my work'}));
+ await screen.findByRole('alert');
+ assert.equal(screen.queryByRole('status',{name:'Brief preparation'}),null);
+ assert(!screen.getByRole('button',{name:'Plan my work'}).hasAttribute('disabled'));
+ router.dispose();
+});
