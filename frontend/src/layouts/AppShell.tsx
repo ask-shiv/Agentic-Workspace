@@ -89,9 +89,20 @@ export function AppShell() {
 				{navigation}
 			</aside>
 			<div className="workspace-main flex min-w-0 flex-1 flex-col">
-				<header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-neutral-200 bg-white px-4 md:px-6">
+				<header className="workspace-topbar grid h-16 shrink-0 items-center gap-3 border-b border-neutral-200 bg-white px-4 md:px-6">
 					<div />
-					<div className="flex shrink-0 items-center gap-2">
+					<Link
+						to="/"
+						aria-label="Workspace home"
+						className="header-brand flex h-11 w-11 items-center justify-center rounded-lg"
+					>
+						<img
+							src={new URL("../assets/orbital-mark.svg", import.meta.url).href}
+							alt="Orbital"
+							className="h-7 w-auto"
+						/>
+					</Link>
+					<div className="flex shrink-0 items-center justify-self-end gap-2">
 						{match && (
 							<button
 								type="button"
