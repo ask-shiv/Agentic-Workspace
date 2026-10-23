@@ -76,7 +76,7 @@ test('unsaved edits block route changes but allow citation query navigation',asy
 });
 
 test('report deep link restores evidence, saves edits and keeps citation navigation',async()=>{
- const saved={...emptyWorkspace(),version:1,findings:[finding],objective:'Review exit flexibility',review_objective:'Review exit flexibility'};
+ const saved={...emptyWorkspace(),version:1,intent:'report' as const,findings:[finding],objective:'Review exit flexibility',review_objective:'Review exit flexibility'};
  const requests: string[]=[];
  globalThis.fetch=async (input,init)=>{
   const url=String(input); requests.push(`${init?.method ?? 'GET'} ${url}`);
@@ -84,7 +84,7 @@ test('report deep link restores evidence, saves edits and keeps citation navigat
   return Response.json(saved);
  };
  function Workspace(){const [,setDirty]=useState(false);return <PreferencesProvider><ReportWorkspace conversationId='a' document={{id:'doc',conversation_id:'a',filename:'lease.pdf',page_count:9,uploaded_at:'2026-10-21'}} onDirty={setDirty} onCitation={()=>{}}><p>Document chat</p></ReportWorkspace></PreferencesProvider>;}
- const router=createMemoryRouter([{path:'/workspaces/a',element:<Workspace/>}],{initialEntries:['/workspaces/a?view=report']});
+ const router=createMemoryRouter([{path:'/workspaces/a',element:<Workspace/>}],{initialEntries:['/workspaces/a']});
  render(<main><h1>Review workspace</h1><RouterProvider router={router}/></main>); const user=userEvent.setup();
  await screen.findByRole('heading',{name:'Break notice'});
  const audit=await axe.run(document.body,{rules:{'color-contrast':{enabled:false},'label-content-name-mismatch':{enabled:false}}});
@@ -100,9 +100,13 @@ test('report deep link restores evidence, saves edits and keeps citation navigat
  await user.click(screen.getByRole('button',{name:'Save workspace'}));
  await screen.findByText('Saved revision 2');
  assert(requests.includes('PUT /api/conversations/a/workspace'));
- const link=screen.getAllByRole('link',{name:'Inspect source on PDF page 7'})[0];
+ const evidence=screen.getByRole('region',{name:'Source evidence for Key findings'});
+ const link=evidence.querySelector('a') as HTMLAnchorElement;
  assert(link); await user.click(link);
  assert.equal(new URLSearchParams(router.state.location.search).get('citation'),citationKey(finding));
+ assert.equal(new URLSearchParams(router.state.location.search).get('view'),'report');
+ assert.equal(link.getAttribute('aria-current'),'location');
+ assert.equal(evidence.getAttribute('data-source-active'),'true');
  assert(section.value.includes('Lawyer decision'));
  router.dispose();
 });

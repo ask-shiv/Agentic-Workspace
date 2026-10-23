@@ -30,6 +30,7 @@ import { CopyWorkspaceLink } from "./CopyWorkspaceLink";
 import { EmptyState } from "./EmptyState";
 import { IntentStart } from "./IntentStart";
 import { ReportDestination } from "./ReportDestination";
+import { ReportEvidence } from "./ReportEvidence";
 import { ReportTray } from "./ReportTray";
 import { RevisionHistory } from "./RevisionHistory";
 import { SidebarTools } from "./SidebarTools";
@@ -1256,14 +1257,10 @@ export function ReportWorkspace({
 												{section.content || "No text in this section yet."}
 											</Streamdown>
 										</div>
-										<div className="mt-3 flex flex-wrap gap-3">
-											{section.finding_ids.map((id) => {
-												const finding = data.findings[id];
-												return finding ? (
-													<SourceCitation key={id} finding={finding} compact />
-												) : null;
-											})}
-										</div>
+										<ReportEvidence
+											section={section}
+											findings={data.findings}
+										/>
 									</section>
 								))}
 							</article>
@@ -1296,6 +1293,7 @@ export function ReportWorkspace({
 											then choose “Propose a draft”.
 										</p>
 									)}
+									<ReportEvidence section={section} findings={data.findings} />
 									<textarea
 										aria-label={section.title}
 										value={section.content}
@@ -1318,14 +1316,7 @@ export function ReportWorkspace({
 											})
 										}
 									/>
-									<div className="flex flex-wrap gap-2">
-										{section.finding_ids.map((id) => {
-											const finding = data.findings[id];
-											return finding ? (
-												<SourceCitation key={id} finding={finding} compact />
-											) : null;
-										})}
-									</div>
+
 									<button
 										type="button"
 										className={button}

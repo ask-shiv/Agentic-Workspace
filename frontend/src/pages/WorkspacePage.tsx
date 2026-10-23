@@ -47,7 +47,7 @@ function WorkspaceSession({ id }: { id: string }) {
 	const [quote, setQuote] = useState("");
 	const [search, setSearch] = useSearchParams();
 	const location = useLocation();
-	const desktopSource = useMediaQuery("(min-width: 1440px)");
+	const desktopSource = useMediaQuery("(min-width: 1200px)");
 	const {
 		document,
 		error,
@@ -91,6 +91,11 @@ function WorkspaceSession({ id }: { id: string }) {
 	const source = document ? (
 		<SourcePanel
 			document={document}
+			contextLabel={
+				search.get("view") === "report"
+					? "Evidence for your working report"
+					: "Evidence for your document review"
+			}
 			page={page}
 			quote={quote}
 			onPage={(value) =>
@@ -161,7 +166,7 @@ function WorkspaceSession({ id }: { id: string }) {
 				search.get("source") === "1" &&
 				(desktopSource ? (
 					<aside
-						className="flex w-[28rem] shrink-0 flex-col border-l bg-white"
+						className="flex w-[clamp(22rem,36vw,28rem)] shrink-0 flex-col border-l bg-white"
 						aria-label="Original source document"
 					>
 						<div className="flex items-center justify-between border-b px-4 py-3">
