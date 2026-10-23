@@ -188,3 +188,36 @@ test('master report opens a dedicated view, repeats reliably and preserves edits
  assert.equal((screen.getByRole('textbox',{name:'Introduction'}) as HTMLTextAreaElement).value,'Current advice human edit');
  router.dispose();
 });
+
+for (const readingMode of [false,true]) {
+ test(`pointer drag links the actual destination and preserves other sections (reading=${readingMode})`,async()=>{
+  localStorage.setItem('agentic-workspace:preferences:v1',JSON.stringify({readingMode}));
+  const saved={...current,sections:[...current.sections,{title:'Next steps',content:'Human notes',finding_ids:[]}]};
+  globalThis.fetch=async()=>Response.json(saved);
+  const originalPointer=window.PointerEvent;const originalHit=document.elementFromPoint;
+  Object.defineProperty(window,'PointerEvent',{configurable:true,value:window.MouseEvent});
+  const router=mount();
+  try {
+   const handle=await screen.findByRole('button',{name:'Drag Repair obligation to a report section'});
+   handle.setPointerCapture=()=>{};handle.hasPointerCapture=()=>false;
+   const destination=screen.getByRole('region',{name:'Report section: Next steps'});
+   document.elementFromPoint=()=>destination.querySelector('textarea')??destination;
+   const down=()=>fireEvent.pointerDown(handle,{button:0,clientX:10,clientY:10,pointerId:1});
+   const move=()=>fireEvent.pointerMove(handle,{clientX:100,clientY:100,pointerId:1});
+   const up=()=>fireEvent.pointerUp(handle,{clientX:100,clientY:100,pointerId:1});
+   const initial=destination.textContent;
+   down();move();fireEvent.keyDown(handle,{key:'Escape'});up();assert.equal(destination.textContent,initial);
+   document.elementFromPoint=()=>document.body;down();move();up();assert.equal(destination.textContent,initial);
+   document.elementFromPoint=()=>destination.querySelector('textarea')??destination;
+   down();move();assert.equal(destination.getAttribute('data-drag-over'),'true');up();
+   assert.equal(destination.getAttribute('data-drag-over'),'false');
+   assert.match(screen.getByLabelText('Report additions').textContent??'',/Added “Repair obligation” to Next steps/);
+   if (!readingMode) {
+    assert.equal((screen.getByRole('textbox',{name:'Introduction'}) as HTMLTextAreaElement).value,'Current advice');
+    assert.match((screen.getByRole('textbox',{name:'Next steps'}) as HTMLTextAreaElement).value,/Human notes\n\nRepair obligation/);
+   } else assert.match(destination.textContent??'',/Human notes.*Repair obligation/s);
+   const before=destination.textContent;
+   down();move();up();assert.equal(destination.textContent,before);
+  } finally {router.dispose();Object.defineProperty(window,'PointerEvent',{configurable:true,value:originalPointer});document.elementFromPoint=originalHit;}
+ });
+}

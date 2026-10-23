@@ -28,8 +28,10 @@ import type { Document } from "../types";
 import { AttentionPanel } from "./AttentionPanel";
 import { CopyWorkspaceLink } from "./CopyWorkspaceLink";
 import { EmptyState } from "./EmptyState";
+import { FindingDragHandle } from "./FindingDragHandle";
 import { IntentStart } from "./IntentStart";
 import { ReportDestination } from "./ReportDestination";
+import { ReportDropZone } from "./ReportDropZone";
 import { ReportEvidence } from "./ReportEvidence";
 import { ReportTray } from "./ReportTray";
 import { RevisionHistory } from "./RevisionHistory";
@@ -148,6 +150,7 @@ export function ReportWorkspace({
 	const findingRefs = useRef<(HTMLElement | null)[]>([]);
 	const [target, setTarget] = useState(1);
 	const [reportNotice, setReportNotice] = useState("");
+	const [dropTarget, setDropTarget] = useState<number | null>(null);
 	useEffect(() => {
 		setTarget((current) =>
 			Math.min(current, Math.max(0, data.sections.length - 1)),
@@ -1128,15 +1131,14 @@ export function ReportWorkspace({
 							aria-label={`Finding ${id + 1}: ${finding.title}`}
 							onFocus={() => setActiveFinding(id)}
 							data-active={activeFinding === id}
-							draggable={!busy && reviewCurrent}
-							onDragStart={(e) =>
-								e.dataTransfer.setData(
-									"application/orbital-finding",
-									String(id),
-								)
-							}
 							className="finding-card space-y-3 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm"
 						>
+							<FindingDragHandle
+								title={finding.title}
+								disabled={!!busy || !reviewCurrent}
+								onTarget={setDropTarget}
+								onDrop={(index) => add(id, index)}
+							/>
 							<div className="flex flex-wrap gap-2 text-xs">
 								<span
 									className={
@@ -1237,9 +1239,9 @@ export function ReportWorkspace({
 							</p>
 						)}
 						<p className="text-xs text-neutral-500">
-							Drag findings here, use “Add to report”, or write your own
-							section. Source checks cover quotations; edited prose still needs
-							your review.
+							Drag a finding’s grip into a section, use “Add to report”, or
+							write your own section. Source checks cover quotations; edited
+							prose still needs your review.
 						</p>
 						{!preferences.readingMode && (
 							<label className="block text-xs">
@@ -1258,8 +1260,14 @@ export function ReportWorkspace({
 								aria-label="Readable report"
 								className="rounded-xl border bg-white p-6 shadow-sm"
 							>
-								{data.sections.map((section) => (
-									<section key={section.title} className="mb-8">
+								{data.sections.map((section, index) => (
+									<ReportDropZone
+										key={section.title}
+										title={section.title}
+										disabled={!!busy || !reviewCurrent}
+										index={index}
+										highlighted={dropTarget === index}
+									>
 										<h3 className="mb-3 font-serif text-xl font-semibold">
 											{section.title}
 										</h3>
@@ -1289,23 +1297,17 @@ export function ReportWorkspace({
 											section={section}
 											findings={data.findings}
 										/>
-									</section>
+									</ReportDropZone>
 								))}
 							</article>
 						) : (
 							data.sections.map((section, index) => (
-								<div
+								<ReportDropZone
 									key={section.title}
-									onDragOver={(e) => e.preventDefault()}
-									onDrop={(e) => {
-										e.preventDefault();
-										const value = e.dataTransfer.getData(
-											"application/orbital-finding",
-										);
-										if (!busy && reviewCurrent && /^\d+$/.test(value))
-											add(Number(value), index);
-									}}
-									className="report-section space-y-3 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm"
+									title={section.title}
+									disabled={!!busy || !reviewCurrent}
+									index={index}
+									highlighted={dropTarget === index}
 								>
 									<h3 className="font-medium">{section.title}</h3>
 									{section.purpose && (
@@ -1396,7 +1398,7 @@ export function ReportWorkspace({
 											</button>
 										</div>
 									)}
-								</div>
+								</ReportDropZone>
 							))
 						)}
 					</section>

@@ -1120,3 +1120,48 @@ html[data-motion="reduced"] .planning-spinner {
 	border-left: 0;
 	overflow: visible;
 }
+
+.finding-drag-handle {
+	display: inline-flex;
+	align-items: center;
+	gap: .375rem;
+	padding: .5rem;
+	border: 1px solid #53627c;
+	border-radius: .5rem;
+	color: inherit;
+	cursor: grab;
+}
+.finding-drag-handle:active {
+	cursor: grabbing;
+}
+.report-drop-hint {
+	border: 1px dashed #7183a5;
+	border-radius: .5rem;
+	padding: .75rem;
+	font-size: .875rem;
+}
+.report-section[data-drag-over="true"] {
+	outline: 3px solid #91daca;
+	outline-offset: -3px;
+}
+.report-section[data-drag-over="true"] .report-drop-hint {
+	background: #164840;
+	color: white;
+}
+
+.finding-drag-handle {
+	touch-action: none;
+	user-select: none;
+}
+.finding-drag-preview {
+	position: fixed;
+	z-index: 100;
+	pointer-events: none;
+	max-width: 20rem;
+	border: 1px solid #91daca;
+	border-radius: .5rem;
+	background: #164840;
+	color: white;
+	padding: .75rem;
+	box-shadow: 0 4px 20px #0006;
+}
