@@ -57,6 +57,8 @@ test('sidebar view navigation preserves the chosen workflow and unsaved report j
  const router=createMemoryRouter([{path:'*',element:<PreferencesProvider><div data-workspace-shell><WorkspaceNavigation conversations={[]} loading={false} onCreate={()=>{}}/><ReportWorkspace conversationId='a' document={doc} onDirty={()=>{}} onCitation={()=>{}}>{context=><output data-testid='context'>{JSON.stringify(context)}</output>}</ReportWorkspace></div></PreferencesProvider>}],{initialEntries:['/workspaces/a?view=report']});
  render(<RouterProvider router={router}/>);const user=userEvent.setup();
  const editor=await screen.findByRole('textbox',{name:'Introduction'});await user.type(editor,'My negotiating decision.');
+ await user.click(screen.getByRole('link',{name:'Write report'}));
+ await waitFor(()=>assert.equal(document.activeElement?.id,'view-report'));
  await user.click(screen.getByRole('link',{name:'Review findings'}));
  assert.equal(document.activeElement?.id,'view-risk');
  assert.equal(new URLSearchParams(router.state.location.search).get('view'),'risk');

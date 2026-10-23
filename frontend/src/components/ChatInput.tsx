@@ -62,7 +62,7 @@ export function ChatInput({
 	);
 
 	return (
-		<div className="border-t border-neutral-200 bg-white p-3">
+		<div className="shrink-0 border-t border-neutral-200 bg-white p-3">
 			<div className="flex items-end gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2">
 				<Tooltip>
 					<TooltipTrigger asChild>

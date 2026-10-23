@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic_ai import Agent
+from pydantic_ai import Agent, ModelRetry, RunContext
 from pydantic_ai.usage import UsageLimits
 
 from takehome.services.agent_security import UNTRUSTED_INPUT_POLICY
@@ -99,6 +100,7 @@ def require_current_briefs(
 brief_agent = Agent(
     "anthropic:claude-haiku-4-5-20251001",
     output_type=BriefProposal,
+    deps_type=str,
     instructions=UNTRUSTED_INPUT_POLICY
     + (
         "Propose a small workflow brief for a commercial property lawyer from their objective and a document overview. "
@@ -111,6 +113,36 @@ brief_agent = Agent(
         "Use topic-based questions and section purposes, not asserted document facts: do not copy or calculate lease dates, amounts or conclusions from the partial overview. Do not invent verified legal positions, client preferences or assurances. Do not answer questions not established by the input."
     ),
 )
+
+
+_CALENDAR_DATE = re.compile(
+    r"\b(?:\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:January|February|March|April|May|June|July|August|September|October|November|December)\s*,?\s*\d{4}"
+    r"|(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?\s*,?\s*\d{4}"
+    r"|\d{4}-\d{2}-\d{2}|\d{1,2}/\d{1,2}/\d{4})\b",
+    re.IGNORECASE,
+)
+
+
+def validate_planning_dates(objective: str, proposal: BriefProposal) -> BriefProposal:
+    def normalise(value: str) -> str:
+        return re.sub(r"[^a-z0-9]", "", value.casefold())
+
+    supplied = {normalise(item.group()) for item in _CALENDAR_DATE.finditer(objective)}
+    generated = {
+        normalise(item.group()) for item in _CALENDAR_DATE.finditer(proposal.model_dump_json())
+    }
+    if generated - supplied:
+        raise ModelRetry(
+            "The proposed brief introduced a calendar date absent from the lawyer's objective. "
+            "Remove such dates from every field. Keep the plan topic-based and ask to verify "
+            "contractual dates during investigation; do not guess or correct dates from the overview."
+        )
+    return proposal
+
+
+@brief_agent.output_validator
+def check_planning_dates(ctx: RunContext[str], proposal: BriefProposal) -> BriefProposal:
+    return validate_planning_dates(ctx.deps, proposal)
 
 
 async def propose_brief(
@@ -134,13 +166,15 @@ async def propose_brief(
                     "workflow_guidance": workflow_guidance(workflow),
                 }
             ),
+            deps=objective,
             usage_limits=UsageLimits(request_limit=3, total_tokens_limit=12000),
         ),
         timeout=45,
     )
-    proposal = result.output.model_dump()
+    proposal = validate_planning_dates(objective, result.output).model_dump()
     if infer_objective:
         objective = proposal["outcome"]
+        proposal["client_role"] = "unspecified"
     if workflow == "report":
         middle = [
             section

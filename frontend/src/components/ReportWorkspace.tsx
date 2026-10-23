@@ -638,7 +638,7 @@ export function ReportWorkspace({
 		return (
 			<div className="flex min-h-0 flex-1 flex-col">
 				{tools}
-				<div className="flex items-center justify-between border-b p-4">
+				<div className="flex shrink-0 items-center justify-between border-b p-4">
 					<h2>Document chat</h2>
 					<button
 						type="button"
@@ -1266,8 +1266,12 @@ export function ReportWorkspace({
 									{proposal?.index === index && (
 										<div className="space-y-3 rounded border border-blue-200 bg-blue-50 p-3">
 											<strong className="text-sm">
-												Proposed amendment — not applied
+												AI draft — requires lawyer review; not applied
 											</strong>
+											<p className="text-xs text-neutral-600">
+												Check dates, clause references, conditions and
+												unsupported claims against the source before accepting.
+											</p>
 											<p className="whitespace-pre-wrap text-sm">
 												{proposal.content}
 											</p>

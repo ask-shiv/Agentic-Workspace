@@ -121,7 +121,17 @@ export function WorkspaceNavigation({
 							<Link
 								key={item.view}
 								to={{ pathname: location.pathname, search: query.toString() }}
-								onClick={onFollow}
+								onClick={() => {
+									onFollow?.();
+									if (view === item.view)
+										window.requestAnimationFrame(() => {
+											const heading = window.document.getElementById(
+												`view-${item.view}`,
+											);
+											heading?.focus({ preventScroll: true });
+											heading?.scrollIntoView?.({ block: "start" });
+										});
+								}}
 								aria-current={view === item.view ? "page" : undefined}
 								className={`sidebar-link ${view === item.view ? "sidebar-link-active" : ""}`}
 							>

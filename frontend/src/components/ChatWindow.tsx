@@ -30,7 +30,7 @@ export function ChatWindow({
 	onUpload,
 	contextBlocked = false,
 }: ChatWindowProps) {
-	const scrollRef = useRef<HTMLDivElement>(null);
+	const scrollRef = useRef<HTMLElement>(null);
 
 	// Auto-scroll to bottom when new messages arrive or during streaming
 	const messagesLength = messages.length;
@@ -66,8 +66,8 @@ export function ChatWindow({
 	// Empty conversation - show upload prompt
 	if (messages.length === 0 && !streaming) {
 		return (
-			<div className="flex flex-1 flex-col bg-white">
-				<div className="flex flex-1 items-center justify-center">
+			<div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
+				<div className="flex min-h-0 flex-1 items-center justify-center overflow-y-auto">
 					{hasDocument ? (
 						<div className="text-center">
 							<p className="text-sm text-neutral-500">
@@ -95,21 +95,26 @@ export function ChatWindow({
 	}
 
 	return (
-		<div className="flex flex-1 flex-col bg-white">
+		<div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
 			{error && (
 				<div className="mx-4 mt-2 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">
 					{error}
 				</div>
 			)}
 
-			<div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-4">
+			<section
+				ref={scrollRef}
+				aria-label="Chat messages"
+				tabIndex={0}
+				className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-4"
+			>
 				<div className="mx-auto max-w-2xl space-y-1">
 					{messages.map((message) => (
 						<MessageBubble key={message.id} message={message} />
 					))}
 					{streaming && <StreamingBubble content={streamingContent} />}
 				</div>
-			</div>
+			</section>
 
 			{contextBlocked && (
 				<p className="bg-amber-50 p-3 text-sm text-amber-900">
