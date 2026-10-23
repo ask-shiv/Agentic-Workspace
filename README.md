@@ -4,7 +4,7 @@ An intent-led workspace for commercial property lawyers: agree the work, investi
 
 Start with [the three-paragraph rationale](DECISIONS.md), [the completed engineering rehearsal](docs/REHEARSAL.md), then [the walkthrough script](docs/LOOM_SCRIPT.md). This is an independently created repository, not a GitHub fork.
 
-**Submission status:** the working prototype and evaluation notes are included. Part 1 is submitted separately as a PDF through the assignment form. The recorded 2–3-minute Loom link is still required; it is not represented as complete.
+**Submission status:** the working prototype and evaluation notes are included. Part 1 should be uploaded separately as a PDF through the assignment form. The recorded 2–3-minute Loom link is still required; it is not represented as complete.
 
 ## Try the core journey
 

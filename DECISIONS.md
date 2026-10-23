@@ -16,7 +16,7 @@ The implementation history and verification limits follow below.
 - Intent and objective, finding cards, source inspection/navigation, add/drag into three editable sections, proposed drafts, and explicit acceptance.
 - Postgres-backed report state with optimistic revision checks. Immutable saved snapshots support preview and restore as a new revision, alongside stale-write protection. Starting a new review preserves report text but clears old evidence attachments after confirmation.
 - Server-generated Markdown attachment containing saved text, source quotations, review status, objective, revision and export date. Unsaved work must be saved first.
-- Current regression baseline: 42 backend tests and 33 frontend tests, including semantic accessibility checks, plus frontend lint/TypeScript production build and live persistence/conflict checks. Live model checks and their failures are documented separately; the smoke script does not call a model.
+- Current regression baseline: 48 backend tests and 33 frontend tests, including semantic accessibility checks, plus frontend lint/TypeScript production build and live persistence/conflict checks. Live model checks and their failures are documented separately; the smoke script does not call a model.
 - Adversarial review identified a proposal/save race and an oversized-section edge case; both were corrected before merge.
 
 ## Limits and follow-ups — would complete with more time
